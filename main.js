@@ -246,3 +246,22 @@ window.addEventListener('DOMContentLoaded', () => {
   fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
   initSwipers();
 });
+// DARK/LIGHT MODE TOGGLE
+function initThemeToggle() {
+  const toggleBtn = document.getElementById('theme-toggle');
+  const currentTheme = localStorage.getItem('theme') || 'dark';
+  document.body.classList.add(currentTheme);
+  toggleBtn.textContent = currentTheme === 'light' ? '🌞' : '🌙';
+
+  toggleBtn.addEventListener('click', () => {
+    const isDark = document.body.classList.contains('dark');
+    document.body.classList.toggle('dark', !isDark);
+    document.body.classList.toggle('light', isDark);
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    toggleBtn.textContent = isDark ? '🌞' : '🌙';
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initThemeToggle(); // ✅ Initialize theme toggle on load
+});
