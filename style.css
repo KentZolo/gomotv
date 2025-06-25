@@ -331,22 +331,20 @@ body {
     font-size: 1.2rem;
   }
 }
-/* Pareho ang layout ng genre at search */
-.search-results,
-.genre-results {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  padding: 20px;
+
+.search-results-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  padding: 20px;
 }
 
 @media (max-width: 768px) {
-  .search-results,
-  .genre-results {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .search-results-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
-
+  
 .movie-card {
   background: #1a1a1a;
   aspect-ratio: 2/3;
