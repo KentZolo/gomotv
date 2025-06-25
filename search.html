@@ -44,7 +44,6 @@
       const container = document.getElementById('results-grid');
       const title = document.getElementById('search-title');
 
-      title.textContent = `🔍 Results for "${query}"`;
 
       try {
         const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`);
