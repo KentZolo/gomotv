@@ -43,7 +43,6 @@
     async function searchMovies(query, page = 1) {
       const container = document.getElementById('results-grid');
       const title = document.getElementById('search-title');
-      const pagination = document.getElementById('pagination');
 
       title.textContent = `🔍 Results for "${query}"`;
 
@@ -83,15 +82,15 @@
       }
     }
 
-      function renderPagination(totalPages) {
-        const paginationTop = document.getElementById('pagination-top');
-        const paginationBottom = document.getElementById('pagination');
+    function renderPagination(totalPages) {
+      const paginationTop = document.getElementById('pagination-top');
+      const paginationBottom = document.getElementById('pagination');
 
-        if (totalPages <= 1) {
-          if (paginationTop) paginationTop.innerHTML = '';
-          if (paginationBottom) paginationBottom.innerHTML = '';
-          return;
-      }   
+      if (totalPages <= 1) {
+        if (paginationTop) paginationTop.innerHTML = '';
+        if (paginationBottom) paginationBottom.innerHTML = '';
+        return;
+      }
 
       let buttons = '';
       const maxPage = Math.min(currentPage + 2, totalPages);
@@ -109,7 +108,9 @@
         buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
       }
 
-      pagination.innerHTML = buttons;
+      [paginationTop, paginationBottom].forEach(pagination => {
+        if (pagination) pagination.innerHTML = buttons;
+      });
     }
 
     function goToPage(page) {
