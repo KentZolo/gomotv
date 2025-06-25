@@ -37,7 +37,7 @@ function showBannerSlide(index) {
   img.dataset.type = 'movie';
 
   document.getElementById('poster-meta').textContent =
-    `★ ${item.vote_average?.toFixed(1) || 'N/A'} ·  Movie · ${item.release_date?.slice(0, 4) || ''}`;
+    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} · 🎬 Movie · ${item.release_date?.slice(0, 4) || ''}`;
   document.getElementById('poster-summary').textContent = item.title;
 
   img.addEventListener('click', () => {
@@ -74,7 +74,6 @@ function displayMedia(items, containerSelector, defaultType) {
     const imageUrl = getImageUrl(item.poster_path || item.backdrop_path);
     const year = (item.release_date || item.first_air_date || '').slice(0, 4);
     const releaseDate = item.release_date || item.first_air_date || '';
-    
     let quality = 'HD';
     if (releaseDate) {
       const now = new Date();
@@ -176,6 +175,7 @@ async function loadGenres() {
   }
 }
 
+// ✅ Modal logic with URL support
 const SERVERS = [
   { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` },
   { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
@@ -184,6 +184,7 @@ const SERVERS = [
 
 async function openModal(id, type) {
   history.pushState(null, "", `?id=${id}&type=${type}`);
+
   const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
   const data = await res.json();
   const title = data.title || data.name;
@@ -198,7 +199,7 @@ async function openModal(id, type) {
       <div class="modal-content">
         <span class="close-btn">×</span>
         <h3>${title}</h3>
-        <p>★ ${rating} · ${type.toUpperCase()} · ${year}</p>
+        <p>⭐ ${rating} · ${type.toUpperCase()} · ${year}</p>
         <div class="genres">${genres}</div>
         <p>${overview}</p>
         <label>Server:</label>
@@ -226,6 +227,14 @@ async function openModal(id, type) {
     iframe.src = server.url(type, id);
     shield.style.display = 'block';
     setTimeout(() => (shield.style.display = 'none'), 3000);
+
+    iframe.onerror = () => {
+      if (index + 1 < SERVERS.length) {
+        loadServer(index + 1);
+      } else {
+        shield.textContent = 'No working server found.';
+      }
+    };
   }
 
   loadServer(0);
@@ -240,13 +249,14 @@ async function openModal(id, type) {
   modal.querySelector('.close-btn').addEventListener('click', () => {
     modal.remove();
     document.body.style.overflow = '';
-    window.history.pushState(null, "", window.location.pathname); // 🔙 restore clean URL
+    history.pushState(null, "", window.location.pathname);
   });
 
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
       modal.remove();
       document.body.style.overflow = '';
+      history.pushState(null, "", window.location.pathname);
     }
   });
 }
@@ -260,39 +270,19 @@ window.addEventListener('DOMContentLoaded', () => {
   fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
   fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
   initSwipers();
-});
 
-// DARK/LIGHT MODE TOGGLE
-function initThemeToggle() {
-  const toggleBtn = document.getElementById('theme-toggle');
-  const currentTheme = localStorage.getItem('theme') || 'dark';
-  document.body.classList.add(currentTheme);
-  toggleBtn.textContent = '🌓';
-
-  toggleBtn.addEventListener('click', () => {
-    const isDark = document.body.classList.contains('dark');
-    document.body.classList.toggle('dark', !isDark);
-    document.body.classList.toggle('light', isDark);
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-    toggleBtn.textContent = '🌓';
-  });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  initThemeToggle(); // ✅ Initialize theme toggle on load
-});
-
-const urlParams = new URLSearchParams(window.location.search);
-const mid = urlParams.get('id');
-const mtype = urlParams.get('type');
-if (mid && mtype) {
-  openModal(mid, mtype);
-}
-
-window.addEventListener("popstate", () => {
-  const modal = document.querySelector('.modal');
-  if (modal) {
-    modal.remove();
-    document.body.style.overflow = '';
+  // ✅ Auto open modal from URL
+  const p = new URLSearchParams(location.search);
+  if (p.get("id") && p.get("type")) {
+    openModal(p.get("id"), p.get("type"));
   }
+
+  // ✅ Close modal on back button
+  window.addEventListener("popstate", () => {
+    const modal = document.querySelector('.modal');
+    if (modal) {
+      modal.remove();
+      document.body.style.overflow = '';
+    }
+  });
 });
