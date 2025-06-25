@@ -69,14 +69,14 @@
   `;
 }).join('');
         
-        document.querySelectorAll('.poster-wrapper img').forEach(img => {
-          img.addEventListener('click', () => {
-            const id = img.dataset.id;
-            const type = img.dataset.type;
-            const title = img.dataset.title;
-            openModalPlayer(id, title, type);
-          });
-        });
+        document.querySelectorAll('.movie-card img').forEach(img => {
+  img.addEventListener('click', () => {
+    const id = img.dataset.id;
+    const type = img.dataset.type;
+    const title = img.dataset.title;
+    openModalPlayer(id, title, type);
+  });
+});
 
         renderPagination(data.total_pages);
       } catch (err) {
