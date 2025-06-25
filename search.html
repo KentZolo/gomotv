@@ -84,7 +84,9 @@
     }
 
     function renderPagination(totalPages) {
-      const pagination = document.getElementById('pagination');
+      const paginationTop = document.getElementById('pagination-top');
+      const paginationBottom = document.getElementById('pagination');
+      
       if (totalPages <= 1) return pagination.innerHTML = '';
 
       let buttons = '';
