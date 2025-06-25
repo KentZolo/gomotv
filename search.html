@@ -128,7 +128,10 @@ if (releaseDate) {
     }
 
     function openModalPlayer(id, title, type) {
-      history.pushState(null, "", `?id=${id}&type=${type}`);
+  fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=77312bdd4669c80af3d08e0bf719d7ff`)
+    .then(res => res.json())
+    .then(data => {
+      const title = data.title || data.name;
       const modal = document.createElement('div');
       modal.className = 'modal';
       document.body.style.overflow = 'hidden';
@@ -144,6 +147,70 @@ if (releaseDate) {
         </div>
       `;
 
+      document.getElementById('modal-container').appendChild(modal);
+      const select = modal.querySelector('#server-select');
+
+      const SERVERS = [
+        { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` },
+        { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
+        { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` }
+      ];
+
+      SERVERS.forEach(server => {
+        const option = document.createElement('option');
+        option.value = server.id;
+        option.textContent = server.name;
+        select.appendChild(option);
+      });
+
+      function loadServer(index) {
+        const server = SERVERS[index];
+        select.value = server.id;
+        const iframe = modal.querySelector('#player-frame');
+        iframe.src = server.url(type, id);
+
+        const shield = modal.querySelector('.iframe-shield');
+        shield.style.display = 'block';
+        setTimeout(() => shield.style.display = 'none', 3000);
+
+        iframe.onerror = () => {
+          if (index + 1 < SERVERS.length) {
+            loadServer(index + 1);
+          } else {
+            shield.textContent = 'No working server found.';
+          }
+        };
+      }
+
+      loadServer(0);
+
+      select.addEventListener('change', () => {
+        const selected = SERVERS.find(s => s.id === select.value);
+        if (selected) {
+          modal.querySelector('#player-frame').src = selected.url(type, id);
+        }
+      });
+
+      modal.querySelector('.close-btn').addEventListener('click', () => {
+        modal.remove();
+        document.body.style.overflow = '';
+        window.history.pushState(null, "", window.location.pathname);
+      });
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+          document.body.style.overflow = '';
+          window.history.pushState(null, "", window.location.pathname);
+        }
+      });
+    })
+    .catch(err => {
+      console.error("Modal fetch error:", err);
+      alert("Failed to load movie info.");
+    });
+    }
+    
       document.getElementById('modal-container').appendChild(modal);
       const select = modal.querySelector('#server-select');
 
@@ -202,9 +269,9 @@ if (releaseDate) {
 const mid = urlParams.get('id');
 const mtype = urlParams.get('type');
 if (mid && mtype) {
-  openModal(mid, mtype);
+  openModalPlayer(mid, '', mtype); // ✅ title is optional now
 }
-
+    
     window.addEventListener("popstate", () => {
   const modal = document.querySelector('.modal');
   if (modal) {
