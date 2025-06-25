@@ -51,25 +51,23 @@
         const data = await res.json();
         const results = data.results.filter(item => item.media_type !== 'person');
 
-       container.innerHTML = results.map(item => {
-  const id = item.id;
-  const type = item.media_type;
-  const title = item.title || item.name;
-  const year = item.release_date?.slice(0, 4) || item.first_air_date?.slice(0, 4) || '';
-  const img = getImageUrl(item.poster_path || item.backdrop_path);
+        container.innerHTML = results.map(item => {
+          const id = item.id;
+          const type = item.media_type;
+          const title = item.title || item.name;
+          const year = item.release_date?.slice(0, 4) || item.first_air_date?.slice(0, 4) || '';
+          const img = getImageUrl(item.poster_path || item.backdrop_path);
 
-  return `
-    <div class="movie-card">
-      <img class="movie-poster" src="${img}" alt="${title}" data-id="${id}" data-type="${type}" data-title="${title}">
-      <div class="movie-info">
-        <h3>${title}</h3>
-        <p>${type === 'movie' ? '🎬' : '📺'} ${year}</p>
-      </div>
-    </div>
-  `;
-}).join('');
+          return `
+            <div class="poster-wrapper">
+              <img src="${img}" alt="${title}" data-id="${id}" data-type="${type}" data-title="${title}">
+              <div class="poster-label">${title}</div>
+              <div class="poster-meta">${type === 'movie' ? '🎬' : '📺'} ${year}</div>
+            </div>
+          `;
+        }).join('');
 
-        document.querySelectorAll('.movie-poster').forEach(img => {
+        document.querySelectorAll('.poster-wrapper img').forEach(img => {
           img.addEventListener('click', () => {
             const id = img.dataset.id;
             const type = img.dataset.type;
