@@ -83,11 +83,15 @@
       }
     }
 
-    function renderPagination(totalPages) {
-      const paginationTop = document.getElementById('pagination-top');
-      const paginationBottom = document.getElementById('pagination');
-      
-      if (totalPages <= 1) return pagination.innerHTML = '';
+      function renderPagination(totalPages) {
+        const paginationTop = document.getElementById('pagination-top');
+        const paginationBottom = document.getElementById('pagination');
+
+        if (totalPages <= 1) {
+          if (paginationTop) paginationTop.innerHTML = '';
+          if (paginationBottom) paginationBottom.innerHTML = '';
+          return;
+      }   
 
       let buttons = '';
       const maxPage = Math.min(currentPage + 2, totalPages);
