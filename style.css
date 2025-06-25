@@ -246,3 +246,14 @@ body.light .modal-content {
 body.light .theme-toggle {
   color: #000;
 }
+.menu-toggle {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+
+body.light .menu-toggle {
+  color: #000;
+}
