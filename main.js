@@ -72,8 +72,21 @@ function displayMedia(items, containerSelector, defaultType) {
   container.innerHTML = items.map(item => {
     const title = item.title || item.name;
     const imageUrl = getImageUrl(item.poster_path || item.backdrop_path);
+    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+    const releaseDate = item.release_date || item.first_air_date || '';
+    
+    let quality = 'HD';
+    if (releaseDate) {
+      const now = new Date();
+      const released = new Date(releaseDate);
+      const diffDays = Math.floor((now - released) / (1000 * 60 * 60 * 24));
+      if (diffDays < 7) quality = 'CAM';
+      else if (diffDays < 21) quality = 'TS';
+    }
+
     return `
       <div class="swiper-slide poster-wrapper">
+        <div class="poster-badge">${quality}</div>
         <img src="${imageUrl}" 
              alt="${title}" 
              data-id="${item.id}" 
