@@ -262,14 +262,6 @@ window.addEventListener('DOMContentLoaded', () => {
   initSwipers();
 });
 
-window.addEventListener("popstate", () => {
-  const modal = document.querySelector('.modal');
-  if (modal) {
-    modal.remove();
-    document.body.style.overflow = '';
-  }
-});
-
 // DARK/LIGHT MODE TOGGLE
 function initThemeToggle() {
   const toggleBtn = document.getElementById('theme-toggle');
@@ -288,4 +280,12 @@ function initThemeToggle() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initThemeToggle(); // ✅ Initialize theme toggle on load
+});
+
+window.addEventListener("popstate", () => {
+  const modal = document.querySelector('.modal');
+  if (modal) {
+    modal.remove();
+    document.body.style.overflow = '';
+  }
 });
