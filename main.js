@@ -183,6 +183,7 @@ const SERVERS = [
 ];
 
 async function openModal(id, type) {
+  history.pushState(null, "", `?id=${id}&type=${type}`);
   const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
   const data = await res.json();
   const title = data.title || data.name;
@@ -239,6 +240,7 @@ async function openModal(id, type) {
   modal.querySelector('.close-btn').addEventListener('click', () => {
     modal.remove();
     document.body.style.overflow = '';
+    window.history.pushState(null, "", window.location.pathname); // 🔙 restore clean URL
   });
 
   modal.addEventListener('click', (e) => {
