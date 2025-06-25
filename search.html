@@ -1,189 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Search Results - GomoTV</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Results - GomoTV</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="navbar">
-    <button onclick="history.back()" class="menu-toggle">←</button>
-    <h1 class="logo">Search Results</h1>
-  </header>
+  <header class="navbar">
+    <button onclick="history.back()" class="menu-toggle">←</button>
+    <h1 class="logo">Search Results</h1>
+  </header>
 
-  <main>
-    <h2 class="search-title" id="search-title">🔍 Results</h2>
-    <div class="search-results-grid" id="results-grid"></div>
-    <div id="pagination" class="pagination"></div>
-  </main>
+  <main>
+    <h2 class="search-title" id="search-title">🔍 Results</h2>
+    <div class="search-results-grid" id="results-grid"></div>
+    <div id="pagination" class="pagination"></div>
+  </main>
 
-  <div id="modal-container"></div>
+  <div id="modal-container"></div>
 
-  <script>
-    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
-    const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
-    const FALLBACK_IMAGE = 'https://via.placeholder.com/500x750?text=No+Poster';
+  <script>
+    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+    const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
+    const FALLBACK_IMAGE = 'https://via.placeholder.com/500x750?text=No+Poster';
 
-    const SERVERS = [
-      { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` },
-      { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
-      { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` }
-    ];
+    const SERVERS = [
+      { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` },
+      { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
+      { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` }
+    ];
 
-    const params = new URLSearchParams(location.search);
-    const query = params.get('q') || '';
-    let currentPage = parseInt(params.get('page')) || 1;
+    const params = new URLSearchParams(location.search);
+    const query = params.get('q') || '';
+    let currentPage = parseInt(params.get('page')) || 1;
 
-    function getImageUrl(path) {
-      return path ? IMG_BASE + path : FALLBACK_IMAGE;
-    }
+    function getImageUrl(path) {
+      return path ? IMG_BASE + path : FALLBACK_IMAGE;
+    }
 
-    async function searchMovies(query, page = 1) {
-      const container = document.getElementById('results-grid');
-      const title = document.getElementById('search-title');
-      const pagination = document.getElementById('pagination');
+    async function searchMovies(query, page = 1) {
+      const container = document.getElementById('results-grid');
+      const title = document.getElementById('search-title');
+      const pagination = document.getElementById('pagination');
 
-      title.textContent = `🔍 Results for "${query}"`;
+      title.textContent = `🔍 Results for "${query}"`;
 
-      try {
-        const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`);
-        const data = await res.json();
-        const results = data.results.filter(item => item.media_type !== 'person');
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`);
+        const data = await res.json();
+        const results = data.results.filter(item => item.media_type !== 'person');
 
-        container.innerHTML = results.map(item => {
-          const id = item.id;
-          const type = item.media_type;
-          const title = item.title || item.name;
-          const year = item.release_date?.slice(0, 4) || item.first_air_date?.slice(0, 4) || '';
-          const img = getImageUrl(item.poster_path || item.backdrop_path);
+        container.innerHTML = results.map(item => {
+          const id = item.id;
+          const type = item.media_type;
+          const title = item.title || item.name;
+          const year = item.release_date?.slice(0, 4) || item.first_air_date?.slice(0, 4) || '';
+          const img = getImageUrl(item.poster_path || item.backdrop_path);
 
-          return `
-            <div class="poster-wrapper">
-              <img src="${img}" alt="${title}" data-id="${id}" data-type="${type}" data-title="${title}">
-              <div class="poster-label">${title}</div>
-              <div class="poster-meta">${type === 'movie' ? '🎬' : '📺'} ${year}</div>
-            </div>
-          `;
-        }).join('');
+          return `
+            <div class="poster-wrapper">
+              <img src="${img}" alt="${title}" data-id="${id}" data-type="${type}" data-title="${title}">
+              <div class="poster-label">${title}</div>
+              <div class="poster-meta">${type === 'movie' ? '🎬' : '📺'} ${year}</div>
+            </div>
+          `;
+        }).join('');
 
-        document.querySelectorAll('.poster-wrapper img').forEach(img => {
-          img.addEventListener('click', () => {
-            const id = img.dataset.id;
-            const type = img.dataset.type;
-            const title = img.dataset.title;
-            openModalPlayer(id, title, type);
-          });
-        });
+        document.querySelectorAll('.poster-wrapper img').forEach(img => {
+          img.addEventListener('click', () => {
+            const id = img.dataset.id;
+            const type = img.dataset.type;
+            const title = img.dataset.title;
+            openModalPlayer(id, title, type);
+          });
+        });
 
-        renderPagination(data.total_pages);
-      } catch (err) {
-        container.innerHTML = '<p class="no-results">Something went wrong.</p>';
-        console.error(err);
-      }
-    }
+        renderPagination(data.total_pages);
+      } catch (err) {
+        container.innerHTML = '<p class="no-results">Something went wrong.</p>';
+        console.error(err);
+      }
+    }
 
-    function renderPagination(totalPages) {
-      const pagination = document.getElementById('pagination');
-      if (totalPages <= 1) return pagination.innerHTML = '';
+    function renderPagination(totalPages) {
+      const pagination = document.getElementById('pagination');
+      if (totalPages <= 1) return pagination.innerHTML = '';
 
-      let buttons = '';
-      const maxPage = Math.min(currentPage + 2, totalPages);
-      const minPage = Math.max(1, currentPage - 2);
+      let buttons = '';
+      const maxPage = Math.min(currentPage + 2, totalPages);
+      const minPage = Math.max(1, currentPage - 2);
 
-      if (currentPage > 1) {
-        buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
-      }
+      if (currentPage > 1) {
+        buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
+      }
 
-      for (let i = minPage; i <= maxPage; i++) {
-        buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
-      }
+      for (let i = minPage; i <= maxPage; i++) {
+        buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+      }
 
-      if (currentPage < totalPages) {
-        buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
-      }
+      if (currentPage < totalPages) {
+        buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
+      }
 
-      pagination.innerHTML = buttons;
-    }
+      pagination.innerHTML = buttons;
+    }
 
-    function goToPage(page) {
-      location.href = `search.html?q=${encodeURIComponent(query)}&page=${page}`;
-    }
+    function goToPage(page) {
+      location.href = `search.html?q=${encodeURIComponent(query)}&page=${page}`;
+    }
 
-    function openModalPlayer(id, title, type) {
-      const modal = document.createElement('div');
-      modal.className = 'modal';
-      document.body.style.overflow = 'hidden';
+    function openModalPlayer(id, title, type) {
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      document.body.style.overflow = 'hidden';
 
-      modal.innerHTML = `
-        <div class="modal-content">
-          <span class="close-btn">×</span>
-          <h3>${title}</h3>
-          <label>Server:</label>
-          <select id="server-select"></select>
-          <div class="iframe-shield">Loading player...</div>
-          <iframe id="player-frame" allowfullscreen></iframe>
-        </div>
-      `;
+      modal.innerHTML = `
+        <div class="modal-content">
+          <span class="close-btn">×</span>
+          <h3>${title}</h3>
+          <label>Server:</label>
+          <select id="server-select"></select>
+          <div class="iframe-shield">Loading player...</div>
+          <iframe id="player-frame" allowfullscreen></iframe>
+        </div>
+      `;
 
-      document.getElementById('modal-container').appendChild(modal);
-      const select = modal.querySelector('#server-select');
+      document.getElementById('modal-container').appendChild(modal);
+      const select = modal.querySelector('#server-select');
 
-      SERVERS.forEach(server => {
-        const option = document.createElement('option');
-        option.value = server.id;
-        option.textContent = server.name;
-        select.appendChild(option);
-      });
+      SERVERS.forEach(server => {
+        const option = document.createElement('option');
+        option.value = server.id;
+        option.textContent = server.name;
+        select.appendChild(option);
+      });
 
-      function loadServer(index) {
-        const server = SERVERS[index];
-        select.value = server.id;
-        const iframe = modal.querySelector('#player-frame');
-        iframe.src = server.url(type, id);
+      function loadServer(index) {
+        const server = SERVERS[index];
+        select.value = server.id;
+        const iframe = modal.querySelector('#player-frame');
+        iframe.src = server.url(type, id);
 
-        const shield = modal.querySelector('.iframe-shield');
-        shield.style.display = 'block';
-        setTimeout(() => shield.style.display = 'none', 3000);
+        const shield = modal.querySelector('.iframe-shield');
+        shield.style.display = 'block';
+        setTimeout(() => shield.style.display = 'none', 3000);
 
-        iframe.onerror = () => {
-          if (index + 1 < SERVERS.length) {
-            loadServer(index + 1);
-          } else {
-            shield.textContent = 'No working server found.';
-          }
-        };
-      }
+        iframe.onerror = () => {
+          if (index + 1 < SERVERS.length) {
+            loadServer(index + 1);
+          } else {
+            shield.textContent = 'No working server found.';
+          }
+        };
+      }
 
-      loadServer(0);
+      loadServer(0);
 
-      select.addEventListener('change', () => {
-        const selected = SERVERS.find(s => s.id === select.value);
-        if (selected) {
-          modal.querySelector('#player-frame').src = selected.url(type, id);
-        }
-      });
+      select.addEventListener('change', () => {
+        const selected = SERVERS.find(s => s.id === select.value);
+        if (selected) {
+          modal.querySelector('#player-frame').src = selected.url(type, id);
+        }
+      });
 
-      modal.querySelector('.close-btn').addEventListener('click', () => {
-        modal.remove();
-        document.body.style.overflow = '';
-      });
+      modal.querySelector('.close-btn').addEventListener('click', () => {
+        modal.remove();
+        document.body.style.overflow = '';
+      });
 
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.remove();
-          document.body.style.overflow = '';
-        }
-      });
-    }
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+          document.body.style.overflow = '';
+        }
+      });
+    }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      if (query.length >= 2) {
-        searchMovies(query, currentPage);
-      } else {
-        document.getElementById('results-grid').innerHTML = '<p class="no-results">Enter a valid search query.</p>';
-      }
-    });
-  </script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (query.length >= 2) {
+        searchMovies(query, currentPage);
+      } else {
+        document.getElementById('results-grid').innerHTML = '<p class="no-results">Enter a valid search query.</p>';
+      }
+    });
+  </script>
 </body>
 </html>
