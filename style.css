@@ -170,20 +170,24 @@ body {
 }
 
 .poster-wrapper {
-Â  display: flex;
-Â  flex-direction: column;
-Â  position: relative;
-Â  border-radius: 8px;
-Â  overflow: hidden;
-Â  cursor: pointer;
-Â  width: 100%; /* This makes it fit grid cell */
+  aspect-ratio: 2/3;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+  background: #1a1a1a;
+}
+
+.poster-wrapper:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
 }
 
 .poster-wrapper img {
   width: 100%;
-  aspect-ratio: 2/3;
+  height: 100%;
   object-fit: cover;
-  border-radius: 8px;
 }
 
 .poster-label {
@@ -328,14 +332,15 @@ body {
   }
 }
 .search-results-grid {
-Â  display: grid;
-Â  grid-template-columns: repeat(4, 1fr); /* 4 columns desktop */
-Â  gap: 15px;
-Â  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  padding: 20px;
 }
 
 @media (max-width: 768px) {
-Â  .search-results-grid {
-Â  Â  grid-template-columns: repeat(2, 1fr); /* 2 columns phone/tablet */
-Â  }
+  .search-results-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
+  
