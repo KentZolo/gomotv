@@ -128,6 +128,7 @@ if (releaseDate) {
     }
 
     function openModalPlayer(id, title, type) {
+      history.pushState(null, "", `?id=${id}&type=${type}`);
       const modal = document.createElement('div');
       modal.className = 'modal';
       document.body.style.overflow = 'hidden';
@@ -176,6 +177,7 @@ if (releaseDate) {
       modal.querySelector('.close-btn').addEventListener('click', () => {
         modal.remove();
         document.body.style.overflow = '';
+        window.history.pushState(null, "", window.location.pathname); // 🔙 restore clean URL
       });
 
       modal.addEventListener('click', (e) => {
