@@ -12,11 +12,16 @@
     <h1 class="logo" id="genre-title">Genre</h1>
   </header>
 
- <main>
-  <div id="pagination-top" class="pagination"></div>
-  <div class="search-results-grid" id="results-grid"></div>
-  <div id="pagination" class="pagination"></div>
- </main>
+  <main>
+    <!-- ✅ TOP PAGINATION -->
+    <div id="pagination-top" class="pagination"></div>
+
+    <!-- ✅ RESULTS -->
+    <div class="search-results-grid" id="results-grid"></div>
+
+    <!-- ✅ BOTTOM PAGINATION -->
+    <div id="pagination" class="pagination"></div>
+  </main>
 
   <div id="modal-container"></div>
 
@@ -42,7 +47,6 @@
 
     async function fetchByGenre(genreId, page = 1) {
       const container = document.getElementById('results-grid');
-      const pagination = document.getElementById('pagination');
       const title = document.getElementById('genre-title');
       title.textContent = `🎬 ${genreName}`;
 
@@ -84,12 +88,12 @@
       const paginationTop = document.getElementById('pagination-top');
       const paginationBottom = document.getElementById('pagination');
 
-   if (totalPages <= 1) {
-     if (paginationTop) paginationTop.innerHTML = '';
-     if (paginationBottom) paginationBottom.innerHTML = '';
-     return;
-   }
-      
+      if (totalPages <= 1) {
+        if (paginationTop) paginationTop.innerHTML = '';
+        if (paginationBottom) paginationBottom.innerHTML = '';
+        return;
+      }
+
       let buttons = '';
       const maxPage = Math.min(currentPage + 2, totalPages);
       const minPage = Math.max(1, currentPage - 2);
@@ -106,7 +110,9 @@
         buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
       }
 
-      pagination.innerHTML = buttons;
+      [paginationTop, paginationBottom].forEach(pagination => {
+        if (pagination) pagination.innerHTML = buttons;
+      });
     }
 
     function goToPage(page) {
