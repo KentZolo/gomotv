@@ -282,6 +282,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initThemeToggle(); // ✅ Initialize theme toggle on load
 });
 
+const urlParams = new URLSearchParams(window.location.search);
+const mid = urlParams.get('id');
+const mtype = urlParams.get('type');
+if (mid && mtype) {
+  openModal(mid, mtype);
+}
+
 window.addEventListener("popstate", () => {
   const modal = document.querySelector('.modal');
   if (modal) {
