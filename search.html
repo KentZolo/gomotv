@@ -183,6 +183,26 @@
         document.getElementById('results-grid').innerHTML = '<p class="no-results">Enter a valid search query.</p>';
       }
     });
+
+    initThemeToggle();
+
+    function initThemeToggle() {
+  const toggleBtn = document.getElementById('theme-toggle');
+  if (!toggleBtn) return;
+
+  const currentTheme = localStorage.getItem('theme') || 'dark';
+  document.body.classList.add(currentTheme);
+  toggleBtn.textContent = currentTheme === 'light' ? '🌞' : '🌙';
+
+  toggleBtn.addEventListener('click', () => {
+    const isDark = document.body.classList.contains('dark');
+    document.body.classList.toggle('dark', !isDark);
+    document.body.classList.toggle('light', isDark);
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    toggleBtn.textContent = isDark ? '🌞' : '🌙';
+  });
+    }
+    
   </script>
 </body>
 </html>
