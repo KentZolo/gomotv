@@ -37,7 +37,7 @@ function showBannerSlide(index) {
   img.dataset.type = 'movie';
 
   document.getElementById('poster-meta').textContent =
-    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} · 🎬 Movie · ${item.release_date?.slice(0, 4) || ''}`;
+    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} ·  Movie · ${item.release_date?.slice(0, 4) || ''}`;
   document.getElementById('poster-summary').textContent = item.title;
 
   img.addEventListener('click', () => {
