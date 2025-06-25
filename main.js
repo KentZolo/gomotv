@@ -261,6 +261,15 @@ window.addEventListener('DOMContentLoaded', () => {
   fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
   initSwipers();
 });
+
+window.addEventListener("popstate", () => {
+  const modal = document.querySelector('.modal');
+  if (modal) {
+    modal.remove();
+    document.body.style.overflow = '';
+  }
+});
+
 // DARK/LIGHT MODE TOGGLE
 function initThemeToggle() {
   const toggleBtn = document.getElementById('theme-toggle');
