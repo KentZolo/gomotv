@@ -215,6 +215,14 @@
 
       initThemeToggle();
     });
+
+    window.addEventListener("popstate", () => {
+  const modal = document.querySelector('.modal');
+  if (modal) {
+    modal.remove();
+    document.body.style.overflow = '';
+  }
+});
   </script>
 </body>
 </html>
