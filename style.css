@@ -257,3 +257,21 @@ body.light .theme-toggle {
 body.light .menu-toggle {
   color: #000;
 }
+
+.poster-wrapper {
+  position: relative;
+}
+
+.poster-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #e50914;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  z-index: 2;
+  text-transform: uppercase;
+}
