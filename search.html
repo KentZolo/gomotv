@@ -198,6 +198,14 @@ if (releaseDate) {
 
     initThemeToggle();
 
+    window.addEventListener("popstate", () => {
+  const modal = document.querySelector('.modal');
+  if (modal) {
+    modal.remove();
+    document.body.style.overflow = '';
+  }
+});
+
     function initThemeToggle() {
   const toggleBtn = document.getElementById('theme-toggle');
   if (!toggleBtn) return;
