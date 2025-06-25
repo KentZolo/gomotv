@@ -61,16 +61,8 @@
           const img = getImageUrl(item.poster_path || item.backdrop_path);
           const type = item.media_type || 'movie';
           const releaseDate = item.release_date || item.first_air_date || '';
-let quality = 'HD';
-if (releaseDate) {
-  const now = new Date();
-  const released = new Date(releaseDate);
-  const diffDays = Math.floor((now - released) / (1000 * 60 * 60 * 24));
-  if (diffDays < 7) quality = 'CAM';
-  else if (diffDays < 21) quality = 'TS';
-}
+        }
           return `
-  <div class="poster-wrapper">
     <div class="poster-badge">${quality}</div>
     <img src="${img}" alt="${title}" data-id="${id}" data-type="${type}" data-title="${title}">
     <div class="poster-label">${title}</div>
