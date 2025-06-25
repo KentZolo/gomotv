@@ -286,3 +286,20 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+function initThemeToggle() {
+  const toggleBtn = document.getElementById('theme-toggle');
+  if (!toggleBtn) return;
+
+  const currentTheme = localStorage.getItem('theme') || 'dark';
+  document.body.classList.add(currentTheme);
+  toggleBtn.textContent = '🌓';
+
+  toggleBtn.addEventListener('click', () => {
+    const isDark = document.body.classList.contains('dark');
+    document.body.classList.toggle('dark', !isDark);
+    document.body.classList.toggle('light', isDark);
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  });
+}
+
+initThemeToggle();
