@@ -201,3 +201,48 @@ body {
     font-size: 12px;
   }
 }
+/* DARK THEME (Default) */
+body.dark {
+  background: #0f0f0f;
+  color: white;
+}
+
+/* LIGHT THEME */
+body.light {
+  background: #f4f4f4;
+  color: #111;
+}
+
+body.light .navbar,
+body.light .menu-panel,
+body.light .footer {
+  background: #fff;
+  color: #000;
+}
+
+body.light .poster-wrapper {
+  background: #eee;
+}
+
+body.light .poster-label,
+body.light .poster-meta {
+  color: #333;
+}
+
+body.light .modal-content {
+  background: #fff;
+  color: #000;
+}
+
+.theme-toggle {
+  margin-left: auto;
+  font-size: 20px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+body.light .theme-toggle {
+  color: #000;
+}
