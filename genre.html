@@ -53,9 +53,10 @@
           const title = item.title || item.name;
           const year = (item.release_date || item.first_air_date || '').slice(0, 4);
           const img = getImageUrl(item.poster_path || item.backdrop_path);
+          const type = item.media_type || 'movie';
           return `
             <div class="poster-wrapper">
-              <img src="${img}" alt="${title}" data-id="${item.id}" data-type="movie" data-title="${title}">
+              <img src="${img}" alt="${title}" data-id="${item.id}" data-type="${type}" data-title="${title}">
               <div class="poster-label">${title}</div>
               <div class="poster-meta">🎬 ${year}</div>
             </div>
@@ -140,14 +141,6 @@
         const shield = modal.querySelector('.iframe-shield');
         shield.style.display = 'block';
         setTimeout(() => shield.style.display = 'none', 3000);
-
-        iframe.onerror = () => {
-          if (index + 1 < SERVERS.length) {
-            loadServer(index + 1);
-          } else {
-            shield.textContent = 'No working server found.';
-          }
-        };
       }
 
       loadServer(0);
