@@ -289,3 +289,12 @@ body.light .menu-toggle {
 .nav:hover {
   color: #e50914;
 }
+.media-section {
+  margin-top: 40px; /* Add spacing above each section */
+  padding: 0 15px;
+}
+
+.media-section h2 {
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+}
