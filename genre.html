@@ -33,10 +33,10 @@
     ];
 
     const params = new URLSearchParams(location.search);
-    const genreId = params.get('id');
-    const genreName = params.get('genre');
-    let currentPage = parseInt(params.get('page')) || 1;
-
+const genreId = params.get('id') || '16'; // fallback to Animation ID
+const genreName = params.get('genre') || 'Animation';
+let currentPage = parseInt(params.get('page')) || 1;
+    
     function getImageUrl(path) {
       return path ? IMG_BASE + path : FALLBACK_IMAGE;
     }
