@@ -301,16 +301,15 @@ body.light .menu-toggle {
 .featured {
   margin-bottom: 30px;
 }
-/* Larger posters only for homepage */
-.homepage-grid .poster-wrapper {
-  transform: scale(1.05); /* +5% visual size */
-}
-
-@media (min-width: 769px) {
+@media (max-width: 768px) {
   .homepage-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(2, 1fr); /* ✅ two columns on mobile */
+    gap: 12px; /* ✅ tighter gap */
+    padding: 10px;
   }
+
+  .homepage-grid .poster-wrapper {
+    transform: scale(1); /* ✅ Remove scale on mobile for balance */
 }
 .homepage-grid {
   padding-top: 10px;
