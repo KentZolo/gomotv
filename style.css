@@ -443,4 +443,13 @@ body.light .poster-wrapper:hover {
 .hamburger-menu .submenu a:hover {
   color: #e50914;
 }
+.search-results-grid .poster-wrapper {
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .search-results-grid .poster-wrapper {
+    transform: scale(1); /* remove zoom on mobile */
+  }
+}
   
