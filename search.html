@@ -8,11 +8,30 @@
 </head>
 <body>
   <header class="navbar">
-    <button onclick="history.back()" class="menu-toggle">←</button>
-    <h1 class="logo">Search Results</h1>
-    <button id="theme-toggle" class="theme-toggle">🌓</button>
-  </header>
+  <!-- Hamburger Icon -->
+  <div class="menu-toggle" id="menu-toggle">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
 
+  <h1 class="logo">GomoTV</h1>
+  <button id="theme-toggle" class="theme-toggle">🌓</button>
+</header>
+
+<!-- Hamburger Navigation Menu -->
+<nav class="hamburger-menu" id="hamburger-menu">
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="genres.html">Genre</a></li>
+    <li><a href="#">Country</a></li>
+    <li><a href="#">Movies</a></li>
+    <li><a href="#">TV Shows</a></li>
+    <li><a href="#">Top IMDB</a></li>
+    <li><a href="#">Android App</a></li>
+  </ul>
+</nav>
+  
   <main>
     <h2 class="search-title" id="search-title"></h2>
     <div id="pagination-top" class="pagination"></div>
