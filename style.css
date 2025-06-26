@@ -452,4 +452,7 @@ body.light .poster-wrapper:hover {
     transform: scale(1); /* remove zoom on mobile */
   }
 }
+.search-results-grid .poster-label {
+  font-size: 15px;
+}
   
