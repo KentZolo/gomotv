@@ -23,8 +23,8 @@
     <ul>
       <li><a href="index.html">Home</a></li>
       <li>
-        <li class="has-submenu" id="genre-toggle">
-        Genre
+        <li id="genre-toggle">
+        <a href="#">Genre</a>
         <ul class="submenu">
           <li><a href="genre.html?genre=Action&id=28">Action</a></li>
           <li><a href="genre.html?genre=Animation&id=16">Animation</a></li>
@@ -270,6 +270,19 @@
           `<p class="no-results">❌ Invalid genre. Please choose from the <a href='genres.html'>genre list</a>.</p>`;
         return;
       }
+
+      const genreToggle = document.getElementById('genre-toggle');
+if (genreToggle) {
+  const toggleLink = genreToggle.querySelector('a');
+  const submenu = genreToggle.querySelector('.submenu');
+
+  if (toggleLink && submenu) {
+    toggleLink.addEventListener('click', (e) => {
+      e.preventDefault(); // ✅ Prevent link from navigating
+      submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+    });
+  }
+}
 
       fetchGenreMovies(genreId, currentPage);
       initThemeToggle();
