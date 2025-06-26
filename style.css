@@ -455,58 +455,36 @@ body.light .poster-wrapper:hover {
 .search-results-grid .poster-label {
   font-size: 15px;
 }
-.country-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.country-btn {
-  padding: 10px;
-  background: #222;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.country-btn:hover {
-  background: #e50914;
-}
-
-body.light .country-btn {
-  background: #ddd;
-  color: #000;
-}
-
-body.light .country-btn:hover {
-  background: #e50914;
-  color: white;
-}
-
-/* Country Grid Fix */
+/* ✅ Final Country Grid Styles */
 .country-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 10px;
-  padding: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  padding: 15px;
 }
 
 .country-grid a {
-  background: #222;
-  color: white;
-  padding: 8px 10px;
-  text-align: center;
-  text-decoration: none;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: background 0.3s;
+  background: #222;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: background 0.3s;
 }
 
 .country-grid a:hover {
-  background: #e50914;
+  background: #e50914;
+}
+
+body.light .country-grid a {
+  background: #eee;
+  color: #111;
+}
+
+body.light .country-grid a:hover {
+  background: #e50914;
+  color: white;
 }
   
