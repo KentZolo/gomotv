@@ -31,17 +31,18 @@ async function loadBannerSlider() {
 function showBannerSlide(index) {
   const item = bannerItems[index];
   const img = document.getElementById('poster-img');
-  if (!img) return;
   img.src = getImageUrl(item.backdrop_path, true);
   img.alt = item.title;
   img.dataset.id = item.id;
   img.dataset.type = 'movie';
 
   document.getElementById('poster-meta').textContent =
-    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} · Movie · ${item.release_date?.slice(0, 4) || ''}`;
+    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} ·  Movie · ${item.release_date?.slice(0, 4) || ''}`;
   document.getElementById('poster-summary').textContent = item.title;
 
-  img.onclick = () => openModal(item.id, 'movie');
+  img.addEventListener('click', () => {
+    openModal(item.id, 'movie');
+  });
 }
 
 function prevSlide() {
@@ -83,17 +84,21 @@ function displayMedia(items, containerSelector, defaultType) {
     }
 
     return `
-      <div class="poster-wrapper">
+      <div class="swiper-slide poster-wrapper">
         <div class="poster-badge">${quality}</div>
-        <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-title="${title}" data-type="${item.media_type || defaultType}">
+        <img src="${imageUrl}" 
+             alt="${title}" 
+             data-id="${item.id}" 
+             data-title="${title}" 
+             data-type="${item.media_type || defaultType}">
         <div class="poster-label">${title}</div>
-        <div class="poster-meta">📅 ${year}</div>
       </div>
     `;
   }).join('');
 
-  container.querySelectorAll('.poster-wrapper img').forEach(img => {
-    img.addEventListener('click', () => {
+  container.querySelectorAll('.poster-wrapper').forEach(poster => {
+    poster.addEventListener('click', () => {
+      const img = poster.querySelector('img');
       const id = img.dataset.id;
       const type = img.dataset.type;
       openModal(id, type);
@@ -104,6 +109,7 @@ function displayMedia(items, containerSelector, defaultType) {
 function setupSearchRedirect() {
   const searchBtn = document.getElementById('search-button');
   const searchInput = document.getElementById('search-input');
+
   if (searchBtn && searchInput) {
     searchBtn.addEventListener('click', () => {
       const query = searchInput.value.trim();
@@ -118,7 +124,33 @@ function setupSearchRedirect() {
   }
 }
 
-// MODAL PLAYER
+async function loadGenres() {
+  const container = document.getElementById('genre-buttons');
+  if (!container) return;
+
+  try {
+    const res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`);
+    const data = await res.json();
+    const genres = data.genres;
+
+    container.innerHTML = genres.map(genre => `
+      <button class="genre-btn" data-id="${genre.id}">${genre.name}</button>
+    `).join('');
+
+    document.querySelectorAll('.genre-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const genreId = btn.dataset.id;
+        const genreName = btn.textContent.trim();
+        window.location.href = `genre.html?genre=${encodeURIComponent(genreName)}&id=${genreId}`;
+      });
+    });
+
+  } catch (err) {
+    console.error('Failed to load genres:', err);
+  }
+}
+
+// ✅ Modal logic with URL support
 const SERVERS = [
   { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` },
   { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
@@ -132,37 +164,37 @@ async function openModal(id, type) {
   const data = await res.json();
   const title = data.title || data.name;
   const year = (data.release_date || data.first_air_date || '').slice(0, 4);
+  const rating = data.vote_average?.toFixed(1) || 'N/A';
   const overview = data.overview || 'No description available.';
   const genres = data.genres?.map(g => `<span>${g.name}</span>`).join('');
+  const poster = getImageUrl(data.poster_path);
 
-  const modal = document.createElement('div');
-  modal.className = 'modal';
-  document.body.style.overflow = 'hidden';
-  modal.innerHTML = `
-    <div class="modal-content">
-      <span class="close-btn">×</span>
-      <h3>${title}</h3>
-      <p>📅 ${year}</p>
-      <div class="genres">${genres}</div>
-      <p>${overview}</p>
-      <label>Server:</label>
-      <select id="server-select"></select>
-      <div class="iframe-shield">Loading player...</div>
-      <iframe id="player-frame" allowfullscreen></iframe>
+  const modalHtml = `
+    <div class="modal">
+      <div class="modal-content">
+        <span class="close-btn">×</span>
+        <h3>${title}</h3>
+        <p>⭐ ${rating} · ${type.toUpperCase()} · ${year}</p>
+        <div class="genres">${genres}</div>
+        <p>${overview}</p>
+        <label>Server:</label>
+        <select id="server-select">
+          ${SERVERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        </select>
+        <div class="iframe-shield">Loading player...</div>
+        <iframe id="player-frame" allowfullscreen></iframe>
+      </div>
     </div>
   `;
-  document.getElementById('modal-container').appendChild(modal);
 
+  const container = document.getElementById('modal-container');
+  container.innerHTML = modalHtml;
+  document.body.style.overflow = 'hidden';
+
+  const modal = document.querySelector('.modal');
   const iframe = modal.querySelector('#player-frame');
-  const select = modal.querySelector('#server-select');
   const shield = modal.querySelector('.iframe-shield');
-
-  SERVERS.forEach(server => {
-    const option = document.createElement('option');
-    option.value = server.id;
-    option.textContent = server.name;
-    select.appendChild(option);
-  });
+  const select = modal.querySelector('#server-select');
 
   function loadServer(index) {
     const server = SERVERS[index];
@@ -170,13 +202,23 @@ async function openModal(id, type) {
     iframe.src = server.url(type, id);
     shield.style.display = 'block';
     setTimeout(() => (shield.style.display = 'none'), 3000);
+
+    iframe.onerror = () => {
+      if (index + 1 < SERVERS.length) {
+        loadServer(index + 1);
+      } else {
+        shield.textContent = 'No working server found.';
+      }
+    };
   }
 
   loadServer(0);
 
   select.addEventListener('change', () => {
     const selected = SERVERS.find(s => s.id === select.value);
-    if (selected) iframe.src = selected.url(type, id);
+    if (selected) {
+      iframe.src = selected.url(type, id);
+    }
   });
 
   modal.querySelector('.close-btn').addEventListener('click', () => {
@@ -194,10 +236,43 @@ async function openModal(id, type) {
   });
 }
 
-// THEME
+window.addEventListener('DOMContentLoaded', () => {
+  setupSearchRedirect();
+  loadGenres();
+  loadBannerSlider();
+  fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
+  fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
+  fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
+  initSwipers();
+
+    const menuToggle = document.getElementById('menu-toggle');
+  const menuPanel = document.getElementById('hamburger-menu');
+
+  if (menuToggle && menuPanel) {
+    menuToggle.addEventListener('click', () => {
+      menuPanel.style.display = menuPanel.style.display === 'block' ? 'none' : 'block';
+    });
+  }
+
+  // ✅ Auto open modal from URL
+  const p = new URLSearchParams(location.search);
+  if (p.get("id") && p.get("type")) {
+    openModal(p.get("id"), p.get("type"));
+  }
+
+  // ✅ Close modal on back button
+  window.addEventListener("popstate", () => {
+    const modal = document.querySelector('.modal');
+    if (modal) {
+      modal.remove();
+      document.body.style.overflow = '';
+    }
+  });
+});
 function initThemeToggle() {
   const toggleBtn = document.getElementById('theme-toggle');
   if (!toggleBtn) return;
+
   const currentTheme = localStorage.getItem('theme') || 'dark';
   document.body.classList.add(currentTheme);
   toggleBtn.textContent = '🌓';
@@ -210,58 +285,14 @@ function initThemeToggle() {
   });
 }
 
-// HAMBURGER + GENRE + COUNTRY SHOW/HIDE
-function initMenuToggles() {
-  const toggleBtn = document.getElementById('menu-toggle');
-  const navPanel = document.getElementById('hamburger-menu');
-  if (toggleBtn && navPanel) {
-    toggleBtn.addEventListener('click', () => {
-      navPanel.style.display = navPanel.style.display === 'block' ? 'none' : 'block';
-    });
-  }
+initThemeToggle();
 
-  const genreToggle = document.getElementById('genre-toggle');
-  if (genreToggle) {
-    const link = genreToggle.querySelector('a');
-    const submenu = genreToggle.querySelector('.genre-buttons');
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      submenu.style.display = submenu.style.display === 'grid' ? 'none' : 'grid';
-    });
-  }
-
-  const countryToggle = document.getElementById('country-toggle');
-  if (countryToggle) {
-    const link = countryToggle.querySelector('a');
-    const submenu = countryToggle.querySelector('.country-buttons');
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      submenu.style.display = submenu.style.display === 'grid' ? 'none' : 'grid';
-    });
-  }
+function toggleMenu() {
+  const panel = document.getElementById('hamburger-menu');
+  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
 }
 
-// ✅ INIT ALL ON HOMEPAGE
-window.addEventListener('DOMContentLoaded', () => {
-  initThemeToggle();
-  initMenuToggles();
-  setupSearchRedirect();
-  loadBannerSlider();
-  fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
-  fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
-  fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
-
-  const p = new URLSearchParams(location.search);
-  if (p.get("id") && p.get("type")) {
-    openModal(p.get("id"), p.get("type"));
-  }
-
-  window.addEventListener("popstate", () => {
-    const modal = document.querySelector('.modal');
-    if (modal) {
-      modal.remove();
-      document.body.style.overflow = '';
-    }
-  });
-});
-    
+function closeMenu() {
+  const panel = document.getElementById('hamburger-menu');
+  panel.style.display = 'none';
+}
