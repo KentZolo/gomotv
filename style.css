@@ -337,4 +337,36 @@ body.light .menu-toggle {
   background: #e50914;
   margin-top: 5px;
 }
+body.light {
+  background-color: #f0f0f0;
+  color: #111;
+}
+
+body.light .navbar {
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+body.light .menu-panel {
+  background: #f5f5f5;
+}
+
+body.light .poster-wrapper {
+  background: #ffffff;
+}
+
+body.light .modal-content {
+  background: #ffffff;
+  color: #111;
+}
+
+body.light .genre-btn {
+  background: #ddd;
+  color: #000;
+}
+
+body.light .genre-btn:hover {
+  background: #e50914;
+  color: #fff;
+}
   
