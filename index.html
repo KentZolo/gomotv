@@ -80,26 +80,31 @@
   <script src="main.js"></script>
 
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const genreToggle = document.getElementById('genre-toggle');
-    if (genreToggle) {
-      const toggleLink = genreToggle.querySelector('a');
-      const submenu = genreToggle.querySelector('.submenu');
+document.addEventListener('DOMContentLoaded', () => {
+  // ✅ Hamburger menu toggle
+  const toggleBtn = document.getElementById('menu-toggle');
+  const navPanel = document.getElementById('hamburger-menu');
 
-      if (toggleLink && submenu) {
-        toggleLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-        });
-      }
-    }
-
-    // Optional: toggle hamburger menu (kung wala pa)
-    document.getElementById('menu-toggle')?.addEventListener('click', () => {
-      const menu = document.getElementById('hamburger-menu');
-      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+  if (toggleBtn && navPanel) {
+    toggleBtn.addEventListener('click', () => {
+      navPanel.style.display = navPanel.style.display === 'block' ? 'none' : 'block';
     });
-  });
+  }
+
+  // ✅ Genre submenu toggle
+  const genreToggle = document.getElementById('genre-toggle');
+  if (genreToggle) {
+    const toggleLink = genreToggle.querySelector('a');
+    const submenu = genreToggle.querySelector('.submenu');
+
+    if (toggleLink && submenu) {
+      toggleLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+      });
+    }
+  }
+});
   </script>
 </body>
 </html>
