@@ -486,4 +486,25 @@ body.light .country-btn:hover {
   background: #e50914;
   color: white;
 }
+
+.country-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  padding-top: 10px;
+}
+
+.country-grid a {
+  background: #222;
+  color: white;
+  padding: 8px 10px;
+  border-radius: 6px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.country-grid a:hover {
+  background: #e50914;
+}
   
