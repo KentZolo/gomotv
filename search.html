@@ -7,39 +7,41 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="navbar">
-  <!-- Hamburger Icon -->
-  <div class="menu-toggle" id="menu-toggle">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-
-  <h1 class="logo">GomoTV</h1>
-  <button id="theme-toggle" class="theme-toggle">🌓</button>
+<!-- ✅ Navbar with hamburger + theme toggle -->
+<header class="navbar">
+  <div class="menu-toggle" id="menu-toggle">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  <h1 class="logo">GomoTV</h1>
+  <button id="theme-toggle" class="theme-toggle">🌓</button>
 </header>
 
-<!-- Hamburger Navigation Menu -->
+<!-- ✅ Hamburger Menu (with search) -->
 <nav class="hamburger-menu" id="hamburger-menu">
-  <ul>
-    <li><a href="index.html">Home</a></li>
-    <li>
-  Genre
-  <ul class="submenu">
-    <li><a href="genre.html?genre=Action&id=28">Action</a></li>
-    <li><a href="genre.html?genre=Animation&id=16">Animation</a></li>
-    <li><a href="genre.html?genre=Horror&id=27">Horror</a></li>
-    <li><a href="genre.html?genre=Comedy&id=35">Comedy</a></li>
-    <li><a href="genre.html?genre=Drama&id=18">Drama</a></li>
-  </ul>
-    </li>
-    
-    <li><a href="#">Country</a></li>
-    <li><a href="#">Movies</a></li>
-    <li><a href="#">TV Shows</a></li>
-    <li><a href="#">Top IMDB</a></li>
-    <li><a href="#">Android App</a></li>
-  </ul>
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="Search movies or shows...">
+    <button id="search-button">Search</button>
+  </div>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li id="genre-toggle">
+      <a href="#">Genre</a>
+      <ul class="submenu">
+        <li><a href="genre.html?genre=Action&id=28">Action</a></li>
+        <li><a href="genre.html?genre=Animation&id=16">Animation</a></li>
+        <li><a href="genre.html?genre=Horror&id=27">Horror</a></li>
+        <li><a href="genre.html?genre=Comedy&id=35">Comedy</a></li>
+        <li><a href="genre.html?genre=Drama&id=18">Drama</a></li>
+      </ul>
+    </li>
+    <li><a href="#">Country</a></li>
+    <li><a href="#">Movies</a></li>
+    <li><a href="#">TV Shows</a></li>
+    <li><a href="#">Top IMDB</a></li>
+    <li><a href="#">Android App</a></li>
+  </ul>
 </nav>
   
   <main>
@@ -254,6 +256,31 @@
       }
 
       initThemeToggle();
+      
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleBtn = document.getElementById('menu-toggle');
+  const navPanel = document.getElementById('hamburger-menu');
+
+  if (toggleBtn && navPanel) {
+    toggleBtn.addEventListener('click', () => {
+      navPanel.style.display = navPanel.style.display === 'block' ? 'none' : 'block';
+    });
+  }
+
+  // Genre submenu toggle
+  const genreToggle = document.getElementById('genre-toggle');
+  if (genreToggle) {
+    const toggleLink = genreToggle.querySelector('a');
+    const submenu = genreToggle.querySelector('.submenu');
+
+    if (toggleLink && submenu) {
+      toggleLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+      });
+    }
+  }
+});
 
       // Auto-open modal if URL has id & type
       const id = params.get('id');
