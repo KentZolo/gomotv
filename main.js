@@ -106,21 +106,6 @@ function displayMedia(items, containerSelector, defaultType) {
   });
 }
 
-function initSwipers() {
-  const options = {
-    slidesPerView: 2,
-    spaceBetween: 10,
-    breakpoints: {
-      640: { slidesPerView: 3 },
-      768: { slidesPerView: 4 },
-      1024: { slidesPerView: 6 }
-    }
-  };
-  new Swiper('.trending-swiper', options);
-  new Swiper('.movie-swiper', options);
-  new Swiper('.tv-swiper', options);
-}
-
 function setupSearchRedirect() {
   const searchBtn = document.getElementById('search-button');
   const searchInput = document.getElementById('search-input');
