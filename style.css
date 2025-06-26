@@ -298,3 +298,6 @@ body.light .menu-toggle {
   margin-bottom: 15px;
   font-size: 1.5rem;
 }
+.featured {
+  margin-bottom: 30px;
+}
