@@ -1,129 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GomoTV</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GomoTV</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
 <body>
-  <header class="navbar">
-    <div class="menu-toggle" id="menu-toggle">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-    <h1 class="logo">GomoTV</h1>
-    <button id="theme-toggle" class="theme-toggle">🌓</button>
-  </header>
+  <header class="navbar">
+    <!-- Hamburger Icon -->
+    <div class="menu-toggle" id="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
 
-  <!-- Hamburger Menu -->
-  <nav class="hamburger-menu" id="hamburger-menu">
-    <ul>
-      <li><a href="index.html">Home</a></li>
+    <h1 class="logo">GomoTV</h1>
+    <button id="theme-toggle" class="theme-toggle">🌓</button>
+  </header>
 
-      <!-- Genre Grid -->
-      <li id="genre-toggle">
-        <a href="#">Genre</a>
-        <div class="genre-buttons submenu" style="display: none;">
-          <!-- Genre links -->
-          <a href="genre.html?genre=Action&id=28" class="genre-btn">Action</a>
-          <a href="genre.html?genre=Comedy&id=35" class="genre-btn">Comedy</a>
-          <a href="genre.html?genre=Drama&id=18" class="genre-btn">Drama</a>
-          <a href="genre.html?genre=Horror&id=27" class="genre-btn">Horror</a>
-          <a href="genre.html?genre=Animation&id=16" class="genre-btn">Animation</a>
-          <a href="genre.html?genre=Romance&id=10749" class="genre-btn">Romance</a>
-          <a href="genre.html?genre=Thriller&id=53" class="genre-btn">Thriller</a>
-          <a href="genre.html?genre=Science%20Fiction&id=878" class="genre-btn">Sci-Fi</a>
-          <a href="genre.html?genre=Documentary&id=99" class="genre-btn">Documentary</a>
-          <a href="genre.html?genre=Western&id=37" class="genre-btn">Western</a>
-        </div>
-      </li>
+  <!-- Hamburger Navigation Menu -->
+  <nav class="hamburger-menu" id="hamburger-menu">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li id="genre-toggle">
+        <a href="#">Genre</a>
+        <ul class="submenu">
+          <li><a href="genre.html?genre=Action&id=28">Action</a></li>
+          <li><a href="genre.html?genre=Animation&id=16">Animation</a></li>
+          <li><a href="genre.html?genre=Horror&id=27">Horror</a></li>
+          <li><a href="genre.html?genre=Comedy&id=35">Comedy</a></li>
+          <li><a href="genre.html?genre=Drama&id=18">Drama</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Country</a></li>
+      <li><a href="#">Movies</a></li>
+      <li><a href="#">TV Shows</a></li>
+      <li><a href="#">Top IMDB</a></li>
+      <li><a href="#">Android App</a></li>
+    </ul>
+  </nav>
 
-      <!-- Country Grid -->
-      <li id="country-toggle">
-        <a href="#">Country</a>
-        <div class="country-buttons submenu" style="display: none;">
-          <a href="country.html?country=PH&name=Philippines" class="country-btn">🇵🇭 Philippines</a>
-          <a href="country.html?country=JP&name=Japan" class="country-btn">🇯🇵 Japan</a>
-          <a href="country.html?country=US&name=United States" class="country-btn">🇺🇸 USA</a>
-          <a href="country.html?country=KR&name=South Korea" class="country-btn">🇰🇷 Korea</a>
-          <a href="country.html?country=FR&name=France" class="country-btn">🇫🇷 France</a>
-          <a href="country.html?country=IN&name=India" class="country-btn">🇮🇳 India</a>
-        </div>
-      </li>
+  <!-- Banner Section -->
+  <section class="featured">
+    <div class="banner-slider">
+      <div class="poster-box" id="active-slide">
+        <button class="nav prev">‹</button>
+        <img id="poster-img" src="" alt="Featured" class="poster-image">
+        <div class="overlay">
+          <p id="poster-meta" class="meta-text">Loading...</p>
+          <h2 id="poster-summary" class="title-text">GomoTV</h2>
+        </div>
+        <button class="nav next">›</button>
+      </div>
+    </div>
+  </section>
 
-      <li><a href="#">Movies</a></li>
-      <li><a href="#">TV Shows</a></li>
-      <li><a href="#">Top IMDB</a></li>
-      <li><a href="#">Android App</a></li>
-    </ul>
-  </nav>
+  <!-- Media Sections -->
+  <section class="media-section">
+    <h2>Trending</h2>
+    <div class="search-results-grid homepage-grid movie-list"></div>
+  </section>
 
-  <!-- Featured Banner -->
-  <section class="featured">
-    <div class="banner-slider">
-      <div class="poster-box" id="active-slide">
-        <button class="nav prev">‹</button>
-        <img id="poster-img" src="" alt="Featured" class="poster-image">
-        <div class="overlay">
-          <p id="poster-meta" class="meta-text">Loading...</p>
-          <h2 id="poster-summary" class="title-text">GomoTV</h2>
-        </div>
-        <button class="nav next">›</button>
-      </div>
-    </div>
-  </section>
+  <section class="media-section">
+    <h2>Popular Movies</h2>
+    <div class="search-results-grid homepage-grid popular-list"></div>
+  </section>
 
-  <!-- Trending -->
-  <section class="media-section">
-    <h2>Trending</h2>
-    <div class="search-results-grid homepage-grid movie-list"></div>
-  </section>
+  <section class="media-section">
+    <h2>Popular TV Shows</h2>
+    <div class="search-results-grid homepage-grid tv-list"></div>
+  </section>
 
-  <!-- Popular Movies -->
-  <section class="media-section">
-    <h2>Popular Movies</h2>
-    <div class="search-results-grid homepage-grid popular-list"></div>
-  </section>
+  <!-- Modal Container -->
+  <div id="modal-container"></div>
 
-  <!-- Popular TV Shows -->
-  <section class="media-section">
-    <h2>Popular TV Shows</h2>
-    <div class="search-results-grid homepage-grid tv-list"></div>
-  </section>
+  <footer class="footer">© 2025 - GomoTV. All content is property of its respective owners.</footer>
 
-  <!-- Modal Player Container -->
-  <div id="modal-container"></div>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="main.js"></script>
 
-  <!-- Footer -->
-  <footer class="footer">© 2025 - GomoTV. All content is property of its respective owners.</footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Hamburger toggle
+      const toggleBtn = document.getElementById('menu-toggle');
+      const navPanel = document.getElementById('hamburger-menu');
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  <script src="main.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const menuBtn = document.getElementById('menu-toggle');
-      const nav = document.getElementById('hamburger-menu');
+      if (toggleBtn && navPanel) {
+        toggleBtn.addEventListener('click', () => {
+          navPanel.style.display = navPanel.style.display === 'block' ? 'none' : 'block';
+        });
+      }
 
-      menuBtn.addEventListener('click', () => {
-        nav.style.display = nav.style.display === 'block' ? 'none' : 'block';
-      });
+      // Genre submenu toggle
+      const genreToggle = document.getElementById('genre-toggle');
+      if (genreToggle) {
+        const toggleLink = genreToggle.querySelector('a');
+        const submenu = genreToggle.querySelector('.submenu');
 
-      const genreToggle = document.getElementById('genre-toggle');
-      genreToggle.addEventListener('click', () => {
-        const submenu = genreToggle.querySelector('.submenu');
-        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-      });
-
-      const countryToggle = document.getElementById('country-toggle');
-      countryToggle.addEventListener('click', () => {
-        const submenu = countryToggle.querySelector('.submenu');
-        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-      });
-    });
-  </script>
+        if (toggleLink && submenu) {
+          toggleLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+          });
+        }
+      }
+    });
+  </script>
 </body>
 </html>
