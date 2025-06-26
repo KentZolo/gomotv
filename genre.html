@@ -273,6 +273,17 @@
 
       fetchGenreMovies(genreId, currentPage);
       initThemeToggle();
+        // 🔁 Genre submenu toggle
+  const genreToggle = document.getElementById('genre-toggle');
+  if (genreToggle) {
+    genreToggle.addEventListener('click', () => {
+      const submenu = genreToggle.querySelector('.submenu');
+      if (submenu) {
+        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+      }
+    });
+  }
+});
     });
   </script>
 </body>
