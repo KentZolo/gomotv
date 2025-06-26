@@ -7,41 +7,40 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Navbar -->
   <header class="navbar">
-  <!-- Hamburger Icon -->
-  <div class="menu-toggle" id="menu-toggle">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
+    <div class="menu-toggle" id="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <h1 class="logo" id="genre-title">Genre</h1>
+    <button id="theme-toggle" class="theme-toggle">🌓</button>
+  </header>
 
-  <h1 class="logo">GomoTV</h1>
-  <button id="theme-toggle" class="theme-toggle">🌓</button>
-</header>
+  <!-- Hamburger Menu -->
+  <nav class="hamburger-menu" id="hamburger-menu">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li>
+        Genre
+        <ul class="submenu">
+          <li><a href="genre.html?genre=Action&id=28">Action</a></li>
+          <li><a href="genre.html?genre=Animation&id=16">Animation</a></li>
+          <li><a href="genre.html?genre=Horror&id=27">Horror</a></li>
+          <li><a href="genre.html?genre=Comedy&id=35">Comedy</a></li>
+          <li><a href="genre.html?genre=Drama&id=18">Drama</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Country</a></li>
+      <li><a href="#">Movies</a></li>
+      <li><a href="#">TV Shows</a></li>
+      <li><a href="#">Top IMDB</a></li>
+      <li><a href="#">Android App</a></li>
+    </ul>
+  </nav>
 
-<!-- Hamburger Navigation Menu -->
-<nav class="hamburger-menu" id="hamburger-menu">
-  <ul>
-    <li><a href="index.html">Home</a></li>
-    <li>
-  Genre
-  <ul class="submenu">
-    <li><a href="genre.html?genre=Action&id=28">Action</a></li>
-    <li><a href="genre.html?genre=Animation&id=16">Animation</a></li>
-    <li><a href="genre.html?genre=Horror&id=27">Horror</a></li>
-    <li><a href="genre.html?genre=Comedy&id=35">Comedy</a></li>
-    <li><a href="genre.html?genre=Drama&id=18">Drama</a></li>
-  </ul>
-    </li>
-    
-    <li><a href="#">Country</a></li>
-    <li><a href="#">Movies</a></li>
-    <li><a href="#">TV Shows</a></li>
-    <li><a href="#">Top IMDB</a></li>
-    <li><a href="#">Android App</a></li>
-  </ul>
-</nav>
-
+  <!-- Results -->
   <main>
     <div id="pagination-top" class="pagination"></div>
     <div class="search-results-grid" id="results-grid"></div>
@@ -50,10 +49,16 @@
 
   <div id="modal-container"></div>
 
+  <!-- Script -->
   <script>
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
     const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
     const FALLBACK_IMAGE = 'https://via.placeholder.com/500x750?text=No+Poster';
+
+    const params = new URLSearchParams(location.search);
+    const genreId = params.get('id');
+    const genreName = params.get('genre');
+    let currentPage = parseInt(params.get('page')) || 1;
 
     const SERVERS = [
       { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` },
@@ -61,65 +66,69 @@
       { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` }
     ];
 
-    const params = new URLSearchParams(location.search);
-    const genreId = params.get('id');
-    const genreName = params.get('genre');
-    let currentPage = parseInt(params.get('page')) || 1;
-     
     function getImageUrl(path) {
       return path ? IMG_BASE + path : FALLBACK_IMAGE;
     }
 
     async function fetchGenreMovies(genreId, page = 1) {
-  const container = document.getElementById('results-grid');
-  const pagination = document.getElementById('pagination');
-  const paginationTop = document.getElementById('pagination-top');
+      const container = document.getElementById('results-grid');
+      const title = document.getElementById('genre-title');
+      title.textContent = `🎬 ${genreName}`;
 
-  try {
-    const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=77312bdd4669c80af3d08e0bf719d7ff&with_genres=${genreId}&page=${page}`);
-    const data = await res.json();
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}`);
+        const data = await res.json();
 
-    container.innerHTML = data.results.map(item => {
-      const title = item.title || item.name;
-      const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-      const imageUrl = item.poster_path
-        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-        : 'https://via.placeholder.com/500x750?text=No+Poster';
+        container.innerHTML = data.results.map(item => {
+          const title = item.title || item.name;
+          const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+          const imageUrl = getImageUrl(item.poster_path || item.backdrop_path);
 
-      return `
-        <div class="poster-wrapper">
-          <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="movie" data-title="${title}">
-          <div class="poster-label">${title}</div>
-          <div class="poster-meta">🎬 ${year}</div>
-        </div>
-      `;
-    }).join('');
+          // Auto badge
+          const releaseDate = item.release_date || '';
+          let quality = 'HD';
+          if (releaseDate) {
+            const now = new Date();
+            const released = new Date(releaseDate);
+            const diff = (now - released) / (1000 * 60 * 60 * 24);
+            if (diff < 7) quality = 'CAM';
+            else if (diff < 21) quality = 'TS';
+          }
 
-    // ✅ Click listener for modal
-    document.querySelectorAll('.poster-wrapper img').forEach(img => {
-      img.addEventListener('click', () => {
-        const id = img.dataset.id;
-        const title = img.dataset.title;
-        const type = img.dataset.type;
-        openModalPlayer(id, title, type);
-      });
-    });
+          return `
+            <div class="poster-wrapper">
+              <div class="poster-badge">${quality}</div>
+              <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="movie" data-title="${title}">
+              <div class="poster-label">${title}</div>
+              <div class="poster-meta">🎬 ${year}</div>
+            </div>
+          `;
+        }).join('');
 
-    renderPagination(data.total_pages);
+        document.querySelectorAll('.poster-wrapper img').forEach(img => {
+          img.addEventListener('click', () => {
+            const id = img.dataset.id;
+            const type = img.dataset.type;
+            const title = img.dataset.title;
+            history.pushState(null, "", `?genre=${encodeURIComponent(genreName)}&id=${genreId}&page=${currentPage}&id=${id}&type=${type}`);
+            openModalPlayer(id, type);
+          });
+        });
 
-  } catch (err) {
-    container.innerHTML = '<p class="no-results">Something went wrong while loading results.</p>';
-    console.error('Genre fetch failed:', err);
-  }
+        renderPagination(data.total_pages);
+      } catch (err) {
+        container.innerHTML = '<p class="no-results">❌ Failed to load results.</p>';
+        console.error(err);
+      }
     }
 
     function renderPagination(totalPages) {
-      const paginationTop = document.getElementById('pagination-top');
-      const paginationBottom = document.getElementById('pagination');
+      const pagTop = document.getElementById('pagination-top');
+      const pagBottom = document.getElementById('pagination');
 
       if (totalPages <= 1) {
-        paginationTop.innerHTML = '';
-        paginationBottom.innerHTML = '';
+        pagTop.innerHTML = '';
+        pagBottom.innerHTML = '';
         return;
       }
 
@@ -139,8 +148,8 @@
         buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
       }
 
-      paginationTop.innerHTML = buttons;
-      paginationBottom.innerHTML = buttons;
+      pagTop.innerHTML = buttons;
+      pagBottom.innerHTML = buttons;
     }
 
     function goToPage(page) {
@@ -185,14 +194,11 @@
 
             const shield = modal.querySelector('.iframe-shield');
             shield.style.display = 'block';
-            setTimeout(() => shield.style.display = 'none', 3000);
+            setTimeout(() => (shield.style.display = 'none'), 3000);
 
             iframe.onerror = () => {
-              if (index + 1 < SERVERS.length) {
-                loadServer(index + 1);
-              } else {
-                shield.textContent = 'No working server found.';
-              }
+              if (index + 1 < SERVERS.length) loadServer(index + 1);
+              else shield.textContent = 'No working server found.';
             };
           }
 
@@ -237,30 +243,35 @@
       });
     }
 
+    function toggleMenu() {
+      const panel = document.getElementById('hamburger-menu');
+      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function closeMenu() {
+      const panel = document.getElementById('hamburger-menu');
+      panel.style.display = 'none';
+    }
+
+    document.getElementById('menu-toggle')?.addEventListener('click', toggleMenu);
+
+    window.addEventListener("popstate", () => {
+      const modal = document.querySelector('.modal');
+      if (modal) {
+        modal.remove();
+        document.body.style.overflow = '';
+      }
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
-      if (genreId && genreName) {
-        fetchGenreMovies(genreId, currentPage);
-      } else {
-        document.getElementById('results-grid').innerHTML = '<p class="no-results">Invalid genre ID.</p>';
+      if (!genreId || !genreName) {
+        document.getElementById("results-grid").innerHTML =
+          `<p class="no-results">❌ Invalid genre. Please choose from the <a href='genres.html'>genre list</a>.</p>`;
+        return;
       }
 
+      fetchGenreMovies(genreId, currentPage);
       initThemeToggle();
-
-      // Auto-open modal if URL has id & type
-      const id = params.get('id');
-      const type = params.get('type');
-      if (id && type) {
-        openModalPlayer(id, type);
-      }
-
-      // Back button closes modal
-      window.addEventListener("popstate", () => {
-        const modal = document.querySelector('.modal');
-        if (modal) {
-          modal.remove();
-          document.body.style.overflow = '';
-        }
-      });
     });
   </script>
 </body>
