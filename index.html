@@ -9,20 +9,19 @@
 </head>
 <body>
   <header class="navbar">
-    <button id="menu-toggle" class="menu-toggle">☰</button>
-    <h1 class="logo">GomoTV</h1>
-    <button id="theme-toggle" class="theme-toggle">🌓</button>
-  </header>
+  <!-- Hamburger Icon (just this) -->
+  <div class="menu-toggle" id="menu-toggle">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
 
-  <!-- Hamburger Icon -->
-<div class="menu-toggle" id="menu-toggle">
-  <span></span>
-  <span></span>
-  <span></span>
-</div>
+  <h1 class="logo">GomoTV</h1>
+  <button id="theme-toggle" class="theme-toggle">🌓</button>
+</header>
 
 <!-- Navigation Menu -->
-<nav class="menu-panel" id="menu-panel">
+<nav class="hamburger-menu" id="menu-panel">
   <ul>
     <li><a href="#" onclick="closeMenu()">Close Menu</a></li>
     <li><a href="index.html">Home</a></li>
