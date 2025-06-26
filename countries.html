@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Countries - GomoTV</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="navbar">
+    <button onclick="history.back()" class="menu-toggle">←</button>
+    <h1 class="logo">Select Country</h1>
+    <button id="theme-toggle" class="theme-toggle">🌓</button>
+  </header>
+
+  <main style="padding: 20px;">
+    <div class="country-buttons">
+      <button class="country-btn" onclick="goToCountry('AR', 'Argentina')">🇦🇷 Argentina</button>
+      <button class="country-btn" onclick="goToCountry('AU', 'Australia')">🇦🇺 Australia</button>
+      <button class="country-btn" onclick="goToCountry('AT', 'Austria')">🇦🇹 Austria</button>
+      <button class="country-btn" onclick="goToCountry('BE', 'Belgium')">🇧🇪 Belgium</button>
+      <button class="country-btn" onclick="goToCountry('BR', 'Brazil')">🇧🇷 Brazil</button>
+      <button class="country-btn" onclick="goToCountry('CA', 'Canada')">🇨🇦 Canada</button>
+      <button class="country-btn" onclick="goToCountry('CN', 'China')">🇨🇳 China</button>
+      <button class="country-btn" onclick="goToCountry('CZ', 'Czech Republic')">🇨🇿 Czech Republic</button>
+      <button class="country-btn" onclick="goToCountry('DK', 'Denmark')">🇩🇰 Denmark</button>
+      <button class="country-btn" onclick="goToCountry('FI', 'Finland')">🇫🇮 Finland</button>
+      <button class="country-btn" onclick="goToCountry('FR', 'France')">🇫🇷 France</button>
+      <button class="country-btn" onclick="goToCountry('DE', 'Germany')">🇩🇪 Germany</button>
+      <button class="country-btn" onclick="goToCountry('HK', 'Hong Kong')">🇭🇰 Hong Kong</button>
+      <button class="country-btn" onclick="goToCountry('HU', 'Hungary')">🇭🇺 Hungary</button>
+      <button class="country-btn" onclick="goToCountry('IN', 'India')">🇮🇳 India</button>
+      <button class="country-btn" onclick="goToCountry('IE', 'Ireland')">🇮🇪 Ireland</button>
+      <button class="country-btn" onclick="goToCountry('IL', 'Israel')">🇮🇱 Israel</button>
+      <button class="country-btn" onclick="goToCountry('IT', 'Italy')">🇮🇹 Italy</button>
+      <button class="country-btn" onclick="goToCountry('JP', 'Japan')">🇯🇵 Japan</button>
+      <button class="country-btn" onclick="goToCountry('LU', 'Luxembourg')">🇱🇺 Luxembourg</button>
+      <button class="country-btn" onclick="goToCountry('MX', 'Mexico')">🇲🇽 Mexico</button>
+      <button class="country-btn" onclick="goToCountry('NL', 'Netherlands')">🇳🇱 Netherlands</button>
+      <button class="country-btn" onclick="goToCountry('NZ', 'New Zealand')">🇳🇿 New Zealand</button>
+      <button class="country-btn" onclick="goToCountry('NO', 'Norway')">🇳🇴 Norway</button>
+      <button class="country-btn" onclick="goToCountry('PL', 'Poland')">🇵🇱 Poland</button>
+      <button class="country-btn" onclick="goToCountry('RO', 'Romania')">🇷🇴 Romania</button>
+      <button class="country-btn" onclick="goToCountry('PH', 'Philippines')">🇵🇭 Philippines</button>
+      <button class="country-btn" onclick="goToCountry('US', 'USA')">🇺🇸 USA</button>
+      <button class="country-btn" onclick="goToCountry('KR', 'South Korea')">🇰🇷 South Korea</button>
+    </div>
+  </main>
+
+  <script>
+    function goToCountry(code, name) {
+      location.href = `country.html?country=${code}&name=${encodeURIComponent(name)}`;
+    }
+
+    // Theme toggle support
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggleBtn = document.getElementById('theme-toggle');
+      const currentTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(currentTheme);
+
+      toggleBtn.addEventListener('click', () => {
+        const isDark = document.body.classList.contains('dark');
+        document.body.classList.toggle('dark', !isDark);
+        document.body.classList.toggle('light', isDark);
+        localStorage.setItem('theme', isDark ? 'light' : 'dark');
+      });
+    });
+  </script>
+</body>
+</html>
