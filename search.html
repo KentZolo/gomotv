@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Search Results - GomoTV</title>
+  <title>Search - GomoTV</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- HEADER -->
   <header class="navbar">
     <div class="menu-toggle" id="menu-toggle">
       <span></span>
@@ -18,171 +17,102 @@
     <button id="theme-toggle" class="theme-toggle">🌓</button>
   </header>
 
-  <!-- HAMBURGER MENU -->
+  <!-- Hamburger Navigation -->
   <nav class="hamburger-menu" id="hamburger-menu">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+
+      <li id="genre-toggle">
+        <a href="#">Genre</a>
+        <div class="genre-buttons submenu-grid" style="display: none;">
+          <a href="genre.html?genre=Action&id=28">Action</a>
+          <a href="genre.html?genre=Action & Adventure&id=10759">Action & Adventure</a>
+          <a href="genre.html?genre=Adventure&id=12">Adventure</a>
+          <a href="genre.html?genre=Animation&id=16">Animation</a>
+          <a href="genre.html?genre=Biography&id=1">Biography</a>
+          <a href="genre.html?genre=Comedy&id=35">Comedy</a>
+          <a href="genre.html?genre=Crime&id=80">Crime</a>
+          <a href="genre.html?genre=Documentary&id=99">Documentary</a>
+          <a href="genre.html?genre=Drama&id=18">Drama</a>
+          <a href="genre.html?genre=Family&id=10751">Family</a>
+          <a href="genre.html?genre=Fantasy&id=14">Fantasy</a>
+          <a href="genre.html?genre=History&id=36">History</a>
+          <a href="genre.html?genre=Horror&id=27">Horror</a>
+          <a href="genre.html?genre=Kids&id=10762">Kids</a>
+          <a href="genre.html?genre=Music&id=10402">Music</a>
+          <a href="genre.html?genre=Mystery&id=9648">Mystery</a>
+          <a href="genre.html?genre=News&id=10763">News</a>
+          <a href="genre.html?genre=Reality&id=10764">Reality</a>
+          <a href="genre.html?genre=Romance&id=10749">Romance</a>
+          <a href="genre.html?genre=Sci-Fi & Fantasy&id=10765">Sci-Fi & Fantasy</a>
+          <a href="genre.html?genre=Science Fiction&id=878">Science Fiction</a>
+          <a href="genre.html?genre=Soap&id=10766">Soap</a>
+          <a href="genre.html?genre=Talk&id=10767">Talk</a>
+          <a href="genre.html?genre=Thriller&id=53">Thriller</a>
+          <a href="genre.html?genre=TV Movie&id=10770">TV Movie</a>
+          <a href="genre.html?genre=War&id=10752">War</a>
+          <a href="genre.html?genre=War & Politics&id=10768">War & Politics</a>
+          <a href="genre.html?genre=Western&id=37">Western</a>
+        </div>
+      </li>
+
+      <li id="country-toggle">
+        <a href="#">Country</a>
+        <div class="country-buttons submenu-grid" style="display: none;">
+          <a href="country.html?country=PH&name=Philippines">Philippines</a>
+          <a href="country.html?country=JP&name=Japan">Japan</a>
+          <a href="country.html?country=US&name=United States">United States</a>
+          <a href="country.html?country=KR&name=South Korea">South Korea</a>
+          <a href="country.html?country=FR&name=France">France</a>
+          <a href="country.html?country=AR&name=Argentina">Argentina</a>
+          <a href="country.html?country=AU&name=Australia">Australia</a>
+          <a href="country.html?country=AT&name=Austria">Austria</a>
+          <a href="country.html?country=BE&name=Belgium">Belgium</a>
+          <a href="country.html?country=BR&name=Brazil">Brazil</a>
+          <a href="country.html?country=CA&name=Canada">Canada</a>
+          <a href="country.html?country=CN&name=China">China</a>
+          <a href="country.html?country=CZ&name=Czech Republic">Czech Republic</a>
+          <a href="country.html?country=DK&name=Denmark">Denmark</a>
+          <a href="country.html?country=FI&name=Finland">Finland</a>
+          <a href="country.html?country=DE&name=Germany">Germany</a>
+          <a href="country.html?country=HK&name=Hong Kong">Hong Kong</a>
+          <a href="country.html?country=HU&name=Hungary">Hungary</a>
+          <a href="country.html?country=IN&name=India">India</a>
+          <a href="country.html?country=IE&name=Ireland">Ireland</a>
+          <a href="country.html?country=IL&name=Israel">Israel</a>
+          <a href="country.html?country=IT&name=Italy">Italy</a>
+          <a href="country.html?country=LU&name=Luxembourg">Luxembourg</a>
+          <a href="country.html?country=MX&name=Mexico">Mexico</a>
+          <a href="country.html?country=NL&name=Netherlands">Netherlands</a>
+          <a href="country.html?country=NZ&name=New Zealand">New Zealand</a>
+          <a href="country.html?country=NO&name=Norway">Norway</a>
+          <a href="country.html?country=PL&name=Poland">Poland</a>
+          <a href="country.html?country=RO&name=Romania">Romania</a>
+        </div>
+      </li>
+
+      <li><a href="#">Movies</a></li>
+      <li><a href="#">TV Shows</a></li>
+      <li><a href="#">Top IMDB</a></li>
+    </ul>
+  </nav>
+
+  <!-- Search Bar -->
+  <section class="menu-panel">
     <div class="search-bar">
       <input type="text" id="search-input" placeholder="Search movies or shows..." />
       <button id="search-button">Search</button>
     </div>
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li id="genre-toggle">
-        <a href="#">Genre</a>
-        <ul class="submenu">
-          <li><a href="genre.html?genre=Action&id=28">Action</a></li>
-          <li><a href="genre.html?genre=Animation&id=16">Animation</a></li>
-          <li><a href="genre.html?genre=Horror&id=27">Horror</a></li>
-          <li><a href="genre.html?genre=Comedy&id=35">Comedy</a></li>
-          <li><a href="genre.html?genre=Drama&id=18">Drama</a></li>
-        </ul>
-      </li>
-      <li id="country-toggle">
-        <a href="#">Country</a>
-        <ul class="submenu">
-         <li><a href="country.html?country=US&name=United States">🇺🇸 United States</a></li>
-         <li><a href="country.html?country=JP&name=Japan">🇯🇵 Japan</a></li>
-         <li><a href="country.html?country=KR&name=South Korea">🇰🇷 South Korea</a></li>
-         <li><a href="country.html?country=PH&name=Philippines">🇵🇭 Philippines</a></li>
-         <li><a href="country.html?country=FR&name=France">🇫🇷 France</a></li>
-       </ul>
-      </li>
-      <li><a href="#">Movies</a></li>
-      <li><a href="#">TV Shows</a></li>
-      <li><a href="#">Top IMDB</a></li>
-      <li><a href="#">Android App</a></li>
-    </ul>
-  </nav>
+  </section>
 
-  <!-- MAIN RESULTS -->
   <main>
     <div id="pagination-top" class="pagination"></div>
     <div class="search-results-grid" id="results-grid"></div>
     <div id="pagination" class="pagination"></div>
   </main>
 
-  <!-- MODAL -->
   <div id="modal-container"></div>
 
   <script src="main.js"></script>
-  <script>
-    const params = new URLSearchParams(location.search);
-    const query = params.get("q");
-    let currentPage = parseInt(params.get("page")) || 1;
-
-    function fetchSearchResults(query, page = 1) {
-      const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
-      const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
-      const container = document.getElementById('results-grid');
-
-      fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`)
-        .then(res => res.json())
-        .then(data => {
-          if (!data.results.length) {
-            container.innerHTML = `<p class="no-results">❌ No results found for "${query}".</p>`;
-            return;
-          }
-
-          container.innerHTML = data.results.map(item => {
-            const title = item.title || item.name || 'Untitled';
-            const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-            const img = item.poster_path ? `${IMG_BASE}${item.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Poster';
-            const type = item.media_type || 'movie';
-
-            return `
-              <div class="poster-wrapper">
-                <img src="${img}" alt="${title}" data-id="${item.id}" data-type="${type}">
-                <div class="poster-label">${title}</div>
-                <div class="poster-meta">🎬 ${year}</div>
-              </div>
-            `;
-          }).join("");
-
-          document.querySelectorAll('.poster-wrapper img').forEach(img => {
-            img.addEventListener('click', () => {
-              const id = img.dataset.id;
-              const type = img.dataset.type;
-              history.pushState(null, '', `?q=${encodeURIComponent(query)}&page=${currentPage}&id=${id}&type=${type}`);
-              openModal(id, type);
-            });
-          });
-
-          renderPagination(data.total_pages);
-        })
-        .catch(err => {
-          container.innerHTML = '<p class="no-results">Something went wrong.</p>';
-          console.error(err);
-        });
-    }
-
-    function renderPagination(totalPages) {
-      const paginationTop = document.getElementById('pagination-top');
-      const paginationBottom = document.getElementById('pagination');
-
-      if (totalPages <= 1) {
-        paginationTop.innerHTML = '';
-        paginationBottom.innerHTML = '';
-        return;
-      }
-
-      let buttons = '';
-      const maxPage = Math.min(currentPage + 2, totalPages);
-      const minPage = Math.max(1, currentPage - 2);
-
-      if (currentPage > 1) {
-        buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
-      }
-
-      for (let i = minPage; i <= maxPage; i++) {
-        buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
-      }
-
-      if (currentPage < totalPages) {
-        buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
-      }
-
-      paginationTop.innerHTML = buttons;
-      paginationBottom.innerHTML = buttons;
-    }
-
-    function goToPage(page) {
-      location.href = `search.html?q=${encodeURIComponent(query)}&page=${page}`;
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      if (query) fetchSearchResults(query, currentPage);
-
-      // Hamburger toggle
-      const menuToggle = document.getElementById('menu-toggle');
-      const menuPanel = document.getElementById('hamburger-menu');
-      menuToggle.addEventListener('click', () => {
-        menuPanel.style.display = menuPanel.style.display === 'block' ? 'none' : 'block';
-      });
-
-      // Genre submenu toggle
-      const genreToggle = document.getElementById('genre-toggle');
-      if (genreToggle) {
-        const link = genreToggle.querySelector('a');
-        const submenu = genreToggle.querySelector('.submenu');
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-        });
-      }
-
-      // Auto open modal if exists
-      const id = params.get("id");
-      const type = params.get("type");
-      if (id && type) openModal(id, type);
-
-      // Back closes modal
-      window.addEventListener("popstate", () => {
-        const modal = document.querySelector('.modal');
-        if (modal) {
-          modal.remove();
-          document.body.style.overflow = '';
-        }
-      });
-    });
-  </script>
 </body>
 </html>
