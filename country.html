@@ -13,11 +13,12 @@
     <button id="theme-toggle" class="theme-toggle">🌓</button>
   </header>
 
-  <!-- Country list section -->
-  <div id="country-list-section" style="padding: 20px;">
+  <!-- Country list -->
+  <section style="padding: 20px;">
     <div class="country-list">
       <h2>🌍 Select a Country:</h2>
       <div class="country-grid">
+        <!-- Add more countries here -->
         <a href="country.html?name=Philippines&country=PH">Philippines</a>
         <a href="country.html?name=Japan&country=JP">Japan</a>
         <a href="country.html?name=United States&country=US">United States</a>
@@ -49,7 +50,7 @@
         <a href="country.html?name=Romania&country=RO">Romania</a>
       </div>
     </div>
-  </div>
+  </section>
 
   <main>
     <div id="pagination-top" class="pagination"></div>
@@ -68,14 +69,8 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       initThemeToggle();
-
       if (countryCode && countryName) {
         document.getElementById("country-title").textContent = "🌍 " + countryName;
-
-        // ✅ Hide the country list if viewing results
-        const listSection = document.getElementById('country-list-section');
-        if (listSection) listSection.style.display = 'none';
-
         fetchCountryMovies(countryCode, currentPage);
       }
 
