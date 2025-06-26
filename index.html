@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GomoTV</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
 <body>
   <header class="navbar">
@@ -22,10 +23,10 @@
     <ul>
       <li><a href="index.html">Home</a></li>
 
-      <!-- Genre -->
       <li id="genre-toggle">
         <a href="#">Genre</a>
-        <div class="genre-buttons" style="display: none;">
+        <div class="genre-buttons submenu" style="display: none;">
+          <!-- Genre buttons -->
           <a href="genre.html?genre=Action&id=28" class="genre-btn">Action</a>
           <a href="genre.html?genre=Action%20%26%20Adventure&id=10759" class="genre-btn">Action & Adventure</a>
           <a href="genre.html?genre=Adventure&id=12" class="genre-btn">Adventure</a>
@@ -57,86 +58,103 @@
         </div>
       </li>
 
-      <!-- Country -->
       <li id="country-toggle">
         <a href="#">Country</a>
-        <div class="country-buttons" style="display: none;">
-          <a href="country.html?name=Argentina&country=AR" class="country-btn">Argentina</a>
-          <a href="country.html?name=Australia&country=AU" class="country-btn">Australia</a>
-          <a href="country.html?name=Austria&country=AT" class="country-btn">Austria</a>
-          <a href="country.html?name=Belgium&country=BE" class="country-btn">Belgium</a>
-          <a href="country.html?name=Brazil&country=BR" class="country-btn">Brazil</a>
-          <a href="country.html?name=Canada&country=CA" class="country-btn">Canada</a>
-          <a href="country.html?name=China&country=CN" class="country-btn">China</a>
-          <a href="country.html?name=Czech%20Republic&country=CZ" class="country-btn">Czech Republic</a>
-          <a href="country.html?name=Denmark&country=DK" class="country-btn">Denmark</a>
-          <a href="country.html?name=Finland&country=FI" class="country-btn">Finland</a>
-          <a href="country.html?name=France&country=FR" class="country-btn">France</a>
-          <a href="country.html?name=Germany&country=DE" class="country-btn">Germany</a>
-          <a href="country.html?name=Hong%20Kong&country=HK" class="country-btn">Hong Kong</a>
-          <a href="country.html?name=Hungary&country=HU" class="country-btn">Hungary</a>
-          <a href="country.html?name=India&country=IN" class="country-btn">India</a>
-          <a href="country.html?name=Ireland&country=IE" class="country-btn">Ireland</a>
-          <a href="country.html?name=Israel&country=IL" class="country-btn">Israel</a>
-          <a href="country.html?name=Italy&country=IT" class="country-btn">Italy</a>
-          <a href="country.html?name=Japan&country=JP" class="country-btn">Japan</a>
-          <a href="country.html?name=Luxembourg&country=LU" class="country-btn">Luxembourg</a>
-          <a href="country.html?name=Mexico&country=MX" class="country-btn">Mexico</a>
-          <a href="country.html?name=Netherlands&country=NL" class="country-btn">Netherlands</a>
-          <a href="country.html?name=New%20Zealand&country=NZ" class="country-btn">New Zealand</a>
-          <a href="country.html?name=Norway&country=NO" class="country-btn">Norway</a>
-          <a href="country.html?name=Poland&country=PL" class="country-btn">Poland</a>
-          <a href="country.html?name=Romania&country=RO" class="country-btn">Romania</a>
+        <div class="country-buttons submenu" style="display: none;">
+          <a href="country.html?country=PH&name=Philippines" class="country-btn">🇵🇭 Philippines</a>
+          <a href="country.html?country=JP&name=Japan" class="country-btn">🇯🇵 Japan</a>
+          <a href="country.html?country=US&name=United States" class="country-btn">🇺🇸 United States</a>
+          <a href="country.html?country=KR&name=South Korea" class="country-btn">🇰🇷 South Korea</a>
+          <a href="country.html?country=FR&name=France" class="country-btn">🇫🇷 France</a>
+          <a href="country.html?country=AR&name=Argentina" class="country-btn">🇦🇷 Argentina</a>
+          <a href="country.html?country=AU&name=Australia" class="country-btn">🇦🇺 Australia</a>
+          <a href="country.html?country=AT&name=Austria" class="country-btn">🇦🇹 Austria</a>
+          <a href="country.html?country=BE&name=Belgium" class="country-btn">🇧🇪 Belgium</a>
+          <a href="country.html?country=BR&name=Brazil" class="country-btn">🇧🇷 Brazil</a>
+          <a href="country.html?country=CA&name=Canada" class="country-btn">🇨🇦 Canada</a>
+          <a href="country.html?country=CN&name=China" class="country-btn">🇨🇳 China</a>
+          <a href="country.html?country=CZ&name=Czech Republic" class="country-btn">🇨🇿 Czech Republic</a>
+          <a href="country.html?country=DK&name=Denmark" class="country-btn">🇩🇰 Denmark</a>
+          <a href="country.html?country=FI&name=Finland" class="country-btn">🇫🇮 Finland</a>
+          <a href="country.html?country=DE&name=Germany" class="country-btn">🇩🇪 Germany</a>
+          <a href="country.html?country=HK&name=Hong Kong" class="country-btn">🇭🇰 Hong Kong</a>
+          <a href="country.html?country=HU&name=Hungary" class="country-btn">🇭🇺 Hungary</a>
+          <a href="country.html?country=IE&name=Ireland" class="country-btn">🇮🇪 Ireland</a>
+          <a href="country.html?country=IL&name=Israel" class="country-btn">🇮🇱 Israel</a>
+          <a href="country.html?country=IT&name=Italy" class="country-btn">🇮🇹 Italy</a>
+          <a href="country.html?country=LU&name=Luxembourg" class="country-btn">🇱🇺 Luxembourg</a>
+          <a href="country.html?country=MX&name=Mexico" class="country-btn">🇲🇽 Mexico</a>
+          <a href="country.html?country=NL&name=Netherlands" class="country-btn">🇳🇱 Netherlands</a>
+          <a href="country.html?country=NZ&name=New Zealand" class="country-btn">🇳🇿 New Zealand</a>
+          <a href="country.html?country=NO&name=Norway" class="country-btn">🇳🇴 Norway</a>
+          <a href="country.html?country=PL&name=Poland" class="country-btn">🇵🇱 Poland</a>
+          <a href="country.html?country=RO&name=Romania" class="country-btn">🇷🇴 Romania</a>
         </div>
       </li>
 
-      <li><a href="search.html">Search</a></li>
+      <li><a href="#">Movies</a></li>
+      <li><a href="#">TV Shows</a></li>
+      <li><a href="#">Top IMDB</a></li>
+      <li><a href="#">Android App</a></li>
     </ul>
   </nav>
 
-  <!-- You can place your banner or featured section here -->
-  <main style="padding: 20px;">
-    <h2>🎬 Welcome to GomoTV</h2>
-    <p>Choose a genre or country from the menu to explore movies and shows.</p>
-  </main>
+  <!-- Banner -->
+  <section class="featured">
+    <div class="banner-slider">
+      <div class="poster-box" id="active-slide">
+        <button class="nav prev">‹</button>
+        <img id="poster-img" src="" alt="Featured" class="poster-image">
+        <div class="overlay">
+          <p id="poster-meta" class="meta-text">Loading...</p>
+          <h2 id="poster-summary" class="title-text">GomoTV</h2>
+        </div>
+        <button class="nav next">›</button>
+      </div>
+    </div>
+  </section>
 
+  <!-- Search Results -->
+  <section class="media-section">
+    <h2>Trending</h2>
+    <div class="search-results-grid homepage-grid movie-list"></div>
+  </section>
+
+  <section class="media-section">
+    <h2>Popular Movies</h2>
+    <div class="search-results-grid homepage-grid popular-list"></div>
+  </section>
+
+  <section class="media-section">
+    <h2>Popular TV Shows</h2>
+    <div class="search-results-grid homepage-grid tv-list"></div>
+  </section>
+
+  <div id="modal-container"></div>
+
+  <footer class="footer">© 2025 - GomoTV. All content is property of its respective owners.</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="main.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const menuToggle = document.getElementById('menu-toggle');
-      const hamburgerMenu = document.getElementById('hamburger-menu');
-      const themeToggle = document.getElementById('theme-toggle');
+      const menuBtn = document.getElementById('menu-toggle');
+      const nav = document.getElementById('hamburger-menu');
 
-      // Toggle hamburger menu
-      menuToggle?.addEventListener('click', () => {
-        hamburgerMenu.style.display = hamburgerMenu.style.display === 'block' ? 'none' : 'block';
+      menuBtn.addEventListener('click', () => {
+        nav.style.display = nav.style.display === 'block' ? 'none' : 'block';
       });
 
-      // Theme toggle
-      const currentTheme = localStorage.getItem('theme') || 'dark';
-      document.body.classList.add(currentTheme);
-      themeToggle.textContent = '🌓';
-
-      themeToggle?.addEventListener('click', () => {
-        const isDark = document.body.classList.contains('dark');
-        document.body.classList.toggle('dark', !isDark);
-        document.body.classList.toggle('light', isDark);
-        localStorage.setItem('theme', isDark ? 'light' : 'dark');
-      });
-
-      // Genre toggle
       const genreToggle = document.getElementById('genre-toggle');
-      genreToggle?.querySelector('a')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        const grid = genreToggle.querySelector('.genre-buttons');
-        grid.style.display = grid.style.display === 'block' ? 'none' : 'block';
+      genreToggle.addEventListener('click', () => {
+        const submenu = genreToggle.querySelector('.submenu');
+        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
       });
 
-      // Country toggle
       const countryToggle = document.getElementById('country-toggle');
-      countryToggle?.querySelector('a')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        const grid = countryToggle.querySelector('.country-buttons');
-        grid.style.display = grid.style.display === 'block' ? 'none' : 'block';
+      countryToggle.addEventListener('click', () => {
+        const submenu = countryToggle.querySelector('.submenu');
+        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
       });
     });
   </script>
