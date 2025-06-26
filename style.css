@@ -337,7 +337,7 @@ body.light .menu-toggle {
   background: #e50914;
   margin-top: 5px;
 }
-body.light {
+body.light { 
   background-color: #f0f0f0;
   color: #111;
 }
@@ -368,5 +368,8 @@ body.light .genre-btn {
 body.light .genre-btn:hover {
   background: #e50914;
   color: #fff;
+}
+body.light .poster-wrapper:hover {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
   
