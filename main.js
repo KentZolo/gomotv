@@ -256,6 +256,8 @@ window.addEventListener('DOMContentLoaded', () => {
   fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
   initSwipers();
 
+  document.getElementById('menu-toggle')?.addEventListener('click', toggleMenu);
+
   // ✅ Auto open modal from URL
   const p = new URLSearchParams(location.search);
   if (p.get("id") && p.get("type")) {
@@ -288,3 +290,14 @@ function initThemeToggle() {
 }
 
 initThemeToggle();
+
+function toggleMenu() {
+  const panel = document.getElementById('menu-panel');
+  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+}
+
+function closeMenu() {
+  const panel = document.getElementById('menu-panel');
+  panel.style.display = 'none';
+}
+
