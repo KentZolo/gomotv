@@ -256,30 +256,6 @@
       }
 
       initThemeToggle();
-      
-  const toggleBtn = document.getElementById('menu-toggle');
-  const navPanel = document.getElementById('hamburger-menu');
-
-  if (toggleBtn && navPanel) {
-    toggleBtn.addEventListener('click', () => {
-      navPanel.style.display = navPanel.style.display === 'block' ? 'none' : 'block';
-    });
-  }
-
-  // Genre submenu toggle
-  const genreToggle = document.getElementById('genre-toggle');
-  if (genreToggle) {
-    const toggleLink = genreToggle.querySelector('a');
-    const submenu = genreToggle.querySelector('.submenu');
-
-    if (toggleLink && submenu) {
-      toggleLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-      });
-    }
-  }
-});
 
       // Auto-open modal if URL has id & type
       const id = params.get('id');
