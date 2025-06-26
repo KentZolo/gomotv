@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GomoTV</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
 <body>
   <header class="navbar">
@@ -18,152 +17,126 @@
     <button id="theme-toggle" class="theme-toggle">🌓</button>
   </header>
 
-  <!-- Hamburger Navigation Menu -->
+  <!-- Hamburger Menu -->
   <nav class="hamburger-menu" id="hamburger-menu">
     <ul>
       <li><a href="index.html">Home</a></li>
 
+      <!-- Genre -->
       <li id="genre-toggle">
-  <a href="#">Genre</a>
-  <div class="genre-buttons submenu-grid" id="genre-list" style="display: none;">
-    <a href="genre.html?genre=Action&id=28">Action</a>
-    <a href="genre.html?genre=Action & Adventure&id=10759">Action & Adventure</a>
-    <a href="genre.html?genre=Adventure&id=12">Adventure</a>
-    <a href="genre.html?genre=Animation&id=16">Animation</a>
-    <a href="genre.html?genre=Biography&id=1">Biography</a>
-    <a href="genre.html?genre=Comedy&id=35">Comedy</a>
-    <a href="genre.html?genre=Crime&id=80">Crime</a>
-    <a href="genre.html?genre=Documentary&id=99">Documentary</a>
-    <a href="genre.html?genre=Drama&id=18">Drama</a>
-    <a href="genre.html?genre=Family&id=10751">Family</a>
-    <a href="genre.html?genre=Fantasy&id=14">Fantasy</a>
-    <a href="genre.html?genre=History&id=36">History</a>
-    <a href="genre.html?genre=Horror&id=27">Horror</a>
-    <a href="genre.html?genre=Kids&id=10762">Kids</a>
-    <a href="genre.html?genre=Music&id=10402">Music</a>
-    <a href="genre.html?genre=Mystery&id=9648">Mystery</a>
-    <a href="genre.html?genre=News&id=10763">News</a>
-    <a href="genre.html?genre=Reality&id=10764">Reality</a>
-    <a href="genre.html?genre=Romance&id=10749">Romance</a>
-    <a href="genre.html?genre=Sci-Fi & Fantasy&id=10765">Sci-Fi & Fantasy</a>
-    <a href="genre.html?genre=Science Fiction&id=878">Science Fiction</a>
-    <a href="genre.html?genre=Soap&id=10766">Soap</a>
-    <a href="genre.html?genre=Talk&id=10767">Talk</a>
-    <a href="genre.html?genre=Thriller&id=53">Thriller</a>
-    <a href="genre.html?genre=TV Movie&id=10770">TV Movie</a>
-    <a href="genre.html?genre=War&id=10752">War</a>
-    <a href="genre.html?genre=War & Politics&id=10768">War & Politics</a>
-    <a href="genre.html?genre=Western&id=37">Western</a>
-  </div>
-      </li>
-      
-      <li id="country-toggle">
-        <a href="#">Country</a>
-        <div class="country-grid submenu" id="country-list" style="display: none;">
-          <a href="country.html?name=Argentina&country=AR">Argentina</a>
-          <a href="country.html?name=Australia&country=AU">Australia</a>
-          <a href="country.html?name=Austria&country=AT">Austria</a>
-          <a href="country.html?name=Belgium&country=BE">Belgium</a>
-          <a href="country.html?name=Brazil&country=BR">Brazil</a>
-          <a href="country.html?name=Canada&country=CA">Canada</a>
-          <a href="country.html?name=China&country=CN">China</a>
-          <a href="country.html?name=Czech Republic&country=CZ">Czech Republic</a>
-          <a href="country.html?name=Denmark&country=DK">Denmark</a>
-          <a href="country.html?name=Finland&country=FI">Finland</a>
-          <a href="country.html?name=France&country=FR">France</a>
-          <a href="country.html?name=Germany&country=DE">Germany</a>
-          <a href="country.html?name=Hong Kong&country=HK">Hong Kong</a>
-          <a href="country.html?name=Hungary&country=HU">Hungary</a>
-          <a href="country.html?name=India&country=IN">India</a>
-          <a href="country.html?name=Ireland&country=IE">Ireland</a>
-          <a href="country.html?name=Israel&country=IL">Israel</a>
-          <a href="country.html?name=Italy&country=IT">Italy</a>
-          <a href="country.html?name=Japan&country=JP">Japan</a>
-          <a href="country.html?name=Luxembourg&country=LU">Luxembourg</a>
-          <a href="country.html?name=Mexico&country=MX">Mexico</a>
-          <a href="country.html?name=Netherlands&country=NL">Netherlands</a>
-          <a href="country.html?name=New Zealand&country=NZ">New Zealand</a>
-          <a href="country.html?name=Norway&country=NO">Norway</a>
-          <a href="country.html?name=Philippines&country=PH">Philippines</a>
-          <a href="country.html?name=Poland&country=PL">Poland</a>
-          <a href="country.html?name=Romania&country=RO">Romania</a>
+        <a href="#">Genre</a>
+        <div class="genre-buttons" style="display: none;">
+          <a href="genre.html?genre=Action&id=28" class="genre-btn">Action</a>
+          <a href="genre.html?genre=Action%20%26%20Adventure&id=10759" class="genre-btn">Action & Adventure</a>
+          <a href="genre.html?genre=Adventure&id=12" class="genre-btn">Adventure</a>
+          <a href="genre.html?genre=Animation&id=16" class="genre-btn">Animation</a>
+          <a href="genre.html?genre=Biography&id=1" class="genre-btn">Biography</a>
+          <a href="genre.html?genre=Comedy&id=35" class="genre-btn">Comedy</a>
+          <a href="genre.html?genre=Crime&id=80" class="genre-btn">Crime</a>
+          <a href="genre.html?genre=Documentary&id=99" class="genre-btn">Documentary</a>
+          <a href="genre.html?genre=Drama&id=18" class="genre-btn">Drama</a>
+          <a href="genre.html?genre=Family&id=10751" class="genre-btn">Family</a>
+          <a href="genre.html?genre=Fantasy&id=14" class="genre-btn">Fantasy</a>
+          <a href="genre.html?genre=History&id=36" class="genre-btn">History</a>
+          <a href="genre.html?genre=Horror&id=27" class="genre-btn">Horror</a>
+          <a href="genre.html?genre=Kids&id=10762" class="genre-btn">Kids</a>
+          <a href="genre.html?genre=Music&id=10402" class="genre-btn">Music</a>
+          <a href="genre.html?genre=Mystery&id=9648" class="genre-btn">Mystery</a>
+          <a href="genre.html?genre=News&id=10763" class="genre-btn">News</a>
+          <a href="genre.html?genre=Reality&id=10764" class="genre-btn">Reality</a>
+          <a href="genre.html?genre=Romance&id=10749" class="genre-btn">Romance</a>
+          <a href="genre.html?genre=Sci-Fi%20%26%20Fantasy&id=10765" class="genre-btn">Sci-Fi & Fantasy</a>
+          <a href="genre.html?genre=Science%20Fiction&id=878" class="genre-btn">Science Fiction</a>
+          <a href="genre.html?genre=Soap&id=10766" class="genre-btn">Soap</a>
+          <a href="genre.html?genre=Talk&id=10767" class="genre-btn">Talk</a>
+          <a href="genre.html?genre=Thriller&id=53" class="genre-btn">Thriller</a>
+          <a href="genre.html?genre=TV%20Movie&id=10770" class="genre-btn">TV Movie</a>
+          <a href="genre.html?genre=War&id=10752" class="genre-btn">War</a>
+          <a href="genre.html?genre=War%20%26%20Politics&id=10768" class="genre-btn">War & Politics</a>
+          <a href="genre.html?genre=Western&id=37" class="genre-btn">Western</a>
         </div>
       </li>
 
-      <li><a href="#">Movies</a></li>
-      <li><a href="#">TV Shows</a></li>
-      <li><a href="#">Top IMDB</a></li>
-      <li><a href="#">Android App</a></li>
+      <!-- Country -->
+      <li id="country-toggle">
+        <a href="#">Country</a>
+        <div class="country-buttons" style="display: none;">
+          <a href="country.html?name=Argentina&country=AR" class="country-btn">Argentina</a>
+          <a href="country.html?name=Australia&country=AU" class="country-btn">Australia</a>
+          <a href="country.html?name=Austria&country=AT" class="country-btn">Austria</a>
+          <a href="country.html?name=Belgium&country=BE" class="country-btn">Belgium</a>
+          <a href="country.html?name=Brazil&country=BR" class="country-btn">Brazil</a>
+          <a href="country.html?name=Canada&country=CA" class="country-btn">Canada</a>
+          <a href="country.html?name=China&country=CN" class="country-btn">China</a>
+          <a href="country.html?name=Czech%20Republic&country=CZ" class="country-btn">Czech Republic</a>
+          <a href="country.html?name=Denmark&country=DK" class="country-btn">Denmark</a>
+          <a href="country.html?name=Finland&country=FI" class="country-btn">Finland</a>
+          <a href="country.html?name=France&country=FR" class="country-btn">France</a>
+          <a href="country.html?name=Germany&country=DE" class="country-btn">Germany</a>
+          <a href="country.html?name=Hong%20Kong&country=HK" class="country-btn">Hong Kong</a>
+          <a href="country.html?name=Hungary&country=HU" class="country-btn">Hungary</a>
+          <a href="country.html?name=India&country=IN" class="country-btn">India</a>
+          <a href="country.html?name=Ireland&country=IE" class="country-btn">Ireland</a>
+          <a href="country.html?name=Israel&country=IL" class="country-btn">Israel</a>
+          <a href="country.html?name=Italy&country=IT" class="country-btn">Italy</a>
+          <a href="country.html?name=Japan&country=JP" class="country-btn">Japan</a>
+          <a href="country.html?name=Luxembourg&country=LU" class="country-btn">Luxembourg</a>
+          <a href="country.html?name=Mexico&country=MX" class="country-btn">Mexico</a>
+          <a href="country.html?name=Netherlands&country=NL" class="country-btn">Netherlands</a>
+          <a href="country.html?name=New%20Zealand&country=NZ" class="country-btn">New Zealand</a>
+          <a href="country.html?name=Norway&country=NO" class="country-btn">Norway</a>
+          <a href="country.html?name=Poland&country=PL" class="country-btn">Poland</a>
+          <a href="country.html?name=Romania&country=RO" class="country-btn">Romania</a>
+        </div>
+      </li>
+
+      <li><a href="search.html">Search</a></li>
     </ul>
   </nav>
 
-  <!-- Featured Banner -->
-  <section class="featured">
-    <div class="banner-slider">
-      <div class="poster-box" id="active-slide">
-        <button class="nav prev">‹</button>
-        <img id="poster-img" src="" alt="Featured" class="poster-image">
-        <div class="overlay">
-          <p id="poster-meta" class="meta-text">Loading...</p>
-          <h2 id="poster-summary" class="title-text">GomoTV</h2>
-        </div>
-        <button class="nav next">›</button>
-      </div>
-    </div>
-  </section>
+  <!-- You can place your banner or featured section here -->
+  <main style="padding: 20px;">
+    <h2>🎬 Welcome to GomoTV</h2>
+    <p>Choose a genre or country from the menu to explore movies and shows.</p>
+  </main>
 
-  <!-- Sections -->
-  <section class="media-section">
-    <h2>Trending</h2>
-    <div class="search-results-grid homepage-grid movie-list"></div>
-  </section>
-
-  <section class="media-section">
-    <h2>Popular Movies</h2>
-    <div class="search-results-grid homepage-grid popular-list"></div>
-  </section>
-
-  <section class="media-section">
-    <h2>Popular TV Shows</h2>
-    <div class="search-results-grid homepage-grid tv-list"></div>
-  </section>
-
-  <!-- Modal Container -->
-  <div id="modal-container"></div>
-
-  <!-- Footer -->
-  <footer class="footer">
-    © 2025 - GomoTV. All content is property of its respective owners.
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  <script src="main.js"></script>
-
-  <!-- Toggle JS -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const toggleBtn = document.getElementById('menu-toggle');
-      const navPanel = document.getElementById('hamburger-menu');
-      const genreToggle = document.getElementById('genre-toggle');
-      const countryToggle = document.getElementById('country-toggle');
+      const menuToggle = document.getElementById('menu-toggle');
+      const hamburgerMenu = document.getElementById('hamburger-menu');
+      const themeToggle = document.getElementById('theme-toggle');
 
-      // Hamburger toggle
-      toggleBtn?.addEventListener('click', () => {
-        navPanel.style.display = navPanel.style.display === 'block' ? 'none' : 'block';
+      // Toggle hamburger menu
+      menuToggle?.addEventListener('click', () => {
+        hamburgerMenu.style.display = hamburgerMenu.style.display === 'block' ? 'none' : 'block';
       });
 
-      // Genre submenu toggle
+      // Theme toggle
+      const currentTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(currentTheme);
+      themeToggle.textContent = '🌓';
+
+      themeToggle?.addEventListener('click', () => {
+        const isDark = document.body.classList.contains('dark');
+        document.body.classList.toggle('dark', !isDark);
+        document.body.classList.toggle('light', isDark);
+        localStorage.setItem('theme', isDark ? 'light' : 'dark');
+      });
+
+      // Genre toggle
+      const genreToggle = document.getElementById('genre-toggle');
       genreToggle?.querySelector('a')?.addEventListener('click', (e) => {
         e.preventDefault();
-        const submenu = genreToggle.querySelector('.submenu');
-        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+        const grid = genreToggle.querySelector('.genre-buttons');
+        grid.style.display = grid.style.display === 'block' ? 'none' : 'block';
       });
 
-      // Country submenu toggle
+      // Country toggle
+      const countryToggle = document.getElementById('country-toggle');
       countryToggle?.querySelector('a')?.addEventListener('click', (e) => {
         e.preventDefault();
-        const countryList = document.getElementById('country-list');
-        countryList.style.display = countryList.style.display === 'block' ? 'none' : 'block';
+        const grid = countryToggle.querySelector('.country-buttons');
+        grid.style.display = grid.style.display === 'block' ? 'none' : 'block';
       });
     });
   </script>
