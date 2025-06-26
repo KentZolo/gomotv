@@ -32,9 +32,16 @@
       { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` }
     ];
 
+    const params = new URLSearchParams(location.search);
     const genreId = params.get('id');
     const genreName = params.get('genre');
     let currentPage = parseInt(params.get('page')) || 1;
+
+    if (!genreId || !genreName) {
+  document.getElementById("results-grid").innerHTML =
+    `<p class="no-results">❌ Invalid genre. Please choose from the <a href='genres.html'>genre list</a>.</p>`;
+  throw new Error("Missing genre ID or name");
+    }
      
     function getImageUrl(path) {
       return path ? IMG_BASE + path : FALLBACK_IMAGE;
