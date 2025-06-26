@@ -312,3 +312,6 @@ body.light .menu-toggle {
     gap: 20px;
   }
 }
+.homepage-grid {
+  padding-top: 10px;
+}
