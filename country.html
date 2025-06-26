@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Country Results - GomoTV</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -12,6 +12,45 @@
     <h1 class="logo" id="country-title">Country</h1>
     <button id="theme-toggle" class="theme-toggle">🌓</button>
   </header>
+
+  <!-- Country list -->
+  <section style="padding: 20px;">
+    <div class="country-list">
+      <h2>🌍 Select a Country:</h2>
+      <div class="country-grid">
+        <!-- Add more countries here -->
+        <a href="country.html?name=Philippines&country=PH">Philippines</a>
+        <a href="country.html?name=Japan&country=JP">Japan</a>
+        <a href="country.html?name=United States&country=US">United States</a>
+        <a href="country.html?name=South Korea&country=KR">South Korea</a>
+        <a href="country.html?name=India&country=IN">India</a>
+        <a href="country.html?name=Argentina&country=AR">Argentina</a>
+        <a href="country.html?name=Australia&country=AU">Australia</a>
+        <a href="country.html?name=Austria&country=AT">Austria</a>
+        <a href="country.html?name=Belgium&country=BE">Belgium</a>
+        <a href="country.html?name=Brazil&country=BR">Brazil</a>
+        <a href="country.html?name=Canada&country=CA">Canada</a>
+        <a href="country.html?name=China&country=CN">China</a>
+        <a href="country.html?name=Czech Republic&country=CZ">Czech Republic</a>
+        <a href="country.html?name=Denmark&country=DK">Denmark</a>
+        <a href="country.html?name=Finland&country=FI">Finland</a>
+        <a href="country.html?name=France&country=FR">France</a>
+        <a href="country.html?name=Germany&country=DE">Germany</a>
+        <a href="country.html?name=Hong Kong&country=HK">Hong Kong</a>
+        <a href="country.html?name=Hungary&country=HU">Hungary</a>
+        <a href="country.html?name=Ireland&country=IE">Ireland</a>
+        <a href="country.html?name=Israel&country=IL">Israel</a>
+        <a href="country.html?name=Italy&country=IT">Italy</a>
+        <a href="country.html?name=Luxembourg&country=LU">Luxembourg</a>
+        <a href="country.html?name=Mexico&country=MX">Mexico</a>
+        <a href="country.html?name=Netherlands&country=NL">Netherlands</a>
+        <a href="country.html?name=New Zealand&country=NZ">New Zealand</a>
+        <a href="country.html?name=Norway&country=NO">Norway</a>
+        <a href="country.html?name=Poland&country=PL">Poland</a>
+        <a href="country.html?name=Romania&country=RO">Romania</a>
+      </div>
+    </div>
+  </section>
 
   <main>
     <div id="pagination-top" class="pagination"></div>
@@ -23,122 +62,102 @@
 
   <script>
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
-    const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
-    const FALLBACK_IMAGE = 'https://via.placeholder.com/500x750?text=No+Poster';
-
     const params = new URLSearchParams(location.search);
     const countryCode = params.get('country');
     const countryName = params.get('name');
     let currentPage = parseInt(params.get('page')) || 1;
 
-    if (!countryCode || !countryName) {
-      document.getElementById("results-grid").innerHTML =
-        `<p class="no-results">❌ Invalid country. Please choose from the menu.</p>`;
-      throw new Error("Missing country code or name");
+    document.addEventListener('DOMContentLoaded', () => {
+      initThemeToggle();
+      if (countryCode && countryName) {
+        document.getElementById("country-title").textContent = "🌍 " + countryName;
+        fetchCountryMovies(countryCode, currentPage);
+      }
+
+      const id = params.get('id');
+      const type = params.get('type');
+      if (id && type) openModalPlayer(id, type);
+
+      window.addEventListener('popstate', () => {
+        const modal = document.querySelector('.modal');
+        if (modal) {
+          modal.remove();
+          document.body.style.overflow = '';
+        }
+      });
+    });
+
+    function getImageUrl(path) {
+      return path
+        ? `https://image.tmdb.org/t/p/w500${path}`
+        : 'https://via.placeholder.com/500x750?text=No+Poster';
     }
 
-    document.getElementById("country-title").textContent = `🎌 ${countryName}`;
-
     async function fetchCountryMovies(code, page = 1) {
-      const container = document.getElementById('results-grid');
-      const paginationTop = document.getElementById('pagination-top');
-      const paginationBottom = document.getElementById('pagination');
+      const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_origin_country=${code}&page=${page}`);
+      const data = await res.json();
+      renderResults(data.results);
+      renderPagination(data.total_pages);
+    }
 
-      try {
-        const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_origin_country=${code}&page=${page}`);
-        const data = await res.json();
+    function renderResults(items) {
+      const container = document.getElementById("results-grid");
+      container.innerHTML = items.map(item => {
+        const title = item.title || item.name;
+        const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+        const img = getImageUrl(item.poster_path);
 
-        if (!data.results.length) {
-          container.innerHTML = '<p class="no-results">No results found for this country.</p>';
-          return;
-        }
+        return `
+          <div class="poster-wrapper">
+            <img src="${img}" alt="${title}" data-id="${item.id}" data-type="movie">
+            <div class="poster-label">${title}</div>
+            <div class="poster-meta">📅 ${year}</div>
+          </div>
+        `;
+      }).join('');
 
-        container.innerHTML = data.results.map(item => {
-          const title = item.title || item.name;
-          const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-          const imageUrl = item.poster_path
-            ? `${IMG_BASE}${item.poster_path}`
-            : FALLBACK_IMAGE;
-
-          const releaseDate = item.release_date || '';
-          let quality = 'HD';
-          if (releaseDate) {
-            const now = new Date();
-            const released = new Date(releaseDate);
-            const diffDays = Math.floor((now - released) / (1000 * 60 * 60 * 24));
-            if (diffDays < 7) quality = 'CAM';
-            else if (diffDays < 21) quality = 'TS';
-          }
-
-          return `
-            <div class="poster-wrapper">
-              <div class="poster-badge">${quality}</div>
-              <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="movie" data-title="${title}">
-              <div class="poster-label">${title}</div>
-              <div class="poster-meta">🎬 ${year}</div>
-            </div>
-          `;
-        }).join('');
-
-        document.querySelectorAll('.poster-wrapper img').forEach(img => {
-          img.addEventListener('click', () => {
-            const id = img.dataset.id;
-            const title = img.dataset.title;
-            const type = img.dataset.type;
-            openModalPlayer(id, title, type);
-          });
+      document.querySelectorAll('.poster-wrapper img').forEach(img => {
+        img.addEventListener('click', () => {
+          const id = img.dataset.id;
+          const type = img.dataset.type;
+          history.pushState(null, "", `?country=${countryCode}&name=${countryName}&page=${currentPage}&id=${id}&type=${type}`);
+          openModalPlayer(id, type);
         });
-
-        renderPagination(data.total_pages);
-      } catch (err) {
-        container.innerHTML = '<p class="no-results">Failed to load country results.</p>';
-        console.error(err);
-      }
+      });
     }
 
     function renderPagination(totalPages) {
-      const paginationTop = document.getElementById('pagination-top');
-      const paginationBottom = document.getElementById('pagination');
+      const pagTop = document.getElementById('pagination-top');
+      const pagBottom = document.getElementById('pagination');
       if (totalPages <= 1) {
-        paginationTop.innerHTML = '';
-        paginationBottom.innerHTML = '';
+        pagTop.innerHTML = '';
+        pagBottom.innerHTML = '';
         return;
       }
 
       let buttons = '';
-      const maxPage = Math.min(currentPage + 2, totalPages);
       const minPage = Math.max(1, currentPage - 2);
+      const maxPage = Math.min(totalPages, currentPage + 2);
 
-      if (currentPage > 1) {
-        buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
-      }
-
+      if (currentPage > 1) buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
       for (let i = minPage; i <= maxPage; i++) {
         buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
       }
+      if (currentPage < totalPages) buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
 
-      if (currentPage < totalPages) {
-        buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
-      }
-
-      paginationTop.innerHTML = buttons;
-      paginationBottom.innerHTML = buttons;
+      pagTop.innerHTML = buttons;
+      pagBottom.innerHTML = buttons;
     }
 
     function goToPage(page) {
       location.href = `country.html?country=${countryCode}&name=${encodeURIComponent(countryName)}&page=${page}`;
     }
 
-    function openModalPlayer(id, title, type) {
-      const SERVERS = [
-        { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` },
-        { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
-        { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` }
-      ];
-
+    function openModalPlayer(id, type) {
       fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}`)
         .then(res => res.json())
         .then(data => {
+          const title = data.title || data.name;
           const modal = document.createElement('div');
           modal.className = 'modal';
           document.body.style.overflow = 'hidden';
@@ -146,51 +165,12 @@
           modal.innerHTML = `
             <div class="modal-content">
               <span class="close-btn">×</span>
-              <h3>${data.title || data.name}</h3>
-              <label>Server:</label>
-              <select id="server-select"></select>
-              <div class="iframe-shield">Loading player...</div>
-              <iframe id="player-frame" allowfullscreen></iframe>
+              <h3>${title}</h3>
+              <iframe id="player-frame" src="https://vidsrc.to/embed/movie/${id}" allowfullscreen></iframe>
             </div>
           `;
 
           document.getElementById('modal-container').appendChild(modal);
-          const select = modal.querySelector('#server-select');
-
-          SERVERS.forEach(server => {
-            const option = document.createElement('option');
-            option.value = server.id;
-            option.textContent = server.name;
-            select.appendChild(option);
-          });
-
-          function loadServer(index) {
-            const server = SERVERS[index];
-            const iframe = modal.querySelector('#player-frame');
-            select.value = server.id;
-            iframe.src = server.url(type, id);
-
-            const shield = modal.querySelector('.iframe-shield');
-            shield.style.display = 'block';
-            setTimeout(() => (shield.style.display = 'none'), 3000);
-
-            iframe.onerror = () => {
-              if (index + 1 < SERVERS.length) {
-                loadServer(index + 1);
-              } else {
-                shield.textContent = 'No working server found.';
-              }
-            };
-          }
-
-          loadServer(0);
-
-          select.addEventListener('change', () => {
-            const selected = SERVERS.find(s => s.id === select.value);
-            if (selected) {
-              modal.querySelector('#player-frame').src = selected.url(type, id);
-            }
-          });
 
           modal.querySelector('.close-btn').addEventListener('click', () => {
             modal.remove();
@@ -221,25 +201,6 @@
         localStorage.setItem('theme', isDark ? 'light' : 'dark');
       });
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      fetchCountryMovies(countryCode, currentPage);
-      initThemeToggle();
-
-      const id = params.get('id');
-      const type = params.get('type');
-      if (id && type) {
-        openModalPlayer(id, type);
-      }
-
-      window.addEventListener('popstate', () => {
-        const modal = document.querySelector('.modal');
-        if (modal) {
-          modal.remove();
-          document.body.style.overflow = '';
-        }
-      });
-    });
   </script>
 </body>
 </html>
