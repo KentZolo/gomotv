@@ -288,9 +288,4 @@ function closeMenu() {
   panel.style.display = 'none';
 }
 
-document.getElementById('menu-toggle')?.addEventListener('click', () => {
-  const panel = document.getElementById('hamburger-menu');
-  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-});
-
   document.getElementById('menu-toggle')?.addEventListener('click', toggleMenu);
