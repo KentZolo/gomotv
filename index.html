@@ -22,6 +22,12 @@
 
   <!-- Hamburger Navigation Menu -->
   <nav class="hamburger-menu" id="hamburger-menu">
+
+    <div class="search-bar">
+  <input type="text" id="search-input" placeholder="Search movies or shows...">
+  <button id="search-button">Search</button>
+    </div>
+    
     <ul>
       <li><a href="index.html">Home</a></li>
       <li id="genre-toggle">
@@ -34,7 +40,7 @@
           <li><a href="genre.html?genre=Drama&id=18">Drama</a></li>
         </ul>
       </li>
-      <li><a href="#">Country</a></li>
+      <li><a href="countries.html">Country</a></li>
       <li><a href="#">Movies</a></li>
       <li><a href="#">TV Shows</a></li>
       <li><a href="#">Top IMDB</a></li>
@@ -106,7 +112,20 @@
           });
         }
       }
-    });
+
+       // ✅ Country submenu toggle
+  const countryToggle = document.getElementById('country-toggle');
+  if (countryToggle) {
+    const toggleLink = countryToggle.querySelector('a');
+    const submenu = countryToggle.querySelector('.submenu');
+    if (toggleLink && submenu) {
+      toggleLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+      });
+    }
+  }
+});
   </script>
 </body>
 </html>
