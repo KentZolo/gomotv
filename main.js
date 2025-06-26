@@ -237,7 +237,6 @@ async function openModal(id, type) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  toggleMenu();
   setupSearchRedirect();
   loadGenres();
   loadBannerSlider();
@@ -280,12 +279,12 @@ function initThemeToggle() {
 initThemeToggle();
 
 function toggleMenu() {
-  const panel = document.getElementById('menu-panel');
+  const panel = document.getElementById('hamburger-menu');
   panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
 }
 
 function closeMenu() {
-  const panel = document.getElementById('menu-panel');
+  const panel = document.getElementById('hamburger-menu');
   panel.style.display = 'none';
 }
 
