@@ -9,38 +9,88 @@
 </head>
 <body>
   <header class="navbar">
-    <!-- Hamburger Icon -->
     <div class="menu-toggle" id="menu-toggle">
       <span></span>
       <span></span>
       <span></span>
     </div>
-
     <h1 class="logo">GomoTV</h1>
     <button id="theme-toggle" class="theme-toggle">🌓</button>
   </header>
 
   <!-- Hamburger Navigation Menu -->
   <nav class="hamburger-menu" id="hamburger-menu">
-
-    <div class="search-bar">
-  <input type="text" id="search-input" placeholder="Search movies or shows...">
-  <button id="search-button">Search</button>
-    </div>
-    
     <ul>
       <li><a href="index.html">Home</a></li>
-      <li id="genre-toggle">
-        <a href="#">Genre</a>
-        <ul class="submenu">
-          <li><a href="genre.html?genre=Action&id=28">Action</a></li>
-          <li><a href="genre.html?genre=Animation&id=16">Animation</a></li>
-          <li><a href="genre.html?genre=Horror&id=27">Horror</a></li>
-          <li><a href="genre.html?genre=Comedy&id=35">Comedy</a></li>
-          <li><a href="genre.html?genre=Drama&id=18">Drama</a></li>
-        </ul>
+
+      <li id="country-toggle">
+  <a href="#">Country</a>
+  <div class="country-buttons submenu-grid" id="country-list" style="display: none;">
+    <a href="country.html?country=AR&name=Argentina">Argentina</a>
+    <a href="country.html?country=AU&name=Australia">Australia</a>
+    <a href="country.html?country=AT&name=Austria">Austria</a>
+    <a href="country.html?country=BE&name=Belgium">Belgium</a>
+    <a href="country.html?country=BR&name=Brazil">Brazil</a>
+    <a href="country.html?country=CA&name=Canada">Canada</a>
+    <a href="country.html?country=CN&name=China">China</a>
+    <a href="country.html?country=CZ&name=Czech Republic">Czech Republic</a>
+    <a href="country.html?country=DK&name=Denmark">Denmark</a>
+    <a href="country.html?country=FI&name=Finland">Finland</a>
+    <a href="country.html?country=FR&name=France">France</a>
+    <a href="country.html?country=DE&name=Germany">Germany</a>
+    <a href="country.html?country=HK&name=Hong Kong">Hong Kong</a>
+    <a href="country.html?country=HU&name=Hungary">Hungary</a>
+    <a href="country.html?country=IN&name=India">India</a>
+    <a href="country.html?country=IE&name=Ireland">Ireland</a>
+    <a href="country.html?country=IL&name=Israel">Israel</a>
+    <a href="country.html?country=IT&name=Italy">Italy</a>
+    <a href="country.html?country=JP&name=Japan">Japan</a>
+    <a href="country.html?country=LU&name=Luxembourg">Luxembourg</a>
+    <a href="country.html?country=MX&name=Mexico">Mexico</a>
+    <a href="country.html?country=NL&name=Netherlands">Netherlands</a>
+    <a href="country.html?country=NZ&name=New Zealand">New Zealand</a>
+    <a href="country.html?country=NO&name=Norway">Norway</a>
+    <a href="country.html?country=PH&name=Philippines">Philippines</a>
+    <a href="country.html?country=PL&name=Poland">Poland</a>
+    <a href="country.html?country=RO&name=Romania">Romania</a>
+    <a href="country.html?country=KR&name=South Korea">South Korea</a>
+    <a href="country.html?country=US&name=United States">United States</a>
+  </div>
       </li>
-      <li><a href="countries.html">Country</a></li>
+
+      <li id="country-toggle">
+        <a href="#">Country</a>
+        <div class="country-grid submenu" id="country-list" style="display: none;">
+          <a href="country.html?name=Argentina&country=AR">Argentina</a>
+          <a href="country.html?name=Australia&country=AU">Australia</a>
+          <a href="country.html?name=Austria&country=AT">Austria</a>
+          <a href="country.html?name=Belgium&country=BE">Belgium</a>
+          <a href="country.html?name=Brazil&country=BR">Brazil</a>
+          <a href="country.html?name=Canada&country=CA">Canada</a>
+          <a href="country.html?name=China&country=CN">China</a>
+          <a href="country.html?name=Czech Republic&country=CZ">Czech Republic</a>
+          <a href="country.html?name=Denmark&country=DK">Denmark</a>
+          <a href="country.html?name=Finland&country=FI">Finland</a>
+          <a href="country.html?name=France&country=FR">France</a>
+          <a href="country.html?name=Germany&country=DE">Germany</a>
+          <a href="country.html?name=Hong Kong&country=HK">Hong Kong</a>
+          <a href="country.html?name=Hungary&country=HU">Hungary</a>
+          <a href="country.html?name=India&country=IN">India</a>
+          <a href="country.html?name=Ireland&country=IE">Ireland</a>
+          <a href="country.html?name=Israel&country=IL">Israel</a>
+          <a href="country.html?name=Italy&country=IT">Italy</a>
+          <a href="country.html?name=Japan&country=JP">Japan</a>
+          <a href="country.html?name=Luxembourg&country=LU">Luxembourg</a>
+          <a href="country.html?name=Mexico&country=MX">Mexico</a>
+          <a href="country.html?name=Netherlands&country=NL">Netherlands</a>
+          <a href="country.html?name=New Zealand&country=NZ">New Zealand</a>
+          <a href="country.html?name=Norway&country=NO">Norway</a>
+          <a href="country.html?name=Philippines&country=PH">Philippines</a>
+          <a href="country.html?name=Poland&country=PL">Poland</a>
+          <a href="country.html?name=Romania&country=RO">Romania</a>
+        </div>
+      </li>
+
       <li><a href="#">Movies</a></li>
       <li><a href="#">TV Shows</a></li>
       <li><a href="#">Top IMDB</a></li>
@@ -48,7 +98,7 @@
     </ul>
   </nav>
 
-  <!-- Banner Section -->
+  <!-- Featured Banner -->
   <section class="featured">
     <div class="banner-slider">
       <div class="poster-box" id="active-slide">
@@ -63,7 +113,7 @@
     </div>
   </section>
 
-  <!-- Media Sections -->
+  <!-- Sections -->
   <section class="media-section">
     <h2>Trending</h2>
     <div class="search-results-grid homepage-grid movie-list"></div>
@@ -82,50 +132,41 @@
   <!-- Modal Container -->
   <div id="modal-container"></div>
 
-  <footer class="footer">© 2025 - GomoTV. All content is property of its respective owners.</footer>
+  <!-- Footer -->
+  <footer class="footer">
+    © 2025 - GomoTV. All content is property of its respective owners.
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script src="main.js"></script>
 
+  <!-- Toggle JS -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Hamburger toggle
       const toggleBtn = document.getElementById('menu-toggle');
       const navPanel = document.getElementById('hamburger-menu');
+      const genreToggle = document.getElementById('genre-toggle');
+      const countryToggle = document.getElementById('country-toggle');
 
-      if (toggleBtn && navPanel) {
-        toggleBtn.addEventListener('click', () => {
-          navPanel.style.display = navPanel.style.display === 'block' ? 'none' : 'block';
-        });
-      }
+      // Hamburger toggle
+      toggleBtn?.addEventListener('click', () => {
+        navPanel.style.display = navPanel.style.display === 'block' ? 'none' : 'block';
+      });
 
       // Genre submenu toggle
-      const genreToggle = document.getElementById('genre-toggle');
-      if (genreToggle) {
-        const toggleLink = genreToggle.querySelector('a');
+      genreToggle?.querySelector('a')?.addEventListener('click', (e) => {
+        e.preventDefault();
         const submenu = genreToggle.querySelector('.submenu');
+        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+      });
 
-        if (toggleLink && submenu) {
-          toggleLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-          });
-        }
-      }
-
-       // ✅ Country submenu toggle
-  const countryToggle = document.getElementById('country-toggle');
-  if (countryToggle) {
-    const toggleLink = countryToggle.querySelector('a');
-    const submenu = countryToggle.querySelector('.submenu');
-    if (toggleLink && submenu) {
-      toggleLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-      });
-    }
-  }
-});
+      // Country submenu toggle
+      countryToggle?.querySelector('a')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const countryList = document.getElementById('country-list');
+        countryList.style.display = countryList.style.display === 'block' ? 'none' : 'block';
+      });
+    });
   </script>
 </body>
 </html>
