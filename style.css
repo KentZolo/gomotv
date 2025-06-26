@@ -372,4 +372,51 @@ body.light .genre-btn:hover {
 body.light .poster-wrapper:hover {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+/* HAMBURGER ICON */
+.menu-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 25px;
+  height: 3px;
+  background: white;
+  transition: 0.3s;
+}
+
+/* SIDE/DROPDOWN PANEL */
+.menu-panel {
+  display: none;
+  position: absolute;
+  top: 60px;
+  left: 10px;
+  background: #111;
+  border-radius: 8px;
+  padding: 10px 15px;
+  z-index: 1000;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.menu-panel ul {
+  list-style: none;
+}
+
+.menu-panel li {
+  margin: 10px 0;
+}
+
+.menu-panel a {
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.menu-panel a:hover {
+  color: #e50914;
+}
   
