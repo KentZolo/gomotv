@@ -419,3 +419,28 @@ body.light .poster-wrapper:hover {
   color: #e50914;
 }
   
+.hamburger-menu ul ul.submenu {
+  display: none;
+  margin-left: 15px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.hamburger-menu li:hover > .submenu {
+  display: block;
+}
+
+.hamburger-menu .submenu li {
+  margin: 5px 0;
+}
+
+.hamburger-menu .submenu a {
+  font-size: 14px;
+  color: #ccc;
+  text-decoration: none;
+}
+
+.hamburger-menu .submenu a:hover {
+  color: #e50914;
+}
+  
