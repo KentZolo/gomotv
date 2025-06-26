@@ -121,7 +121,20 @@
           });
         }
       }
-    });
+
+       // ✅ Country submenu toggle
+  const countryToggle = document.getElementById('country-toggle');
+  if (countryToggle) {
+    const toggleLink = countryToggle.querySelector('a');
+    const submenu = countryToggle.querySelector('.submenu');
+    if (toggleLink && submenu) {
+      toggleLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+      });
+    }
+  }
+});
   </script>
 </body>
 </html>
