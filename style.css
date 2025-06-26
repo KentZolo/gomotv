@@ -324,3 +324,17 @@ body.light .menu-toggle {
 .homepage-grid {
   padding-top: 10px;
 }
+.media-section h2 {
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+  position: relative;
+}
+
+.media-section h2::after {
+  content: "";
+  display: block;
+  height: 2px;
+  background: #e50914;
+  margin-top: 5px;
+}
+  
