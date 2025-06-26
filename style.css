@@ -488,3 +488,34 @@ body.light .country-grid a:hover {
   color: white;
 }
   
+.genre-buttons.submenu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.genre-buttons.submenu-grid a {
+  background: #222;
+  padding: 8px 12px;
+  border-radius: 5px;
+  text-decoration: none;
+  color: white;
+  font-size: 14px;
+  text-align: center;
+}
+
+.genre-buttons.submenu-grid a:hover {
+  background: #e50914;
+}
+
+body.light .genre-buttons.submenu-grid a {
+  background: #ddd;
+  color: #000;
+}
+
+body.light .genre-buttons.submenu-grid a:hover {
+  background: #e50914;
+  color: white;
+}
+  
