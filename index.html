@@ -25,7 +25,8 @@
   <ul>
     <li><a href="index.html">Home</a></li>
     <li>
-  Genre
+  <li id="genre-toggle">
+  <a href="#">Genre</a>
   <ul class="submenu">
     <li><a href="genre.html?genre=Action&id=28">Action</a></li>
     <li><a href="genre.html?genre=Animation&id=16">Animation</a></li>
@@ -78,5 +79,28 @@
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script src="main.js"></script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const genreToggle = document.getElementById('genre-toggle');
+    if (genreToggle) {
+      const toggleLink = genreToggle.querySelector('a');
+      const submenu = genreToggle.querySelector('.submenu');
+
+      if (toggleLink && submenu) {
+        toggleLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+        });
+      }
+    }
+
+    // Optional: toggle hamburger menu (kung wala pa)
+    document.getElementById('menu-toggle')?.addEventListener('click', () => {
+      const menu = document.getElementById('hamburger-menu');
+      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    });
+  });
+  </script>
 </body>
 </html>
