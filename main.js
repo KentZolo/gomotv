@@ -124,16 +124,6 @@ function setupSearchRedirect() {
   }
 }
 
-function toggleMenu() {
-  const toggle = document.getElementById('menu-toggle');
-  const panel = document.getElementById('menu-panel');
-  if (toggle && panel) {
-    toggle.addEventListener('click', () => {
-      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-    });
-  }
-}
-
 async function loadGenres() {
   const container = document.getElementById('genre-buttons');
   if (!container) return;
@@ -256,8 +246,6 @@ window.addEventListener('DOMContentLoaded', () => {
   fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
   initSwipers();
 
-  document.getElementById('menu-toggle')?.addEventListener('click', toggleMenu);
-
   // ✅ Auto open modal from URL
   const p = new URLSearchParams(location.search);
   if (p.get("id") && p.get("type")) {
@@ -301,3 +289,4 @@ function closeMenu() {
   panel.style.display = 'none';
 }
 
+  document.getElementById('menu-toggle')?.addEventListener('click', toggleMenu);
