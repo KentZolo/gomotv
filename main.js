@@ -245,6 +245,15 @@ window.addEventListener('DOMContentLoaded', () => {
   fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
   initSwipers();
 
+    const menuToggle = document.getElementById('menu-toggle');
+  const menuPanel = document.getElementById('hamburger-menu');
+
+  if (menuToggle && menuPanel) {
+    menuToggle.addEventListener('click', () => {
+      menuPanel.style.display = menuPanel.style.display === 'block' ? 'none' : 'block';
+    });
+  }
+
   // ✅ Auto open modal from URL
   const p = new URLSearchParams(location.search);
   if (p.get("id") && p.get("type")) {
@@ -288,4 +297,3 @@ function closeMenu() {
   panel.style.display = 'none';
 }
 
-  document.getElementById('menu-toggle')?.addEventListener('click', toggleMenu);
