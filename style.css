@@ -301,3 +301,6 @@ body.light .menu-toggle {
 .featured {
   margin-bottom: 30px;
 }
+.homepage-grid .poster-wrapper {
+  max-width: 180px;
+}
