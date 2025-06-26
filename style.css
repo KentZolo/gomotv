@@ -372,7 +372,6 @@ body.light .genre-btn:hover {
 body.light .poster-wrapper:hover {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-/* HAMBURGER ICON */
 .menu-toggle {
   display: flex;
   flex-direction: column;
@@ -389,8 +388,7 @@ body.light .poster-wrapper:hover {
   transition: 0.3s;
 }
 
-/* SIDE/DROPDOWN PANEL */
-.menu-panel {
+.hamburger-menu {
   display: none;
   position: absolute;
   top: 60px;
@@ -402,21 +400,22 @@ body.light .poster-wrapper:hover {
   box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
-.menu-panel ul {
+.hamburger-menu ul {
   list-style: none;
+  padding: 0;
 }
 
-.menu-panel li {
+.hamburger-menu li {
   margin: 10px 0;
 }
 
-.menu-panel a {
+.hamburger-menu a {
   color: white;
   text-decoration: none;
   font-size: 16px;
 }
 
-.menu-panel a:hover {
+.hamburger-menu a:hover {
   color: #e50914;
 }
   
