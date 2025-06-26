@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Genres - GomoTV</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="navbar">
+    <button onclick="history.back()" class="menu-toggle">←</button>
+    <h1 class="logo">Browse Genres</h1>
+    <button id="theme-toggle" class="theme-toggle">🌓</button>
+  </header>
+
+  <main>
+    <div class="menu-panel">
+      <div class="genre-buttons" id="genre-buttons"></div>
+    </div>
+  </main>
+
+  <script>
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+
+    async function loadGenres() {
+      const container = document.getElementById('genre-buttons');
+      if (!container) return;
+
+      try {
+        const res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`);
+        const data = await res.json();
+        const genres = data.genres;
+
+        container.innerHTML = genres.map(genre => `
+          <button class="genre-btn" onclick="location.href='genre.html?genre=${encodeURIComponent(genre.name)}&id=${genre.id}'">
+            ${genre.name}
+          </button>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load genres:', err);
+      }
+    }
+
+    // Optional: theme toggle
+    function initThemeToggle() {
+      const toggleBtn = document.getElementById('theme-toggle');
+      if (!toggleBtn) return;
+      const currentTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(currentTheme);
+      toggleBtn.textContent = '🌓';
+      toggleBtn.addEventListener('click', () => {
+        const isDark = document.body.classList.contains('dark');
+        document.body.classList.toggle('dark', !isDark);
+        document.body.classList.toggle('light', isDark);
+        localStorage.setItem('theme', isDark ? 'light' : 'dark');
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadGenres();
+      initThemeToggle();
+    });
+  </script>
+</body>
+</html>
