@@ -65,67 +65,52 @@
     const genreId = params.get('id');
     const genreName = params.get('genre');
     let currentPage = parseInt(params.get('page')) || 1;
-
-    if (!genreId || !genreName) {
-  document.getElementById("results-grid").innerHTML =
-    `<p class="no-results">❌ Invalid genre. Please choose from the <a href='genres.html'>genre list</a>.</p>`;
-  throw new Error("Missing genre ID or name");
-    }
      
     function getImageUrl(path) {
       return path ? IMG_BASE + path : FALLBACK_IMAGE;
     }
 
-    async function fetchByGenre(genreId, page = 1) {
-      const container = document.getElementById('results-grid');
-      const title = document.getElementById('genre-title');
-      title.textContent = `🎬 ${genreName}`;
+    async function fetchGenreMovies(genreId, page = 1) {
+  const container = document.getElementById('results-grid');
+  const pagination = document.getElementById('pagination');
+  const paginationTop = document.getElementById('pagination-top');
 
-      try {
-        const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}`);
-        const data = await res.json();
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=77312bdd4669c80af3d08e0bf719d7ff&with_genres=${genreId}&page=${page}`);
+    const data = await res.json();
 
-        container.innerHTML = data.results.map(item => {
-          const id = item.id;
-          const type = 'movie';
-          const title = item.title || item.name;
-          const year = item.release_date?.slice(0, 4) || '';
-          const img = getImageUrl(item.poster_path || item.backdrop_path);
+    container.innerHTML = data.results.map(item => {
+      const title = item.title || item.name;
+      const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+      const imageUrl = item.poster_path
+        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+        : 'https://via.placeholder.com/500x750?text=No+Poster';
 
-          const releaseDate = item.release_date || '';
-          let quality = 'HD';
-          if (releaseDate) {
-            const now = new Date();
-            const released = new Date(releaseDate);
-            const diffDays = Math.floor((now - released) / (1000 * 60 * 60 * 24));
-            if (diffDays < 7) quality = 'CAM';
-            else if (diffDays < 21) quality = 'TS';
-          }
+      return `
+        <div class="poster-wrapper">
+          <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="movie" data-title="${title}">
+          <div class="poster-label">${title}</div>
+          <div class="poster-meta">🎬 ${year}</div>
+        </div>
+      `;
+    }).join('');
 
-          return `
-            <div class="poster-wrapper">
-              <div class="poster-badge">${quality}</div>
-              <img src="${img}" alt="${title}" data-id="${id}" data-type="${type}">
-              <div class="poster-label">${title}</div>
-              <div class="poster-meta">🎬 ${year}</div>
-            </div>
-          `;
-        }).join('');
+    // ✅ Click listener for modal
+    document.querySelectorAll('.poster-wrapper img').forEach(img => {
+      img.addEventListener('click', () => {
+        const id = img.dataset.id;
+        const title = img.dataset.title;
+        const type = img.dataset.type;
+        openModalPlayer(id, title, type);
+      });
+    });
 
-        document.querySelectorAll('.poster-wrapper img').forEach(img => {
-          img.addEventListener('click', () => {
-            const id = img.dataset.id;
-            const type = img.dataset.type;
-            history.pushState(null, "", `?genre=${encodeURIComponent(genreName)}&id=${genreId}&page=${currentPage}&id=${id}&type=${type}`);
-            openModalPlayer(id, type);
-          });
-        });
+    renderPagination(data.total_pages);
 
-        renderPagination(data.total_pages);
-      } catch (err) {
-        container.innerHTML = '<p class="no-results">Failed to load genre results.</p>';
-        console.error(err);
-      }
+  } catch (err) {
+    container.innerHTML = '<p class="no-results">Something went wrong while loading results.</p>';
+    console.error('Genre fetch failed:', err);
+  }
     }
 
     function renderPagination(totalPages) {
@@ -254,7 +239,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       if (genreId && genreName) {
-        fetchByGenre(genreId, currentPage);
+        fetchGenreMovies(genreId, currentPage);
       } else {
         document.getElementById('results-grid').innerHTML = '<p class="no-results">Invalid genre ID.</p>';
       }
