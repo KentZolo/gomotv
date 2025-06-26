@@ -17,6 +17,7 @@
     <button id="theme-toggle" class="theme-toggle">🌓</button>
   </header>
 
+  <!-- Hamburger Navigation -->
   <nav class="hamburger-menu" id="hamburger-menu">
     <ul>
       <li><a href="index.html">Home</a></li>
@@ -30,8 +31,8 @@
           <li><a href="genre.html?genre=Drama&id=18">Drama</a></li>
         </ul>
       </li>
-      <li><a href="genres.html">All Genres</a></li>
-      <li><a href="countries.html">All Countries</a></li>
+      <li><a href="genres.html">Genres</a></li>
+      <li><a href="#">Country</a></li>
       <li><a href="#">Movies</a></li>
       <li><a href="#">TV Shows</a></li>
       <li><a href="#">Top IMDB</a></li>
@@ -54,77 +55,54 @@
     const countryName = params.get('country');
     let currentPage = parseInt(params.get('page')) || 1;
 
-    const title = document.getElementById('country-title');
-    const container = document.getElementById('results-grid');
-
-    const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
-    const FALLBACK_IMAGE = 'https://via.placeholder.com/500x750?text=No+Poster';
-
     const SERVERS = [
       { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` },
       { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
       { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` }
     ];
 
-    if (!countryCode || !countryName) {
-      container.innerHTML = `<p class="no-results">❌ Invalid country. Go to <a href="countries.html">country list</a>.</p>`;
-      throw new Error("Missing country code or name.");
-    }
+    async function fetchCountryMovies(code, page = 1) {
+      const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_origin_country=${code}&page=${page}`);
+      const data = await res.json();
 
-    title.textContent = `🌍 ${countryName}`;
+      const container = document.getElementById("results-grid");
+      document.getElementById("country-title").textContent = `🌍 ${countryName}`;
 
-    async function fetchByCountry(code, page = 1) {
-      try {
-        const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_origin_country=${code}&page=${page}`);
-        const data = await res.json();
+      container.innerHTML = data.results.map(item => {
+        const title = item.title || item.name;
+        const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+        const imageUrl = item.poster_path
+          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+          : 'https://via.placeholder.com/500x750?text=No+Poster';
 
-        container.innerHTML = data.results.map(item => {
-          const title = item.title || item.name;
-          const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-          const img = item.poster_path ? `${IMG_BASE}${item.poster_path}` : FALLBACK_IMAGE;
-          const releaseDate = item.release_date || '';
-          let quality = 'HD';
-          if (releaseDate) {
-            const now = new Date();
-            const released = new Date(releaseDate);
-            const diffDays = Math.floor((now - released) / (1000 * 60 * 60 * 24));
-            if (diffDays < 7) quality = 'CAM';
-            else if (diffDays < 21) quality = 'TS';
-          }
+        return `
+          <div class="poster-wrapper">
+            <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="movie" data-title="${title}">
+            <div class="poster-label">${title}</div>
+            <div class="poster-meta">🎬 ${year}</div>
+          </div>
+        `;
+      }).join('');
 
-          return `
-            <div class="poster-wrapper">
-              <div class="poster-badge">${quality}</div>
-              <img src="${img}" alt="${title}" data-id="${item.id}" data-type="movie" data-title="${title}">
-              <div class="poster-label">${title}</div>
-              <div class="poster-meta">📅 ${year}</div>
-            </div>
-          `;
-        }).join('');
-
-        document.querySelectorAll('.poster-wrapper img').forEach(img => {
-          img.addEventListener('click', () => {
-            const id = img.dataset.id;
-            const type = img.dataset.type;
-            history.pushState(null, "", `?country=${countryName}&code=${countryCode}&page=${currentPage}&id=${id}&type=${type}`);
-            openModalPlayer(id, type);
-          });
+      document.querySelectorAll('.poster-wrapper img').forEach(img => {
+        img.addEventListener('click', () => {
+          const id = img.dataset.id;
+          const title = img.dataset.title;
+          const type = img.dataset.type;
+          openModalPlayer(id, title, type);
         });
+      });
 
-        renderPagination(data.total_pages);
-
-      } catch (err) {
-        container.innerHTML = '<p class="no-results">Something went wrong.</p>';
-        console.error(err);
-      }
+      renderPagination(data.total_pages);
     }
 
     function renderPagination(totalPages) {
-      const paginationTop = document.getElementById('pagination-top');
-      const paginationBottom = document.getElementById('pagination');
+      const top = document.getElementById('pagination-top');
+      const bottom = document.getElementById('pagination');
+
       if (totalPages <= 1) {
-        paginationTop.innerHTML = '';
-        paginationBottom.innerHTML = '';
+        top.innerHTML = '';
+        bottom.innerHTML = '';
         return;
       }
 
@@ -135,15 +113,17 @@
       if (currentPage > 1) {
         buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
       }
+
       for (let i = minPage; i <= maxPage; i++) {
         buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
       }
+
       if (currentPage < totalPages) {
         buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
       }
 
-      paginationTop.innerHTML = buttons;
-      paginationBottom.innerHTML = buttons;
+      top.innerHTML = buttons;
+      bottom.innerHTML = buttons;
     }
 
     function goToPage(page) {
@@ -158,6 +138,7 @@
           const modal = document.createElement('div');
           modal.className = 'modal';
           document.body.style.overflow = 'hidden';
+
           modal.innerHTML = `
             <div class="modal-content">
               <span class="close-btn">×</span>
@@ -168,9 +149,10 @@
               <iframe id="player-frame" allowfullscreen></iframe>
             </div>
           `;
-          document.getElementById('modal-container').appendChild(modal);
 
+          document.getElementById('modal-container').appendChild(modal);
           const select = modal.querySelector('#server-select');
+
           SERVERS.forEach(server => {
             const option = document.createElement('option');
             option.value = server.id;
@@ -209,14 +191,14 @@
           modal.querySelector('.close-btn').addEventListener('click', () => {
             modal.remove();
             document.body.style.overflow = '';
-            history.pushState(null, "", `?country=${countryName}&code=${countryCode}&page=${currentPage}`);
+            history.pushState(null, "", window.location.pathname);
           });
 
           modal.addEventListener('click', (e) => {
             if (e.target === modal) {
               modal.remove();
               document.body.style.overflow = '';
-              history.pushState(null, "", `?country=${countryName}&code=${countryCode}&page=${currentPage}`);
+              history.pushState(null, "", window.location.pathname);
             }
           });
         });
@@ -238,19 +220,27 @@
       });
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      fetchByCountry(countryCode, currentPage);
+    document.addEventListener("DOMContentLoaded", () => {
+      if (countryCode && countryName) {
+        fetchCountryMovies(countryCode, currentPage);
+      }
+
       initThemeToggle();
 
-      document.getElementById('menu-toggle')?.addEventListener('click', () => {
-        const panel = document.getElementById('hamburger-menu');
-        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-      });
+      const toggleBtn = document.getElementById('menu-toggle');
+      const navPanel = document.getElementById('hamburger-menu');
+
+      if (toggleBtn && navPanel) {
+        toggleBtn.addEventListener('click', () => {
+          navPanel.style.display = navPanel.style.display === 'block' ? 'none' : 'block';
+        });
+      }
 
       const genreToggle = document.getElementById('genre-toggle');
       if (genreToggle) {
         const toggleLink = genreToggle.querySelector('a');
         const submenu = genreToggle.querySelector('.submenu');
+
         if (toggleLink && submenu) {
           toggleLink.addEventListener('click', (e) => {
             e.preventDefault();
