@@ -131,5 +131,14 @@
       });
     }
   </script>
+
+   <!-- ✅ ADD THIS SCRIPT FOR DISCLAIMER -->
+  <script type="module">
+    import { addGlobalDisclaimer, disclaimerStyle } from './shared-disclaimer.js';
+    const style = document.createElement('style');
+    style.textContent = disclaimerStyle;
+    document.head.appendChild(style);
+    document.addEventListener('DOMContentLoaded', addGlobalDisclaimer);
+  </script>
 </body>
 </html>
