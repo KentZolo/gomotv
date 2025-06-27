@@ -790,25 +790,3 @@ body.light ::-webkit-scrollbar-track {
 body.light ::-webkit-scrollbar-thumb {
   background: #e50914;
 }
-/* Movies Section Specific Styles */
-.movies-section {
-  padding: 20px;
-}
-
-.filter-options {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.filter-options select {
-  padding: 8px 12px;
-  border-radius: 4px;
-  background: #222;
-  color: white;
-  border: 1px solid #444;
-}
-
-#movies-pagination {
-  margin-top: 20px;
-}
