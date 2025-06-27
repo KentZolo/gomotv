@@ -290,26 +290,5 @@ window.addEventListener('DOMContentLoaded', () => {
       if (modal) modal.remove();
       document.body.style.overflow = '';
     }
-  
-  // Hamburger menu search functionality
-  const menuSearchInput = document.getElementById('menu-search-input');
-  const menuSearchButton = document.getElementById('menu-search-button');
-  
-  if (menuSearchButton && menuSearchInput) {
-    menuSearchButton.addEventListener('click', performMenuSearch);
-    menuSearchInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') performMenuSearch();
-    });
-  }
-  
-  function performMenuSearch() {
-    const searchTerm = menuSearchInput.value.trim();
-    if (searchTerm.length >= 2) {
-      // Close menu after search
-      document.getElementById('hamburger-menu').style.display = 'none';
-      window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
-    } else {
-      alert('Please enter at least 2 characters');
-    }
   });
 });
