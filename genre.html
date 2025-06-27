@@ -90,18 +90,6 @@
       });
     }
 
-    // Auto-add disclaimer
-  if (!document.querySelector('.disclaimer')) {
-    const disclaimer = document.createElement('div');
-    disclaimer.className = 'disclaimer';
-    disclaimer.innerHTML = `
-      <p>Disclaimer: This site links to third-party content. We do not host or own any media.</p>
-      <p>For official streaming, check <a href="https://www.justwatch.com" target="_blank">JustWatch</a>.</p>
-    `;
-    container.parentNode.insertBefore(disclaimer, document.getElementById('pagination'));
-   }
-    }
-    
     function renderPagination(totalPages) {
       const pagTop = document.getElementById('pagination-top');
       const pagBottom = document.getElementById('pagination');
