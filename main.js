@@ -2,14 +2,17 @@ const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
+// Core Functions
 function getImageUrl(path, isBackdrop = false) {
-  return path
-    ? `${IMG_BASE}${path}`
-    : isBackdrop
-    ? 'https://via.placeholder.com/1920x1080?text=No+Banner'
-    : 'https://via.placeholder.com/500x750?text=No+Poster';
+  if (!path) {
+    return isBackdrop 
+      ? 'https://via.placeholder.com/1920x1080?text=No+Banner'
+      : 'https://via.placeholder.com/500x750?text=No+Poster';
+  }
+  return `${IMG_BASE}${path}`;
 }
 
+// Banner Slider
 let bannerIndex = 0;
 let bannerItems = [];
 
@@ -18,31 +21,37 @@ async function loadBannerSlider() {
     const res = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}`);
     const data = await res.json();
     bannerItems = data.results.slice(0, 10);
+    
     if (bannerItems.length > 0) {
       showBannerSlide(bannerIndex);
-      document.querySelector('.prev').addEventListener('click', prevSlide);
-      document.querySelector('.next').addEventListener('click', nextSlide);
+      setupBannerNavigation();
     }
   } catch (err) {
     console.error('Banner error:', err);
+    document.getElementById('poster-summary').textContent = 'Failed to load featured content';
   }
 }
 
 function showBannerSlide(index) {
   const item = bannerItems[index];
   const img = document.getElementById('poster-img');
+  
   img.src = getImageUrl(item.backdrop_path, true);
   img.alt = item.title;
   img.dataset.id = item.id;
   img.dataset.type = 'movie';
 
   document.getElementById('poster-meta').textContent =
-    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} ·  Movie · ${item.release_date?.slice(0, 4) || ''}`;
+    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
   document.getElementById('poster-summary').textContent = item.title;
+}
 
-  img.addEventListener('click', () => {
-    openModal(item.id, 'movie');
-  });
+function setupBannerNavigation() {
+  document.querySelector('.prev').addEventListener('click', prevSlide);
+  document.querySelector('.next').addEventListener('click', nextSlide);
+  
+  // Auto-advance every 5 seconds
+  setInterval(nextSlide, 5000);
 }
 
 function prevSlide() {
@@ -55,228 +64,195 @@ function nextSlide() {
   showBannerSlide(bannerIndex);
 }
 
+// Content Loading
 async function fetchAndDisplay(endpoint, containerSelector, type) {
   try {
+    const container = document.querySelector(containerSelector);
+    container.innerHTML = '<div class="loading"></div>';
+    
     const res = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}`);
     const data = await res.json();
-    displayMedia(data.results, containerSelector, type);
+    
+    if (data.results && data.results.length > 0) {
+      displayMedia(data.results, containerSelector, type);
+    } else {
+      container.innerHTML = '<p class="error-message">No content available</p>';
+    }
   } catch (err) {
-    console.error(`Failed to load ${type}:`, err);
+    console.error(`Failed to load content:`, err);
+    document.querySelector(containerSelector).innerHTML = 
+      '<p class="error-message">Failed to load content</p>';
   }
 }
 
 function displayMedia(items, containerSelector, defaultType) {
   const container = document.querySelector(containerSelector);
-  if (!container) return;
-
   container.innerHTML = items.map(item => {
     const title = item.title || item.name;
-    const imageUrl = getImageUrl(item.poster_path || item.backdrop_path);
+    const imageUrl = getImageUrl(item.poster_path);
     const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-    const releaseDate = item.release_date || item.first_air_date || '';
-    let quality = 'HD';
-    if (releaseDate) {
-      const now = new Date();
-      const released = new Date(releaseDate);
-      const diffDays = Math.floor((now - released) / (1000 * 60 * 60 * 24));
-      if (diffDays < 7) quality = 'CAM';
-      else if (diffDays < 21) quality = 'TS';
-    }
+    const type = item.media_type || defaultType;
+    const quality = determineQuality(item.release_date || item.first_air_date);
 
     return `
-      <div class="swiper-slide poster-wrapper">
-        <div class="poster-badge">${quality}</div>
+      <div class="poster-wrapper">
+        ${quality ? `<div class="poster-badge">${quality}</div>` : ''}
         <img src="${imageUrl}" 
              alt="${title}" 
              data-id="${item.id}" 
-             data-title="${title}" 
-             data-type="${item.media_type || defaultType}">
+             data-type="${type}">
         <div class="poster-label">${title}</div>
+        <div class="poster-meta">📅 ${year}</div>
       </div>
     `;
   }).join('');
 
-  container.querySelectorAll('.poster-wrapper').forEach(poster => {
+  setupPosterClickEvents(containerSelector);
+}
+
+function determineQuality(releaseDate) {
+  if (!releaseDate) return 'HD';
+  
+  const now = new Date();
+  const released = new Date(releaseDate);
+  const diffDays = Math.floor((now - released) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 7) return 'CAM';
+  if (diffDays < 21) return 'TS';
+  return 'HD';
+}
+
+function setupPosterClickEvents(containerSelector) {
+  document.querySelectorAll(`${containerSelector} .poster-wrapper`).forEach(poster => {
     poster.addEventListener('click', () => {
       const img = poster.querySelector('img');
-      const id = img.dataset.id;
-      const type = img.dataset.type;
-      openModal(id, type);
+      openModal(img.dataset.id, img.dataset.type);
     });
   });
 }
 
-function setupSearchRedirect() {
-  const searchBtn = document.getElementById('search-button');
-  const searchInput = document.getElementById('search-input');
-
-  if (searchBtn && searchInput) {
-    searchBtn.addEventListener('click', () => {
-      const query = searchInput.value.trim();
-      if (query.length > 1) {
-        window.location.href = `search.html?q=${encodeURIComponent(query)}`;
-      }
-    });
-
-    searchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') searchBtn.click();
-    });
-  }
-}
-
-async function loadGenres() {
-  const container = document.getElementById('genre-buttons');
-  if (!container) return;
-
-  try {
-    const res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`);
-    const data = await res.json();
-    const genres = data.genres;
-
-    container.innerHTML = genres.map(genre => `
-      <button class="genre-btn" data-id="${genre.id}">${genre.name}</button>
-    `).join('');
-
-    document.querySelectorAll('.genre-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const genreId = btn.dataset.id;
-        const genreName = btn.textContent.trim();
-        window.location.href = `genre.html?genre=${encodeURIComponent(genreName)}&id=${genreId}`;
-      });
-    });
-
-  } catch (err) {
-    console.error('Failed to load genres:', err);
-  }
-}
-
-// ✅ Modal logic with URL support
+// Modal Player
 const SERVERS = [
-  { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` },
   { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
-  { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` }
+  { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
+  { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
 ];
 
 async function openModal(id, type) {
-  history.pushState(null, "", `?id=${id}&type=${type}`);
+  try {
+    history.pushState({ modal: true }, "", `?id=${id}&type=${type}`);
+    
+    const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
+    const data = await res.json();
+    
+    const modal = createModal(data, type, id);
+    document.getElementById('modal-container').appendChild(modal);
+    document.body.style.overflow = 'hidden';
+    
+    setupModalEvents(modal, id, type);
+    loadDefaultServer(modal, type, id);
+  } catch (err) {
+    console.error('Modal error:', err);
+    alert('Failed to load movie details');
+  }
+}
 
-  const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
-  const data = await res.json();
+function createModal(data, type, id) {
   const title = data.title || data.name;
   const year = (data.release_date || data.first_air_date || '').slice(0, 4);
   const rating = data.vote_average?.toFixed(1) || 'N/A';
   const overview = data.overview || 'No description available.';
   const genres = data.genres?.map(g => `<span>${g.name}</span>`).join('');
-  const poster = getImageUrl(data.poster_path);
 
-  const modalHtml = `
-    <div class="modal">
-      <div class="modal-content">
-        <span class="close-btn">×</span>
-        <h3>${title}</h3>
-        <p>⭐ ${rating} · ${type.toUpperCase()} · ${year}</p>
-        <div class="genres">${genres}</div>
-        <p>${overview}</p>
-        <label>Server:</label>
-        <select id="server-select">
-          ${SERVERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
-        </select>
-        <div class="iframe-shield">Loading player...</div>
-        <iframe id="player-frame" allowfullscreen></iframe>
-      </div>
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <span class="close-btn">×</span>
+      <h3>${title} (${year})</h3>
+      <p>⭐ ${rating} • ${type.toUpperCase()}</p>
+      <div class="genres">${genres}</div>
+      <p>${overview}</p>
+      <label>Server:</label>
+      <select id="server-select">
+        ${SERVERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+      </select>
+      <div class="iframe-shield">Loading player...</div>
+      <iframe id="player-frame" allowfullscreen></iframe>
     </div>
   `;
+  
+  return modal;
+}
 
-  const container = document.getElementById('modal-container');
-  container.innerHTML = modalHtml;
-  document.body.style.overflow = 'hidden';
-
-  const modal = document.querySelector('.modal');
-  const iframe = modal.querySelector('#player-frame');
-  const shield = modal.querySelector('.iframe-shield');
-  const select = modal.querySelector('#server-select');
-
-  function loadServer(index) {
-    const server = SERVERS[index];
-    select.value = server.id;
-    iframe.src = server.url(type, id);
-    shield.style.display = 'block';
-    setTimeout(() => (shield.style.display = 'none'), 3000);
-
-    iframe.onerror = () => {
-      if (index + 1 < SERVERS.length) {
-        loadServer(index + 1);
-      } else {
-        shield.textContent = 'No working server found.';
-      }
-    };
-  }
-
-  loadServer(0);
-
-  select.addEventListener('change', () => {
-    const selected = SERVERS.find(s => s.id === select.value);
-    if (selected) {
-      iframe.src = selected.url(type, id);
-    }
-  });
-
-  modal.querySelector('.close-btn').addEventListener('click', () => {
-    modal.remove();
-    document.body.style.overflow = '';
-    history.pushState(null, "", window.location.pathname);
-  });
-
+function setupModalEvents(modal, id, type) {
+  modal.querySelector('.close-btn').addEventListener('click', () => closeModal(modal));
+  
   modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.remove();
-      document.body.style.overflow = '';
-      history.pushState(null, "", window.location.pathname);
+    if (e.target === modal) closeModal(modal);
+  });
+  
+  modal.querySelector('#server-select').addEventListener('change', (e) => {
+    const server = SERVERS.find(s => s.id === e.target.value);
+    if (server) {
+      const iframe = modal.querySelector('#player-frame');
+      iframe.src = server.url(type, id);
     }
   });
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  setupSearchRedirect();
-  loadGenres();
-  loadBannerSlider();
-  fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
-  fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
-  fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
-  initSwipers();
-
-    const menuToggle = document.getElementById('menu-toggle');
-  const menuPanel = document.getElementById('hamburger-menu');
-
-  if (menuToggle && menuPanel) {
-    menuToggle.addEventListener('click', () => {
-      menuPanel.style.display = menuPanel.style.display === 'block' ? 'none' : 'block';
-    });
-  }
-
-  // ✅ Auto open modal from URL
-  const p = new URLSearchParams(location.search);
-  if (p.get("id") && p.get("type")) {
-    openModal(p.get("id"), p.get("type"));
-  }
-
-  // ✅ Close modal on back button
-  window.addEventListener("popstate", () => {
-    const modal = document.querySelector('.modal');
-    if (modal) {
-      modal.remove();
-      document.body.style.overflow = '';
+function loadDefaultServer(modal, type, id) {
+  const iframe = modal.querySelector('#player-frame');
+  const shield = modal.querySelector('.iframe-shield');
+  
+  function tryServer(index) {
+    if (index >= SERVERS.length) {
+      shield.textContent = 'No working server found';
+      return;
     }
-  });
-});
+    
+    const server = SERVERS[index];
+    iframe.src = server.url(type, id);
+    shield.style.display = 'block';
+    
+    iframe.onload = () => {
+      shield.style.display = 'none';
+    };
+    
+    iframe.onerror = () => {
+      tryServer(index + 1);
+    };
+  }
+  
+  tryServer(0);
+}
+
+function closeModal(modal) {
+  modal.remove();
+  document.body.style.overflow = '';
+  history.back();
+}
+
+// Navigation
+function setupMenuToggle() {
+  const menuBtn = document.getElementById('menu-toggle');
+  const menu = document.getElementById('hamburger-menu');
+  
+  if (menuBtn && menu) {
+    menuBtn.addEventListener('click', () => {
+      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    });
+  }
+}
+
+// Theme Toggle
 function initThemeToggle() {
   const toggleBtn = document.getElementById('theme-toggle');
   if (!toggleBtn) return;
-
+  
   const currentTheme = localStorage.getItem('theme') || 'dark';
   document.body.classList.add(currentTheme);
-  toggleBtn.textContent = '🌓';
-
+  
   toggleBtn.addEventListener('click', () => {
     const isDark = document.body.classList.contains('dark');
     document.body.classList.toggle('dark', !isDark);
@@ -285,16 +261,33 @@ function initThemeToggle() {
   });
 }
 
-initThemeToggle();
-
-function toggleMenu() {
-  const panel = document.getElementById('hamburger-menu');
-  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-}
-
-function closeMenu() {
-  const panel = document.getElementById('hamburger-menu');
-  panel.style.display = 'none';
+// Initialization
+window.addEventListener('DOMContentLoaded', () => {
+  initThemeToggle();
+  setupMenuToggle();
+  
+  if (document.querySelector('.banner-slider')) {
+    loadBannerSlider();
   }
   
+  if (document.querySelector('.movie-list')) {
+    fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
+    fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
+    fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
+  }
   
+  // Handle modal from URL
+  const params = new URLSearchParams(location.search);
+  if (params.get('id') && params.get('type')) {
+    openModal(params.get('id'), params.get('type'));
+  }
+  
+  // Handle back button
+  window.addEventListener('popstate', (e) => {
+    if (e.state?.modal) {
+      const modal = document.querySelector('.modal');
+      if (modal) modal.remove();
+      document.body.style.overflow = '';
+    }
+  });
+});
