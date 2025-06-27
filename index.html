@@ -6,6 +6,28 @@
   <title>GomoTV</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <style>
+    /* Additional styles for movies section */
+    .movies-section {
+      display: none; /* Hidden by default */
+    }
+    .filter-options {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .filter-options select {
+      padding: 8px 12px;
+      border-radius: 4px;
+      background: #222;
+      color: white;
+      border: 1px solid #444;
+    }
+    body.light .filter-options select {
+      background: #ddd;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
   <header class="navbar">
@@ -20,20 +42,16 @@
 
   <nav class="hamburger-menu" id="hamburger-menu">
     <div class="menu-search-bar">
-    <input type="text" id="menu-search-input" placeholder="Search movies or shows...">
-    <button id="menu-search-button">🔍</button>
+      <input type="text" id="menu-search-input" placeholder="Search movies or shows...">
+      <button id="menu-search-button">🔍</button>
     </div>
     <ul>
       <li><a href="index.html">Home</a></li>
-      <li id="genre-toggle">
-        <a href="genre.html">Genre</a>
-      </li>
-      <li id="country-toggle">
-        <a href="country.html">Country</a>
-      </li>
-      <li><a href="#">Movies</a></li>
-      <li><a href="#">TV Shows</a></li>
-      <li><a href="#">Top IMDB</a></li>
+      <li><a href="genre.html">Genre</a></li>
+      <li><a href="country.html">Country</a></li>
+      <li><a href="#" id="movies-link">Movies</a></li>
+      <li><a href="#" id="tvshows-link">TV Shows</a></li>
+      <li><a href="#" id="topimdb-link">Top IMDB</a></li>
     </ul>
   </nav>
 
@@ -51,6 +69,7 @@
     </div>
   </section>
 
+  <!-- Existing sections (hidden when movies section is shown) -->
   <section class="media-section">
     <h2>Trending</h2>
     <div class="search-results-grid homepage-grid movie-list"></div>
@@ -66,11 +85,163 @@
     <div class="search-results-grid homepage-grid tv-list"></div>
   </section>
 
+  <!-- New Movies Section (hidden by default) -->
+  <section class="media-section movies-section">
+    <h2>All Movies</h2>
+    <div class="filter-options">
+      <select id="genre-filter">
+        <option value="">All Genres</option>
+        <option value="28">Action</option>
+        <option value="35">Comedy</option>
+        <option value="18">Drama</option>
+        <option value="27">Horror</option>
+        <option value="10749">Romance</option>
+      </select>
+      <select id="year-filter">
+        <option value="">All Years</option>
+        <option value="2023">2023</option>
+        <option value="2022">2022</option>
+        <option value="2021">2021</option>
+      </select>
+    </div>
+    <div class="search-results-grid movies-grid"></div>
+    <div class="pagination" id="movies-pagination"></div>
+  </section>
+
   <div id="modal-container"></div>
 
   <footer class="footer">© 2025 - GomoTV. All content is property of its respective owners.</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  <script src="main.js"></script>
+  <script src="shared-modal.js"></script>
+  <script>
+    // Configuration
+    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
+
+    // Movies Section State
+    let currentMoviesPage = 1;
+
+    // Hamburger Menu Movies Link
+    document.getElementById('movies-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      // Hide all other sections
+      document.querySelectorAll('.media-section:not(.movies-section)').forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Show movies section
+      document.querySelector('.movies-section').style.display = 'block';
+      
+      // Load movies
+      loadMovies();
+      
+      // Close hamburger menu
+      document.getElementById('hamburger-menu').style.display = 'none';
+    });
+
+    // Movies Loading Function
+    async function loadMovies() {
+      const genre = document.getElementById('genre-filter').value;
+      const year = document.getElementById('year-filter').value;
+      
+      let url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${currentMoviesPage}`;
+      
+      if (genre) url += `&with_genres=${genre}`;
+      if (year) url += `&primary_release_year=${year}`;
+      
+      try {
+        const container = document.querySelector('.movies-grid');
+        container.innerHTML = '<div class="loading"></div>';
+        
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        displayMovies(data.results);
+        setupMoviesPagination(data.total_pages);
+      } catch (error) {
+        console.error('Error loading movies:', error);
+        document.querySelector('.movies-grid').innerHTML = '<p class="error-message">Failed to load movies</p>';
+      }
+    }
+
+    function displayMovies(movies) {
+      const container = document.querySelector('.movies-grid');
+      container.innerHTML = movies.map(movie => {
+        return `
+          <div class="poster-wrapper">
+            <img src="${movie.poster_path ? IMG_BASE + movie.poster_path : 'no-poster.jpg'}" 
+                 alt="${movie.title}" 
+                 data-id="${movie.id}" 
+                 data-type="movie"
+                 loading="lazy">
+            <div class="poster-label">${movie.title}</div>
+            <div class="poster-meta">
+              ⭐ ${movie.vote_average?.toFixed(1) || 'N/A'} | ${movie.release_date?.substring(0,4) || ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Set up click events
+      document.querySelectorAll('.movies-grid .poster-wrapper').forEach(poster => {
+        poster.addEventListener('click', () => {
+          const img = poster.querySelector('img');
+          openModal(img.dataset.id, img.dataset.type);
+        });
+      });
+    }
+
+    function setupMoviesPagination(totalPages) {
+      const container = document.getElementById('movies-pagination');
+      if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+
+      container.innerHTML = `
+        <button ${currentMoviesPage === 1 ? 'disabled' : ''} onclick="changeMoviesPage(${currentMoviesPage - 1})">‹ Previous</button>
+        <span>Page ${currentMoviesPage} of ${totalPages}</span>
+        <button ${currentMoviesPage >= totalPages ? 'disabled' : ''} onclick="changeMoviesPage(${currentMoviesPage + 1})">Next ›</button>
+      `;
+    }
+
+    // Make function available globally
+    window.changeMoviesPage = (page) => {
+      currentMoviesPage = page;
+      loadMovies();
+      window.scrollTo({ top: document.querySelector('.movies-section').offsetTop, behavior: 'smooth' });
+    };
+
+    // Filter event listeners
+    document.getElementById('genre-filter').addEventListener('change', () => {
+      currentMoviesPage = 1;
+      loadMovies();
+    });
+
+    document.getElementById('year-filter').addEventListener('change', () => {
+      currentMoviesPage = 1;
+      loadMovies();
+    });
+
+    // Rest of your existing index.html JavaScript code
+    // (Banner slider, other sections loading, etc.)
+    // ... [Keep all your existing JavaScript code] ...
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      // Your existing initialization code
+      // ... [Keep your existing initialization] ...
+
+      // Load initial movies if coming back from another page
+      if (window.location.hash === '#movies') {
+        document.querySelector('.movies-section').style.display = 'block';
+        document.querySelectorAll('.media-section:not(.movies-section)').forEach(s => s.style.display = 'none');
+        loadMovies();
+      }
+    });
+  </script>
 </body>
 </html>
