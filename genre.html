@@ -83,6 +83,18 @@
         `;
       }).join('');
 
+        // Auto-add disclaimer
+  if (!document.querySelector('.disclaimer')) {
+    const disclaimer = document.createElement('div');
+    disclaimer.className = 'disclaimer';
+    disclaimer.innerHTML = `
+      <p>Disclaimer: This site links to third-party content. We do not host or own any media.</p>
+      <p>For official streaming, check <a href="https://www.justwatch.com" target="_blank">JustWatch</a>.</p>
+    `;
+    container.parentNode.insertBefore(disclaimer, document.getElementById('pagination'));
+   }
+ }
+    
       document.querySelectorAll('.poster-wrapper img').forEach(img => {
         img.addEventListener('click', () => {
           openModal(img.dataset.id, img.dataset.type);
