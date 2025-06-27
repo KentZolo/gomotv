@@ -1,4 +1,4 @@
-// shared-modal.js
+// Shared Modal Player for GomoTV
 const SERVERS = [
   { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
   { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
@@ -9,13 +9,13 @@ async function openModal(id, type) {
   try {
     // Get current URL parameters
     const params = new URLSearchParams(window.location.search);
-    const currentQuery = params.get('q') || '';
+    const currentQuery = params.get('q');
     const currentPage = params.get('page') || '1';
-    const genreName = params.get('name') || '';
-    const genreId = params.get('id') || '';
-    const countryCode = params.get('country') || '';
+    const genreName = params.get('name');
+    const genreId = params.get('id');
+    const countryCode = params.get('country');
     
-    // Update URL with modal parameters
+    // Build new URL with modal parameters
     let newUrl = window.location.pathname + '?';
     if (currentQuery) newUrl += `q=${encodeURIComponent(currentQuery)}&`;
     if (currentPage !== '1') newUrl += `page=${currentPage}&`;
