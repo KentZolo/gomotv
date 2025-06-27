@@ -725,3 +725,33 @@ body.light ::-webkit-scrollbar-track {
 body.light ::-webkit-scrollbar-thumb {
   background: #e50914;
   }
+/* Add to style.css */
+.menu-search-bar {
+  display: flex;
+  padding: 10px;
+  background: #222;
+  margin-bottom: 10px;
+}
+
+#menu-search-input {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  background: #fff;
+  color: #000;
+}
+
+#menu-search-button {
+  padding: 0 12px;
+  background: #e50914;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+
+/* Light theme adjustment */
+body.light .menu-search-bar {
+  background: #ddd;
+}
