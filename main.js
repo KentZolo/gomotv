@@ -234,6 +234,7 @@ function closeModal(modal) {
 }
 
 // Navigation
+// In setupMenuToggle() function
 function setupMenuToggle() {
   const menuBtn = document.getElementById('menu-toggle');
   const menu = document.getElementById('hamburger-menu');
@@ -241,6 +242,11 @@ function setupMenuToggle() {
   if (menuBtn && menu) {
     menuBtn.addEventListener('click', () => {
       menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+      
+      // Focus on search input when menu opens
+      if (menu.style.display === 'block' && menuSearchInput) {
+        menuSearchInput.focus();
+      }
     });
   }
 }
@@ -288,6 +294,27 @@ window.addEventListener('DOMContentLoaded', () => {
       const modal = document.querySelector('.modal');
       if (modal) modal.remove();
       document.body.style.overflow = '';
+    }
+  
+  // Hamburger menu search functionality
+  const menuSearchInput = document.getElementById('menu-search-input');
+  const menuSearchButton = document.getElementById('menu-search-button');
+  
+  if (menuSearchButton && menuSearchInput) {
+    menuSearchButton.addEventListener('click', performMenuSearch);
+    menuSearchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') performMenuSearch();
+    });
+  }
+  
+  function performMenuSearch() {
+    const searchTerm = menuSearchInput.value.trim();
+    if (searchTerm.length >= 2) {
+      // Close menu after search
+      document.getElementById('hamburger-menu').style.display = 'none';
+      window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+    } else {
+      alert('Please enter at least 2 characters');
     }
   });
 });
