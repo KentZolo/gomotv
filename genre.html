@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Genre Results - GomoTV</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="shared-modal.js"></script>
 </head>
 <body>
   <header class="navbar">
@@ -51,10 +52,6 @@
         document.getElementById("genre-title").textContent = "🎭 " + genreName;
         fetchGenreMovies(genreId, currentPage);
       }
-
-      const id = params.get('id');
-      const type = params.get('type');
-      if (id && type) openModalPlayer(id, type);
     });
 
     function getImageUrl(path) {
@@ -88,10 +85,7 @@
 
       document.querySelectorAll('.poster-wrapper img').forEach(img => {
         img.addEventListener('click', () => {
-          const id = img.dataset.id;
-          const type = img.dataset.type;
-          history.pushState(null, "", `?name=${encodeURIComponent(genreName)}&id=${genreId}&page=${currentPage}&movieId=${id}&type=${type}`);
-          openModalPlayer(id, type);
+          openModal(img.dataset.id, img.dataset.type);
         });
       });
     }
@@ -121,33 +115,6 @@
 
     function goToPage(page) {
       location.href = `genre.html?name=${encodeURIComponent(genreName)}&id=${genreId}&page=${page}`;
-    }
-
-    function openModalPlayer(id, type) {
-      fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}`)
-        .then(res => res.json())
-        .then(data => {
-          const title = data.title || data.name;
-          const modal = document.createElement('div');
-          modal.className = 'modal';
-          document.body.style.overflow = 'hidden';
-
-          modal.innerHTML = `
-            <div class="modal-content">
-              <span class="close-btn">×</span>
-              <h3>${title}</h3>
-              <iframe id="player-frame" src="https://vidsrc.to/embed/movie/${id}" allowfullscreen></iframe>
-            </div>
-          `;
-
-          document.getElementById('modal-container').appendChild(modal);
-
-          modal.querySelector('.close-btn').addEventListener('click', () => {
-            modal.remove();
-            document.body.style.overflow = '';
-            history.pushState(null, "", `?name=${encodeURIComponent(genreName)}&id=${genreId}&page=${currentPage}`);
-          });
-        });
     }
 
     function initThemeToggle() {
