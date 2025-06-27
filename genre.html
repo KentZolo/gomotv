@@ -130,6 +130,18 @@
         localStorage.setItem('theme', isDark ? 'light' : 'dark');
       });
     }
+
+    <script type="module">
+  import { addGlobalDisclaimer, disclaimerStyle } from './shared-disclaimer.js';
+  
+  // Add CSS
+  const style = document.createElement('style');
+  style.textContent = disclaimerStyle;
+  document.head.appendChild(style);
+
+  // Add disclaimer after results load
+  document.addEventListener('DOMContentLoaded', addGlobalDisclaimer);
+</script>
   </script>
 </body>
 </html>
