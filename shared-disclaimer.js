@@ -1,44 +1,40 @@
 // shared-disclaimer.js
-export function addGlobalDisclaimer() {
+export function addPaginationDisclaimer() {
   const disclaimerHTML = `
-    <div class="global-disclaimer">
-      <p>⚠️ Disclaimer: GomoTV is a search engine only. We do not host or upload any videos.</p>
-      <p>All content is property of their respective owners. <a href="https://www.justwatch.com" target="_blank">Watch legally</a>.</p>
+    <div class="pagination-disclaimer">
+      <p>⚠️ Disclaimer: GomoTV does not host any videos. All content is provided by third-party servers.</p>
+      <p>Support creators via <a href="https://www.justwatch.com" target="_blank">official platforms</a>.</p>
     </div>
   `;
 
-  // Main pages where disclaimer should appear
-  const pages = ['genre', 'search', 'country'];
-  const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+  // Check if disclaimer already exists
+  if (document.querySelector('.pagination-disclaimer')) return;
 
-  if (pages.includes(currentPage)) {
-    const container = document.querySelector('.search-results-grid') || 
-                     document.getElementById('results-grid');
-    
-    if (container && !document.querySelector('.global-disclaimer')) {
-      container.insertAdjacentHTML('afterend', disclaimerHTML);
-    }
+  // Insert after pagination
+  const pagination = document.querySelector('.pagination');
+  if (pagination) {
+    pagination.insertAdjacentHTML('afterend', disclaimerHTML);
   }
 }
 
-// CSS for the disclaimer
+// CSS for pagination disclaimer
 export const disclaimerStyle = `
-  .global-disclaimer {
+  .pagination-disclaimer {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 20px;
-    margin: 30px 0;
-    font-size: 0.8rem;
+    padding: 25px 20px;
+    margin-top: 20px;
+    font-size: 0.75rem;
     color: #aaa;
+    line-height: 1.6;
     border-top: 1px solid #333;
-    border-bottom: 1px solid #333;
   }
-  .global-disclaimer a {
+  .pagination-disclaimer a {
     color: #e50914;
     text-decoration: none;
   }
-  body.light .global-disclaimer {
+  body.light .pagination-disclaimer {
     color: #666;
-    border-color: #ddd;
+    border-top: 1px solid #ddd;
   }
 `;
