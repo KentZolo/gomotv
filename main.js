@@ -2,7 +2,7 @@ const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
-// Core Functions (unchanged)
+// Core Functions
 function getImageUrl(path, isBackdrop = false) {
   if (!path) {
     return isBackdrop
@@ -12,7 +12,7 @@ function getImageUrl(path, isBackdrop = false) {
   return `${IMG_BASE}${path}`;
 }
 
-// Banner Slider (unchanged)
+// Banner Slider
 let bannerIndex = 0;
 let bannerItems = [];
 
@@ -63,7 +63,7 @@ function nextSlide() {
   showBannerSlide(bannerIndex);
 }
 
-// Content Loading (unchanged)
+// Content Loading
 async function fetchAndDisplay(endpoint, containerSelector, type) {
   try {
     const container = document.querySelector(containerSelector);
@@ -127,7 +127,7 @@ function setupPosterClickEvents(containerSelector) {
   });
 }
 
-// Modal Player (unchanged)
+// Modal Player
 const SERVERS = [
   { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
   { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
@@ -136,6 +136,12 @@ const SERVERS = [
 
 async function openModal(id, type) {
   try {
+    // Close any existing all-movies modal first
+    const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
+    if (existingAllMoviesModal) {
+      existingAllMoviesModal.style.display = 'none';
+    }
+
     history.pushState({ modal: true }, "", `?id=${id}&type=${type}`);
 
     const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
@@ -150,6 +156,12 @@ async function openModal(id, type) {
   } catch (err) {
     console.error('Modal error:', err);
     alert('Failed to load movie details');
+    
+    // Re-show all-movies modal if it exists
+    const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
+    if (existingAllMoviesModal) {
+      existingAllMoviesModal.style.display = 'flex';
+    }
   }
 }
 
@@ -158,23 +170,32 @@ function createModal(data, type, id) {
   const year = (data.release_date || data.first_air_date || '').slice(0, 4);
   const rating = data.vote_average?.toFixed(1) || 'N/A';
   const overview = data.overview || 'No description available.';
-  const genres = data.genres?.map(g => `<span>${g.name}</span>`).join('');
+  const genres = data.genres?.map(g => g.name).join(', ');
 
   const modal = document.createElement('div');
   modal.className = 'modal';
   modal.innerHTML = `
     <div class="modal-content">
       <span class="close-btn">×</span>
-      <h3>${title} (${year})</h3>
-      <p>⭐ ${rating} • ${type.toUpperCase()}</p>
-      <div class="genres">${genres}</div>
-      <p>${overview}</p>
-      <label>Server:</label>
-      <select id="server-select">
-        ${SERVERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
-      </select>
-      <div class="iframe-shield">Loading player...</div>
-      <iframe id="player-frame" allowfullscreen></iframe>
+      <div class="modal-header">
+        <h2>${title} (${year})</h2>
+        <div class="meta-info">
+          <span>⭐ ${rating}</span>
+          <span>${type.toUpperCase()}</span>
+          ${genres ? `<span>${genres}</span>` : ''}
+        </div>
+      </div>
+      <div class="modal-body">
+        <h3>Overview</h3>
+        <p>${overview}</p>
+        <select class="server-selector" id="server-select">
+          ${SERVERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        </select>
+        <div class="player-container">
+          <div class="loading-server">Loading player...</div>
+          <iframe id="player-frame" allowfullscreen></iframe>
+        </div>
+      </div>
     </div>
   `;
 
@@ -199,20 +220,20 @@ function setupModalEvents(modal, id, type) {
 
 function loadDefaultServer(modal, type, id) {
   const iframe = modal.querySelector('#player-frame');
-  const shield = modal.querySelector('.iframe-shield');
+  const loading = modal.querySelector('.loading-server');
 
   function tryServer(index) {
     if (index >= SERVERS.length) {
-      shield.textContent = 'No working server found';
+      loading.textContent = 'No working server found';
       return;
     }
 
     const server = SERVERS[index];
     iframe.src = server.url(type, id);
-    shield.style.display = 'block';
+    loading.style.display = 'flex';
 
     iframe.onload = () => {
-      shield.style.display = 'none';
+      loading.style.display = 'none';
     };
 
     iframe.onerror = () => {
@@ -227,9 +248,15 @@ function closeModal(modal) {
   modal.remove();
   document.body.style.overflow = '';
   history.back();
+  
+  // Re-show all-movies modal if it exists
+  const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
+  if (existingAllMoviesModal) {
+    existingAllMoviesModal.style.display = 'flex';
+  }
 }
 
-// Hamburger menu toggle + focus input (unchanged)
+// Hamburger Menu Toggle
 function setupMenuToggle() {
   const menuBtn = document.getElementById('menu-toggle');
   const menu = document.getElementById('hamburger-menu');
@@ -246,7 +273,7 @@ function setupMenuToggle() {
   });
 }
 
-// Hamburger menu search functionality (unchanged)
+// Hamburger Menu Search
 function setupMenuSearch() {
   const menuSearchInput = document.getElementById('menu-search-input');
   const menuSearchButton = document.getElementById('menu-search-button');
@@ -269,7 +296,7 @@ function setupMenuSearch() {
   });
 }
 
-// Theme Toggle (unchanged)
+// Theme Toggle
 function initThemeToggle() {
   const toggleBtn = document.getElementById('theme-toggle');
   if (!toggleBtn) return;
@@ -285,7 +312,7 @@ function initThemeToggle() {
   });
 }
 
-// NEW: All Movies Functionality
+// All Movies Functionality
 async function fetchAllMovies(page = 1) {
   try {
     const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`);
@@ -303,6 +330,12 @@ function setupAllMoviesLink() {
 
   allMoviesLink.addEventListener('click', async (e) => {
     e.preventDefault();
+    
+    // Close any existing modal first
+    const existingModal = document.querySelector('.modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
     
     // Create modal container
     const container = document.createElement('div');
@@ -399,12 +432,12 @@ function renderMoviesPagination(container, totalPages, currentPage) {
   });
 }
 
-// Initialization (updated with new function)
+// Initialize Everything
 window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   setupMenuToggle();
   setupMenuSearch();
-  setupAllMoviesLink(); // Add this line
+  setupAllMoviesLink();
 
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
