@@ -9,45 +9,19 @@
 <body>
   <header class="navbar">
     <button onclick="history.back()" class="menu-toggle">←</button>
-    <h1 class="logo" id="country-title">Country</h1>
+    <h1 class="logo" id="country-title">Countries</h1>
     <button id="theme-toggle" class="theme-toggle">🌓</button>
   </header>
 
-  <!-- Country list -->
-  <section style="padding: 20px;">
+  <section style="padding: 20px; display: none;" id="country-list-section">
     <div class="country-list">
       <h2>🌍 Select a Country:</h2>
       <div class="country-grid">
-        <!-- Add more countries here -->
         <a href="country.html?name=Philippines&country=PH">Philippines</a>
         <a href="country.html?name=Japan&country=JP">Japan</a>
         <a href="country.html?name=United States&country=US">United States</a>
         <a href="country.html?name=South Korea&country=KR">South Korea</a>
-        <a href="country.html?name=India&country=IN">India</a>
-        <a href="country.html?name=Argentina&country=AR">Argentina</a>
-        <a href="country.html?name=Australia&country=AU">Australia</a>
-        <a href="country.html?name=Austria&country=AT">Austria</a>
-        <a href="country.html?name=Belgium&country=BE">Belgium</a>
-        <a href="country.html?name=Brazil&country=BR">Brazil</a>
-        <a href="country.html?name=Canada&country=CA">Canada</a>
-        <a href="country.html?name=China&country=CN">China</a>
-        <a href="country.html?name=Czech Republic&country=CZ">Czech Republic</a>
-        <a href="country.html?name=Denmark&country=DK">Denmark</a>
-        <a href="country.html?name=Finland&country=FI">Finland</a>
         <a href="country.html?name=France&country=FR">France</a>
-        <a href="country.html?name=Germany&country=DE">Germany</a>
-        <a href="country.html?name=Hong Kong&country=HK">Hong Kong</a>
-        <a href="country.html?name=Hungary&country=HU">Hungary</a>
-        <a href="country.html?name=Ireland&country=IE">Ireland</a>
-        <a href="country.html?name=Israel&country=IL">Israel</a>
-        <a href="country.html?name=Italy&country=IT">Italy</a>
-        <a href="country.html?name=Luxembourg&country=LU">Luxembourg</a>
-        <a href="country.html?name=Mexico&country=MX">Mexico</a>
-        <a href="country.html?name=Netherlands&country=NL">Netherlands</a>
-        <a href="country.html?name=New Zealand&country=NZ">New Zealand</a>
-        <a href="country.html?name=Norway&country=NO">Norway</a>
-        <a href="country.html?name=Poland&country=PL">Poland</a>
-        <a href="country.html?name=Romania&country=RO">Romania</a>
       </div>
     </div>
   </section>
@@ -69,22 +43,18 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       initThemeToggle();
-      if (countryCode && countryName) {
-        document.getElementById("country-title").textContent = "🌍 " + countryName;
-        fetchCountryMovies(countryCode, currentPage);
+      
+      if (!countryCode || !countryName) {
+        document.getElementById('country-list-section').style.display = 'block';
+        return;
       }
+      
+      document.getElementById("country-title").textContent = "🌍 " + countryName;
+      fetchCountryMovies(countryCode, currentPage);
 
       const id = params.get('id');
       const type = params.get('type');
       if (id && type) openModalPlayer(id, type);
-
-      window.addEventListener('popstate', () => {
-        const modal = document.querySelector('.modal');
-        if (modal) {
-          modal.remove();
-          document.body.style.overflow = '';
-        }
-      });
     });
 
     function getImageUrl(path) {
@@ -120,7 +90,7 @@
         img.addEventListener('click', () => {
           const id = img.dataset.id;
           const type = img.dataset.type;
-          history.pushState(null, "", `?country=${countryCode}&name=${countryName}&page=${currentPage}&id=${id}&type=${type}`);
+          history.pushState(null, "", `?country=${countryCode}&name=${encodeURIComponent(countryName)}&page=${currentPage}&id=${id}&type=${type}`);
           openModalPlayer(id, type);
         });
       });
@@ -175,15 +145,7 @@
           modal.querySelector('.close-btn').addEventListener('click', () => {
             modal.remove();
             document.body.style.overflow = '';
-            history.pushState(null, "", `?country=${countryCode}&name=${countryName}&page=${currentPage}`);
-          });
-
-          modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-              modal.remove();
-              document.body.style.overflow = '';
-              history.pushState(null, "", `?country=${countryCode}&name=${countryName}&page=${currentPage}`);
-            }
+            history.pushState(null, "", `?country=${countryCode}&name=${encodeURIComponent(countryName)}&page=${currentPage}`);
           });
         });
     }
