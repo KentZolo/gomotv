@@ -2,55 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Genre Results - GomoTV</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Navbar -->
   <header class="navbar">
-    <div class="menu-toggle" id="menu-toggle">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-    <h1 class="logo" id="genre-title">Genre</h1>
+    <button onclick="history.back()" class="menu-toggle">←</button>
+    <h1 class="logo" id="genre-title">Genres</h1>
     <button id="theme-toggle" class="theme-toggle">🌓</button>
   </header>
 
-  <!-- Hamburger Menu -->
-  <nav class="hamburger-menu" id="hamburger-menu">
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li>
-        <li id="genre-toggle">
-        <a href="#">Genre</a>
-        <ul class="submenu">
-          <li><a href="genre.html?genre=Action&id=28">Action</a></li>
-          <li><a href="genre.html?genre=Animation&id=16">Animation</a></li>
-          <li><a href="genre.html?genre=Horror&id=27">Horror</a></li>
-          <li><a href="genre.html?genre=Comedy&id=35">Comedy</a></li>
-          <li><a href="genre.html?genre=Drama&id=18">Drama</a></li>
-        </ul>
-      </li>
-       <li id="country-toggle">
-        <a href="#">Country</a>
-        <ul class="submenu">
-         <li><a href="country.html?country=US&name=United States">🇺🇸 United States</a></li>
-         <li><a href="country.html?country=JP&name=Japan">🇯🇵 Japan</a></li>
-         <li><a href="country.html?country=KR&name=South Korea">🇰🇷 South Korea</a></li>
-         <li><a href="country.html?country=PH&name=Philippines">🇵🇭 Philippines</a></li>
-         <li><a href="country.html?country=FR&name=France">🇫🇷 France</a></li>
-       </ul>
-       </li>
-      <li><a href="#">Movies</a></li>
-      <li><a href="#">TV Shows</a></li>
-      <li><a href="#">Top IMDB</a></li>
-      <li><a href="#">Android App</a></li>
-    </ul>
-  </nav>
+  <section style="padding: 20px;">
+    <div class="genre-list">
+      <h2>🎭 Select a Genre:</h2>
+      <div class="genre-grid">
+        <a href="genre.html?name=Action&id=28">Action</a>
+        <a href="genre.html?name=Animation&id=16">Animation</a>
+        <a href="genre.html?name=Comedy&id=35">Comedy</a>
+        <a href="genre.html?name=Drama&id=18">Drama</a>
+        <a href="genre.html?name=Fantasy&id=14">Fantasy</a>
+        <a href="genre.html?name=Horror&id=27">Horror</a>
+        <a href="genre.html?name=Romance&id=10749">Romance</a>
+        <a href="genre.html?name=Sci-Fi&id=878">Sci-Fi</a>
+        <a href="genre.html?name=Thriller&id=53">Thriller</a>
+      </div>
+    </div>
+  </section>
 
-  <!-- Results -->
   <main>
     <div id="pagination-top" class="pagination"></div>
     <div class="search-results-grid" id="results-grid"></div>
@@ -59,83 +38,67 @@
 
   <div id="modal-container"></div>
 
-  <!-- Script -->
   <script>
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
-    const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
-    const FALLBACK_IMAGE = 'https://via.placeholder.com/500x750?text=No+Poster';
-
     const params = new URLSearchParams(location.search);
     const genreId = params.get('id');
-    const genreName = params.get('genre');
+    const genreName = params.get('name');
     let currentPage = parseInt(params.get('page')) || 1;
 
-    const SERVERS = [
-      { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` },
-      { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
-      { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` }
-    ];
+    document.addEventListener('DOMContentLoaded', () => {
+      initThemeToggle();
+      if (genreId && genreName) {
+        document.getElementById("genre-title").textContent = "🎭 " + genreName;
+        fetchGenreMovies(genreId, currentPage);
+      }
+
+      const id = params.get('id');
+      const type = params.get('type');
+      if (id && type) openModalPlayer(id, type);
+    });
 
     function getImageUrl(path) {
-      return path ? IMG_BASE + path : FALLBACK_IMAGE;
+      return path
+        ? `https://image.tmdb.org/t/p/w500${path}`
+        : 'https://via.placeholder.com/500x750?text=No+Poster';
     }
 
-    async function fetchGenreMovies(genreId, page = 1) {
-      const container = document.getElementById('results-grid');
-      const title = document.getElementById('genre-title');
-      title.textContent = `🎬 ${genreName}`;
+    async function fetchGenreMovies(id, page = 1) {
+      const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${id}&page=${page}`);
+      const data = await res.json();
+      renderResults(data.results);
+      renderPagination(data.total_pages);
+    }
 
-      try {
-        const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}`);
-        const data = await res.json();
+    function renderResults(items) {
+      const container = document.getElementById("results-grid");
+      container.innerHTML = items.map(item => {
+        const title = item.title || item.name;
+        const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+        const img = getImageUrl(item.poster_path);
 
-        container.innerHTML = data.results.map(item => {
-          const title = item.title || item.name;
-          const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-          const imageUrl = getImageUrl(item.poster_path || item.backdrop_path);
+        return `
+          <div class="poster-wrapper">
+            <img src="${img}" alt="${title}" data-id="${item.id}" data-type="movie">
+            <div class="poster-label">${title}</div>
+            <div class="poster-meta">📅 ${year}</div>
+          </div>
+        `;
+      }).join('');
 
-          // Auto badge
-          const releaseDate = item.release_date || '';
-          let quality = 'HD';
-          if (releaseDate) {
-            const now = new Date();
-            const released = new Date(releaseDate);
-            const diff = (now - released) / (1000 * 60 * 60 * 24);
-            if (diff < 7) quality = 'CAM';
-            else if (diff < 21) quality = 'TS';
-          }
-
-          return `
-            <div class="poster-wrapper">
-              <div class="poster-badge">${quality}</div>
-              <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="movie" data-title="${title}">
-              <div class="poster-label">${title}</div>
-              <div class="poster-meta">🎬 ${year}</div>
-            </div>
-          `;
-        }).join('');
-
-        document.querySelectorAll('.poster-wrapper img').forEach(img => {
-          img.addEventListener('click', () => {
-            const id = img.dataset.id;
-            const type = img.dataset.type;
-            const title = img.dataset.title;
-            history.pushState(null, "", `?genre=${encodeURIComponent(genreName)}&id=${genreId}&page=${currentPage}&id=${id}&type=${type}`);
-            openModalPlayer(id, type);
-          });
+      document.querySelectorAll('.poster-wrapper img').forEach(img => {
+        img.addEventListener('click', () => {
+          const id = img.dataset.id;
+          const type = img.dataset.type;
+          history.pushState(null, "", `?name=${encodeURIComponent(genreName)}&id=${genreId}&page=${currentPage}&movieId=${id}&type=${type}`);
+          openModalPlayer(id, type);
         });
-
-        renderPagination(data.total_pages);
-      } catch (err) {
-        container.innerHTML = '<p class="no-results">❌ Failed to load results.</p>';
-        console.error(err);
-      }
+      });
     }
 
     function renderPagination(totalPages) {
       const pagTop = document.getElementById('pagination-top');
       const pagBottom = document.getElementById('pagination');
-
       if (totalPages <= 1) {
         pagTop.innerHTML = '';
         pagBottom.innerHTML = '';
@@ -143,27 +106,21 @@
       }
 
       let buttons = '';
-      const maxPage = Math.min(currentPage + 2, totalPages);
       const minPage = Math.max(1, currentPage - 2);
+      const maxPage = Math.min(totalPages, currentPage + 2);
 
-      if (currentPage > 1) {
-        buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
-      }
-
+      if (currentPage > 1) buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
       for (let i = minPage; i <= maxPage; i++) {
         buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
       }
-
-      if (currentPage < totalPages) {
-        buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
-      }
+      if (currentPage < totalPages) buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
 
       pagTop.innerHTML = buttons;
       pagBottom.innerHTML = buttons;
     }
 
     function goToPage(page) {
-      location.href = `genre.html?genre=${encodeURIComponent(genreName)}&id=${genreId}&page=${page}`;
+      location.href = `genre.html?name=${encodeURIComponent(genreName)}&id=${genreId}&page=${page}`;
     }
 
     function openModalPlayer(id, type) {
@@ -179,60 +136,16 @@
             <div class="modal-content">
               <span class="close-btn">×</span>
               <h3>${title}</h3>
-              <label>Server:</label>
-              <select id="server-select"></select>
-              <div class="iframe-shield">Loading player...</div>
-              <iframe id="player-frame" allowfullscreen></iframe>
+              <iframe id="player-frame" src="https://vidsrc.to/embed/movie/${id}" allowfullscreen></iframe>
             </div>
           `;
 
           document.getElementById('modal-container').appendChild(modal);
-          const select = modal.querySelector('#server-select');
-
-          SERVERS.forEach(server => {
-            const option = document.createElement('option');
-            option.value = server.id;
-            option.textContent = server.name;
-            select.appendChild(option);
-          });
-
-          function loadServer(index) {
-            const server = SERVERS[index];
-            select.value = server.id;
-            const iframe = modal.querySelector('#player-frame');
-            iframe.src = server.url(type, id);
-
-            const shield = modal.querySelector('.iframe-shield');
-            shield.style.display = 'block';
-            setTimeout(() => (shield.style.display = 'none'), 3000);
-
-            iframe.onerror = () => {
-              if (index + 1 < SERVERS.length) loadServer(index + 1);
-              else shield.textContent = 'No working server found.';
-            };
-          }
-
-          loadServer(0);
-
-          select.addEventListener('change', () => {
-            const selected = SERVERS.find(s => s.id === select.value);
-            if (selected) {
-              modal.querySelector('#player-frame').src = selected.url(type, id);
-            }
-          });
 
           modal.querySelector('.close-btn').addEventListener('click', () => {
             modal.remove();
             document.body.style.overflow = '';
-            history.pushState(null, "", `?genre=${encodeURIComponent(genreName)}&id=${genreId}&page=${currentPage}`);
-          });
-
-          modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-              modal.remove();
-              document.body.style.overflow = '';
-              history.pushState(null, "", `?genre=${encodeURIComponent(genreName)}&id=${genreId}&page=${currentPage}`);
-            }
+            history.pushState(null, "", `?name=${encodeURIComponent(genreName)}&id=${genreId}&page=${currentPage}`);
           });
         });
     }
@@ -240,11 +153,9 @@
     function initThemeToggle() {
       const toggleBtn = document.getElementById('theme-toggle');
       if (!toggleBtn) return;
-
       const currentTheme = localStorage.getItem('theme') || 'dark';
       document.body.classList.add(currentTheme);
       toggleBtn.textContent = '🌓';
-
       toggleBtn.addEventListener('click', () => {
         const isDark = document.body.classList.contains('dark');
         document.body.classList.toggle('dark', !isDark);
@@ -252,50 +163,6 @@
         localStorage.setItem('theme', isDark ? 'light' : 'dark');
       });
     }
-
-    function toggleMenu() {
-      const panel = document.getElementById('hamburger-menu');
-      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function closeMenu() {
-      const panel = document.getElementById('hamburger-menu');
-      panel.style.display = 'none';
-    }
-
-    document.getElementById('menu-toggle')?.addEventListener('click', toggleMenu);
-
-    window.addEventListener("popstate", () => {
-      const modal = document.querySelector('.modal');
-      if (modal) {
-        modal.remove();
-        document.body.style.overflow = '';
-      }
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-      if (!genreId || !genreName) {
-        document.getElementById("results-grid").innerHTML =
-          `<p class="no-results">❌ Invalid genre. Please choose from the <a href='genres.html'>genre list</a>.</p>`;
-        return;
-      }
-
-      const genreToggle = document.getElementById('genre-toggle');
-if (genreToggle) {
-  const toggleLink = genreToggle.querySelector('a');
-  const submenu = genreToggle.querySelector('.submenu');
-
-  if (toggleLink && submenu) {
-    toggleLink.addEventListener('click', (e) => {
-      e.preventDefault(); // ✅ Prevent link from navigating
-      submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-    });
-  }
-}
-
-      fetchGenreMovies(genreId, currentPage);
-      initThemeToggle();
-    });
   </script>
 </body>
 </html>
