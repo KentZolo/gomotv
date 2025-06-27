@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Search Results - GomoTV</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="shared-modal.js"></script>
   <style>
     /* Additional styles specific to search page */
     .search-prompt {
@@ -153,13 +154,6 @@
       
       // Set up hamburger menu toggle
       setupMenuToggle();
-      
-      // Check if we need to open a modal from URL
-      const id = params.get("id");
-      const type = params.get("type");
-      if (id && type) {
-        openModal(id, type);
-      }
     });
 
     // Search functionality
@@ -302,18 +296,7 @@
       document.querySelectorAll('.poster-wrapper').forEach(poster => {
         poster.addEventListener('click', function() {
           const img = poster.querySelector('img');
-          const id = img.dataset.id;
-          const type = img.dataset.type;
-          
-          // Update URL without reloading
-          history.pushState(
-            null, 
-            "", 
-            `?q=${encodeURIComponent(query)}&page=${currentPage}&id=${id}&type=${type}`
-          );
-          
-          // Open modal
-          openModal(id, type);
+          openModal(img.dataset.id, img.dataset.type);
         });
       });
     }
@@ -374,119 +357,6 @@
     
     function goToPage(page) {
       window.location.href = `search.html?q=${encodeURIComponent(query)}&page=${page}`;
-    }
-
-    // Modal for viewing movie/TV show details
-    async function openModal(id, type) {
-      try {
-        // Show loading state
-        const modalContainer = document.getElementById('modal-container');
-        modalContainer.innerHTML = `
-          <div class="modal">
-            <div class="modal-content">
-              <div class="loading-large"></div>
-            </div>
-          </div>
-        `;
-        document.body.style.overflow = 'hidden';
-        
-        // Fetch details from TMDB API
-        const response = await fetch(
-          `https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}`
-        );
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch details');
-        }
-        
-        const data = await response.json();
-        
-        // Extract relevant data
-        const title = data.title || data.name;
-        const year = (data.release_date || data.first_air_date || '').substring(0, 4);
-        const rating = data.vote_average ? data.vote_average.toFixed(1) : 'N/A';
-        const overview = data.overview || 'No overview available.';
-        const genres = data.genres ? data.genres.map(g => g.name).join(', ') : '';
-        const backdropUrl = data.backdrop_path 
-          ? `https://image.tmdb.org/t/p/w1280${data.backdrop_path}`
-          : 'https://via.placeholder.com/1280x720?text=No+Backdrop';
-        
-        // Create modal HTML
-        modalContainer.innerHTML = `
-          <div class="modal">
-            <div class="modal-content">
-              <span class="close-btn">&times;</span>
-              
-              <div class="modal-header" style="background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('${backdropUrl}')">
-                <h2>${title} ${year ? `(${year})` : ''}</h2>
-                <div class="meta-info">
-                  <span>⭐ ${rating}</span>
-                  <span>${type === 'movie' ? 'Movie' : 'TV Show'}</span>
-                  ${genres ? `<span>${genres}</span>` : ''}
-                </div>
-              </div>
-              
-              <div class="modal-body">
-                <h3>Overview</h3>
-                <p>${overview}</p>
-                
-                <div class="player-container">
-                  <iframe 
-                    src="https://vidsrc.to/embed/${type}/${id}"
-                    frameborder="0"
-                    allowfullscreen
-                  ></iframe>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-        
-        // Set up modal close functionality
-        const modal = document.querySelector('.modal');
-        const closeBtn = document.querySelector('.close-btn');
-        
-        closeBtn.addEventListener('click', closeModal);
-        modal.addEventListener('click', function(e) {
-          if (e.target === modal) {
-            closeModal();
-          }
-        });
-        
-        // Handle back button
-        window.addEventListener('popstate', function() {
-          if (document.querySelector('.modal')) {
-            closeModal();
-          }
-        });
-        
-      } catch (error) {
-        console.error('Error opening modal:', error);
-        document.getElementById('modal-container').innerHTML = `
-          <div class="modal">
-            <div class="modal-content">
-              <span class="close-btn">&times;</span>
-              <h2>Error</h2>
-              <p>Failed to load details. Please try again.</p>
-            </div>
-          </div>
-        `;
-        
-        document.querySelector('.close-btn').addEventListener('click', closeModal);
-      }
-    }
-    
-    function closeModal() {
-      const modalContainer = document.getElementById('modal-container');
-      modalContainer.innerHTML = '';
-      document.body.style.overflow = '';
-      
-      // Update URL to remove modal parameters
-      history.pushState(
-        null,
-        "",
-        `?q=${encodeURIComponent(query)}&page=${currentPage}`
-      );
     }
   </script>
 </body>
