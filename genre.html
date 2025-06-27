@@ -1,138 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Genre Results - GomoTV</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="shared-modal.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Genre Results - GomoTV</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="shared-modal.js"></script>
+
+  <!-- ✅ Import disclaimer module -->
+  <script type="module">
+    import { addPaginationDisclaimer, disclaimerStyle } from './shared-disclaimer.js';
+
+    // Apply disclaimer CSS
+    const style = document.createElement('style');
+    style.textContent = disclaimerStyle;
+    document.head.appendChild(style);
+
+    // Optional: if you want it triggered globally
+    // document.addEventListener('DOMContentLoaded', addPaginationDisclaimer);
+  </script>
 </head>
 <body>
-  <header class="navbar">
-    <button onclick="history.back()" class="menu-toggle">←</button>
-    <h1 class="logo" id="genre-title">Genres</h1>
-    <button id="theme-toggle" class="theme-toggle">🌓</button>
-  </header>
+  <header class="navbar">
+    <button onclick="history.back()" class="menu-toggle">←</button>
+    <h1 class="logo" id="genre-title">Genres</h1>
+    <button id="theme-toggle" class="theme-toggle">🌓</button>
+  </header>
 
-  <section style="padding: 20px;">
-    <div class="genre-list">
-      <h2>🎭 Select a Genre:</h2>
-      <div class="genre-grid">
-        <a href="genre.html?name=Action&id=28">Action</a>
-        <a href="genre.html?name=Animation&id=16">Animation</a>
-        <a href="genre.html?name=Comedy&id=35">Comedy</a>
-        <a href="genre.html?name=Drama&id=18">Drama</a>
-        <a href="genre.html?name=Fantasy&id=14">Fantasy</a>
-        <a href="genre.html?name=Horror&id=27">Horror</a>
-        <a href="genre.html?name=Romance&id=10749">Romance</a>
-        <a href="genre.html?name=Sci-Fi&id=878">Sci-Fi</a>
-        <a href="genre.html?name=Thriller&id=53">Thriller</a>
-      </div>
-    </div>
-  </section>
+  <section style="padding: 20px;">
+    <div class="genre-list">
+      <h2>🎭 Select a Genre:</h2>
+      <div class="genre-grid">
+        <a href="genre.html?name=Action&id=28">Action</a>
+        <a href="genre.html?name=Animation&id=16">Animation</a>
+        <a href="genre.html?name=Comedy&id=35">Comedy</a>
+        <a href="genre.html?name=Drama&id=18">Drama</a>
+        <a href="genre.html?name=Fantasy&id=14">Fantasy</a>
+        <a href="genre.html?name=Horror&id=27">Horror</a>
+        <a href="genre.html?name=Romance&id=10749">Romance</a>
+        <a href="genre.html?name=Sci-Fi&id=878">Sci-Fi</a>
+        <a href="genre.html?name=Thriller&id=53">Thriller</a>
+      </div>
+    </div>
+  </section>
 
-  <main>
-    <div id="pagination-top" class="pagination"></div>
-    <div class="search-results-grid" id="results-grid"></div>
-    <div id="pagination" class="pagination"></div>
-  </main>
+  <main>
+    <div id="pagination-top" class="pagination"></div>
+    <div class="search-results-grid" id="results-grid"></div>
+    <div id="pagination" class="pagination"></div>
+  </main>
 
-  <div id="modal-container"></div>
+  <div id="modal-container"></div>
 
-  <script>
-    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
-    const params = new URLSearchParams(location.search);
-    const genreId = params.get('id');
-    const genreName = params.get('name');
-    let currentPage = parseInt(params.get('page')) || 1;
+  <script>
+    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+    const params = new URLSearchParams(location.search);
+    const genreId = params.get('id');
+    const genreName = params.get('name');
+    let currentPage = parseInt(params.get('page')) || 1;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      initThemeToggle();
-      if (genreId && genreName) {
-        document.getElementById("genre-title").textContent = "🎭 " + genreName;
-        fetchGenreMovies(genreId, currentPage);
-      }
-    });
+    document.addEventListener('DOMContentLoaded', () => {
+      initThemeToggle();
+      if (genreId && genreName) {
+        document.getElementById("genre-title").textContent = "🎭 " + genreName;
+        fetchGenreMovies(genreId, currentPage);
+      }
+    });
 
-    function getImageUrl(path) {
-      return path
-        ? `https://image.tmdb.org/t/p/w500${path}`
-        : 'https://via.placeholder.com/500x750?text=No+Poster';
-    }
+    function getImageUrl(path) {
+      return path
+        ? `https://image.tmdb.org/t/p/w500${path}`
+        : 'https://via.placeholder.com/500x750?text=No+Poster';
+    }
 
-    async function fetchGenreMovies(id, page = 1) {
-      const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${id}&page=${page}`);
-      const data = await res.json();
-      renderResults(data.results);
-      renderPagination(data.total_pages);
-    }
+    async function fetchGenreMovies(id, page = 1) {
+      const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${id}&page=${page}`);
+      const data = await res.json();
+      renderResults(data.results);
+      renderPagination(data.total_pages);
+    }
 
-    function renderResults(items) {
-      const container = document.getElementById("results-grid");
-      container.innerHTML = items.map(item => {
-        const title = item.title || item.name;
-        const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-        const img = getImageUrl(item.poster_path);
+    function renderResults(items) {
+      const container = document.getElementById("results-grid");
+      container.innerHTML = items.map(item => {
+        const title = item.title || item.name;
+        const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+        const img = getImageUrl(item.poster_path);
 
-        return `
-          <div class="poster-wrapper">
-            <img src="${img}" alt="${title}" data-id="${item.id}" data-type="movie">
-            <div class="poster-label">${title}</div>
-            <div class="poster-meta">📅 ${year}</div>
-          </div>
-        `;
-      }).join('');
-    
-      document.querySelectorAll('.poster-wrapper img').forEach(img => {
-        img.addEventListener('click', () => {
-          openModal(img.dataset.id, img.dataset.type);
-        });
-      });
-    }
+        return `
+          <div class="poster-wrapper">
+            <img src="${img}" alt="${title}" data-id="${item.id}" data-type="movie">
+            <div class="poster-label">${title}</div>
+            <div class="poster-meta">📅 ${year}</div>
+          </div>
+        `;
+      }).join('');
 
-    setTimeout(() => addPaginationDisclaimer(), 0);
-    }
-    
-    function renderPagination(totalPages) {
-      const pagTop = document.getElementById('pagination-top');
-      const pagBottom = document.getElementById('pagination');
-      if (totalPages <= 1) {
-        pagTop.innerHTML = '';
-        pagBottom.innerHTML = '';
-        return;
-      }
+      document.querySelectorAll('.poster-wrapper img').forEach(img => {
+        img.addEventListener('click', () => {
+          openModal(img.dataset.id, img.dataset.type);
+        });
+      });
 
-      let buttons = '';
-      const minPage = Math.max(1, currentPage - 2);
-      const maxPage = Math.min(totalPages, currentPage + 2);
+      // ✅ Add disclaimer AFTER rendering results + pagination
+      setTimeout(() => {
+        if (typeof addPaginationDisclaimer === 'function') {
+          addPaginationDisclaimer();
+        }
+      }, 0);
+    }
 
-      if (currentPage > 1) buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
-      for (let i = minPage; i <= maxPage; i++) {
-        buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
-      }
-      if (currentPage < totalPages) buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
+    function renderPagination(totalPages) {
+      const pagTop = document.getElementById('pagination-top');
+      const pagBottom = document.getElementById('pagination');
+      if (totalPages <= 1) {
+        pagTop.innerHTML = '';
+        pagBottom.innerHTML = '';
+        return;
+      }
 
-      pagTop.innerHTML = buttons;
-      pagBottom.innerHTML = buttons;
-    }
+      let buttons = '';
+      const minPage = Math.max(1, currentPage - 2);
+      const maxPage = Math.min(totalPages, currentPage + 2);
 
-    function goToPage(page) {
-      location.href = `genre.html?name=${encodeURIComponent(genreName)}&id=${genreId}&page=${page}`;
-    }
+      if (currentPage > 1) buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
+      for (let i = minPage; i <= maxPage; i++) {
+        buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+      }
+      if (currentPage < totalPages) buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
 
-    function initThemeToggle() {
-      const toggleBtn = document.getElementById('theme-toggle');
-      if (!toggleBtn) return;
-      const currentTheme = localStorage.getItem('theme') || 'dark';
-      document.body.classList.add(currentTheme);
-      toggleBtn.textContent = '🌓';
-      toggleBtn.addEventListener('click', () => {
-        const isDark = document.body.classList.contains('dark');
-        document.body.classList.toggle('dark', !isDark);
-        document.body.classList.toggle('light', isDark);
-        localStorage.setItem('theme', isDark ? 'light' : 'dark');
-      });
-    }
-  </script>
+      pagTop.innerHTML = buttons;
+      pagBottom.innerHTML = buttons;
+    }
+
+    function goToPage(page) {
+      location.href = `genre.html?name=${encodeURIComponent(genreName)}&id=${genreId}&page=${page}`;
+    }
+
+    function initThemeToggle() {
+      const toggleBtn = document.getElementById('theme-toggle');
+      if (!toggleBtn) return;
+      const currentTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(currentTheme);
+      toggleBtn.textContent = '🌓';
+      toggleBtn.addEventListener('click', () => {
+        const isDark = document.body.classList.contains('dark');
+        document.body.classList.toggle('dark', !isDark);
+        document.body.classList.toggle('light', isDark);
+        localStorage.setItem('theme', isDark ? 'light' : 'dark');
+      });
+    }
+  </script>
 </body>
 </html>
