@@ -2,7 +2,7 @@ const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
-// Core Functions
+// Core Functions (unchanged)
 function getImageUrl(path, isBackdrop = false) {
   if (!path) {
     return isBackdrop
@@ -12,7 +12,7 @@ function getImageUrl(path, isBackdrop = false) {
   return `${IMG_BASE}${path}`;
 }
 
-// Banner Slider
+// Banner Slider (unchanged)
 let bannerIndex = 0;
 let bannerItems = [];
 
@@ -63,7 +63,7 @@ function nextSlide() {
   showBannerSlide(bannerIndex);
 }
 
-// Content Loading
+// Content Loading (unchanged)
 async function fetchAndDisplay(endpoint, containerSelector, type) {
   try {
     const container = document.querySelector(containerSelector);
@@ -127,7 +127,7 @@ function setupPosterClickEvents(containerSelector) {
   });
 }
 
-// Modal Player
+// Modal Player (unchanged)
 const SERVERS = [
   { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
   { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
@@ -229,7 +229,7 @@ function closeModal(modal) {
   history.back();
 }
 
-// Hamburger menu toggle + focus input
+// Hamburger menu toggle + focus input (unchanged)
 function setupMenuToggle() {
   const menuBtn = document.getElementById('menu-toggle');
   const menu = document.getElementById('hamburger-menu');
@@ -246,7 +246,7 @@ function setupMenuToggle() {
   });
 }
 
-// Hamburger menu search functionality
+// Hamburger menu search functionality (unchanged)
 function setupMenuSearch() {
   const menuSearchInput = document.getElementById('menu-search-input');
   const menuSearchButton = document.getElementById('menu-search-button');
@@ -269,7 +269,7 @@ function setupMenuSearch() {
   });
 }
 
-// Theme Toggle
+// Theme Toggle (unchanged)
 function initThemeToggle() {
   const toggleBtn = document.getElementById('theme-toggle');
   if (!toggleBtn) return;
@@ -285,11 +285,126 @@ function initThemeToggle() {
   });
 }
 
-// Initialization
+// NEW: All Movies Functionality
+async function fetchAllMovies(page = 1) {
+  try {
+    const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`);
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error('Error fetching movies:', err);
+    return { results: [], total_pages: 0 };
+  }
+}
+
+function setupAllMoviesLink() {
+  const allMoviesLink = document.getElementById('all-movies-link');
+  if (!allMoviesLink) return;
+
+  allMoviesLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    // Create modal container
+    const container = document.createElement('div');
+    container.className = 'all-movies-modal-container';
+    container.innerHTML = `
+      <div class="modal">
+        <div class="modal-content" style="max-width: 90vw; max-height: 90vh; overflow-y: auto;">
+          <span class="close-btn">×</span>
+          <h2>All Movies</h2>
+          <div class="search-results-grid" id="all-movies-grid"></div>
+          <div class="pagination" id="all-movies-pagination"></div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(container);
+    document.body.style.overflow = 'hidden';
+    
+    // Close button handler
+    const closeBtn = container.querySelector('.close-btn');
+    closeBtn.addEventListener('click', () => {
+      container.remove();
+      document.body.style.overflow = '';
+    });
+    
+    // Load first page of movies
+    const moviesGrid = container.querySelector('#all-movies-grid');
+    const pagination = container.querySelector('#all-movies-pagination');
+    
+    moviesGrid.innerHTML = '<div class="loading"></div>';
+    
+    const data = await fetchAllMovies();
+    if (data.results.length > 0) {
+      displayMedia(data.results, '#all-movies-grid', 'movie');
+      renderMoviesPagination(pagination, data.total_pages, 1);
+    } else {
+      moviesGrid.innerHTML = '<p class="error-message">No movies found</p>';
+    }
+  });
+}
+
+function renderMoviesPagination(container, totalPages, currentPage) {
+  let buttons = '';
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = startPage + maxVisiblePages - 1;
+  
+  if (endPage > totalPages) {
+    endPage = totalPages;
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+  
+  if (currentPage > 1) {
+    buttons += `<button data-page="${currentPage - 1}">« Prev</button>`;
+  }
+  
+  if (startPage > 1) {
+    buttons += `<button data-page="1">1</button>`;
+    if (startPage > 2) {
+      buttons += `<span class="ellipsis">...</span>`;
+    }
+  }
+  
+  for (let i = startPage; i <= endPage; i++) {
+    buttons += `<button data-page="${i}" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+  }
+  
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      buttons += `<span class="ellipsis">...</span>`;
+    }
+    buttons += `<button data-page="${totalPages}">${totalPages}</button>`;
+  }
+  
+  if (currentPage < totalPages) {
+    buttons += `<button data-page="${currentPage + 1}">Next »</button>`;
+  }
+  
+  container.innerHTML = buttons;
+  
+  // Add event listeners to pagination buttons
+  container.querySelectorAll('button[data-page]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const page = parseInt(btn.dataset.page);
+      const moviesGrid = document.getElementById('all-movies-grid');
+      moviesGrid.innerHTML = '<div class="loading"></div>';
+      
+      const data = await fetchAllMovies(page);
+      if (data.results.length > 0) {
+        displayMedia(data.results, '#all-movies-grid', 'movie');
+        renderMoviesPagination(container, data.total_pages, page);
+      }
+    });
+  });
+}
+
+// Initialization (updated with new function)
 window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   setupMenuToggle();
   setupMenuSearch();
+  setupAllMoviesLink(); // Add this line
 
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
