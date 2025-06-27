@@ -6,6 +6,30 @@
   <title>Country Results - GomoTV</title>
   <link rel="stylesheet" href="style.css" />
   <script src="shared-modal.js"></script>
+  <style>
+    /* Disclaimer Styles */
+    .pagination-disclaimer {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 25px 20px;
+      margin-top: -10px;
+      font-size: 0.75rem;
+      color: #aaa;
+      line-height: 1.6;
+      border-top: 1px solid #333;
+      background: rgba(0,0,0,0.1);
+      border-radius: 0 0 8px 8px;
+    }
+    .pagination-disclaimer a {
+      color: #e50914;
+      text-decoration: none;
+    }
+    body.light .pagination-disclaimer {
+      color: #666;
+      border-top: 1px solid #ddd;
+      background: rgba(0,0,0,0.05);
+    }
+  </style>
 </head>
 <body>
   <header class="navbar">
@@ -31,6 +55,7 @@
     <div id="pagination-top" class="pagination"></div>
     <div class="search-results-grid" id="results-grid"></div>
     <div id="pagination" class="pagination"></div>
+    <!-- Disclaimer will be auto-added here by JavaScript -->
   </main>
 
   <div id="modal-container"></div>
@@ -41,6 +66,22 @@
     const countryCode = params.get('country');
     const countryName = params.get('name');
     let currentPage = parseInt(params.get('page')) || 1;
+
+    // Auto-add disclaimer function
+    function addDisclaimer() {
+      if (!document.querySelector('.pagination-disclaimer')) {
+        const disclaimer = document.createElement('div');
+        disclaimer.className = 'pagination-disclaimer';
+        disclaimer.innerHTML = `
+          <p>⚠️ Disclaimer: GomoTV does not host any videos. Content provided by third-party servers.</p>
+          <p>Support creators via <a href="https://www.justwatch.com" target="_blank">official platforms</a>.</p>
+        `;
+        const pagination = document.getElementById('pagination');
+        if (pagination) {
+          pagination.parentNode.insertBefore(disclaimer, pagination.nextSibling);
+        }
+      }
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       initThemeToggle();
@@ -65,6 +106,7 @@
       const data = await res.json();
       renderResults(data.results);
       renderPagination(data.total_pages);
+      addDisclaimer(); // Add disclaimer after loading
     }
 
     function renderResults(items) {
@@ -111,6 +153,7 @@
 
       pagTop.innerHTML = buttons;
       pagBottom.innerHTML = buttons;
+      addDisclaimer(); // Re-add if pagination changes
     }
 
     function goToPage(page) {
