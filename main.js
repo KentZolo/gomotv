@@ -236,19 +236,14 @@ function closeModal(modal) {
 // Navigation
 // In setupMenuToggle() function
 function setupMenuToggle() {
-  const menuBtn = document.getElementById('menu-toggle');
-  const menu = document.getElementById('hamburger-menu');
-  
-  if (menuBtn && menu) {
-    menuBtn.addEventListener('click', () => {
-      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-      
-      // Focus on search input when menu opens
-      if (menu.style.display === 'block' && menuSearchInput) {
-        menuSearchInput.focus();
-      }
-    });
-  }
+  const menuBtn = document.getElementById('menu-toggle');
+  const menu = document.getElementById('hamburger-menu');
+  
+  if (menuBtn && menu) {
+    menuBtn.addEventListener('click', () => {
+      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+      });
+  }
 }
 
 // Theme Toggle
