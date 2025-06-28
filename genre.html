@@ -109,28 +109,33 @@
       addDisclaimer(); // Add disclaimer after loading
     }
 
-    function renderResults(items) {
-      const container = document.getElementById("results-grid");
-      container.innerHTML = items.map(item => {
-        const title = item.title || item.name;
-        const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-        const img = getImageUrl(item.poster_path);
+function renderResults(items) {
+  const container = document.getElementById("results-grid");
+  container.innerHTML = items.map(item => {
+    const title = item.title || item.name;
+    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+    const img = getImageUrl(item.poster_path);
+    const rating = item.vote_average?.toFixed(1) || 'N/A';
 
-        return `
-          <div class="poster-wrapper">
-            <img src="${img}" alt="${title}" data-id="${item.id}" data-type="movie">
-            <div class="poster-label">${title}</div>
-            <div class="poster-meta">${year}</div>
-          </div>
-        `;
-      }).join('');
+    return `
+      <div class="poster-wrapper">
+        <img src="${img}" alt="${title}" data-id="${item.id}" data-type="${item.media_type || 'movie'}">
+        <div class="poster-label">${title}</div>
+        <div class="poster-meta">
+          <span>⭐ ${rating}</span>
+          <span>${year}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
 
-      document.querySelectorAll('.poster-wrapper img').forEach(img => {
-        img.addEventListener('click', () => {
-          openModal(img.dataset.id, img.dataset.type);
-        });
-      });
-    }
+  // Add click event listeners
+  document.querySelectorAll('.poster-wrapper img').forEach(img => {
+    img.addEventListener('click', () => {
+      openModal(img.dataset.id, img.dataset.type);
+    });
+  });
+}
 
     function renderPagination(totalPages) {
       const pagTop = document.getElementById('pagination-top');
