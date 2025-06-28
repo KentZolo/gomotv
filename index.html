@@ -19,33 +19,27 @@
   </header>
 
   <nav class="hamburger-menu" id="hamburger-menu">
-    <div class="menu-search-bar">
-      <input type="text" id="menu-search-input" placeholder="Search movies or shows...">
-      <button id="menu-search-button">🔍</button>
-    </div>
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li>
-      <div class="genre-toggle" id="genre-toggle">Genre</div>
-      <div class="genre-submenu" id="genre-submenu">
-        <a href="genre.html?name=Action&id=28">Action</a>
-        <a href="genre.html?name=Animation&id=16">Animation</a>
-        <a href="genre.html?name=Comedy&id=35">Comedy</a>
-        <a href="genre.html?name=Drama&id=18">Drama</a>
-        <a href="genre.html?name=Fantasy&id=14">Fantasy</a>
-        <a href="genre.html?name=Horror&id=27">Horror</a>
-        <a href="genre.html?name=Romance&id=10749">Romance</a>
-        <a href="genre.html?name=Sci-Fi&id=878">Sci-Fi</a>
-        <a href="genre.html?name=Thriller&id=53">Thriller</a>
+  <div class="menu-search-bar">
+    <input type="text" id="menu-search-input" placeholder="Search movies or shows...">
+    <button id="menu-search-button">🔍</button>
+  </div>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li class="has-submenu">
+      <div class="genre-toggle">Genres</div>
+      <div class="genre-submenu">
+        ${GENRES.map(genre => `
+          <a href="genre.html?id=${genre.id}&name=${encodeURIComponent(genre.name)}">${genre.name}</a>
+        `).join('')}
       </div>
-      </li>
-      <li><a href="country.html">Country</a></li>
-      <li><a href="movies.html">Movies</a></li> 
-      <li><a href="tvshows.html">TV Shows</a></li>
-      <li><a href="topimdb.html">Top IMDB</a></li> 
-    </ul>
+    </li>
+    <li><a href="country.html">Country</a></li>
+    <li><a href="movies.html">Movies</a></li> 
+    <li><a href="tvshows.html">TV Shows</a></li>
+    <li><a href="topimdb.html">Top IMDB</a></li> 
+  </ul>
   </nav>
-
+  
   <section class="featured">
     <div class="banner-slider">
       <div class="poster-box" id="active-slide">
