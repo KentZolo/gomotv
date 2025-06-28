@@ -1,363 +1,413 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Search Results - GomoTV</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="shared-modal.js"></script>
-  <style>
-    /* Additional styles specific to search page */
-    .search-prompt {
-      text-align: center;
-      padding: 40px;
-      grid-column: 1 / -1;
-      color: #aaa;
-      font-size: 1.2rem;
-    }
-    
-    .no-results {
-      text-align: center;
-      padding: 40px;
-      grid-column: 1 / -1;
-      color: #e50914;
-    }
-    
-    .search-bar-container {
-      padding: 15px;
-      background: #111;
-      position: sticky;
-      top: 60px;
-      z-index: 99;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-    }
-    
-    .search-bar {
-      display: flex;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    
-    #search-input {
-      flex: 1;
-      padding: 12px 15px;
-      font-size: 16px;
-      border: none;
-      border-radius: 4px 0 0 4px;
-      background: #fff;
-      color: #000;
-    }
-    
-    #search-button {
-      padding: 0 20px;
-      background: #e50914;
-      color: white;
-      border: none;
-      border-radius: 0 4px 4px 0;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s;
-    }
-    
-    #search-button:hover {
-      background: #c40812;
-    }
-    
-    @media (max-width: 768px) {
-      .search-bar-container {
-        padding: 10px;
-        top: 56px;
-      }
-      
-      #search-input {
-        padding: 10px 12px;
-        font-size: 14px;
-      }
-      
-      #search-button {
-        padding: 0 15px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <header class="navbar">
-    <div class="menu-toggle" id="menu-toggle">
-      <span></span>
-      <span></span>
-      <span></span>
+const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+const IMG_BASE = 'https://image.tmdb.org/t/p/';
+const SERVERS = [
+  { 
+    id: 'vidsrccc', 
+    name: 'Vidsrc.cc', 
+    url: (type, id) => `https://vidsrc.cc/v2/embed/${type}/${id}` 
+  },
+  { 
+    id: 'vidsrc', 
+    name: 'Vidsrc.to', 
+    url: (type, id) => `https://vidsrc.to/embed/${type}/${id}` 
+  },
+  { 
+    id: 'apimocine', 
+    name: 'Apimocine', 
+    url: (type, id) => `https://apimocine.vercel.app/${type}/${id}?autoplay=true` 
+  }
+];
+
+// Utility Functions
+function getImageUrl(path, isBackdrop = false) {
+  if (!path) {
+    return isBackdrop
+      ? 'https://via.placeholder.com/1920x1080?text=No+Banner'
+      : 'https://via.placeholder.com/500x750?text=No+Poster';
+  }
+  return `${IMG_BASE}${isBackdrop ? 'w1280' : 'w500'}${path}`;
+}
+
+// Main Modal Implementation
+function openModal(id, type) {
+  // Close any existing modal first
+  closeModal();
+  
+  // Create modal container if it doesn't exist
+  if (!document.getElementById('modal-container')) {
+    const container = document.createElement('div');
+    container.id = 'modal-container';
+    document.body.appendChild(container);
+  }
+  
+  // Show loading state
+  document.getElementById('modal-container').innerHTML = `
+    <div class="modal-loading">
+      <div class="loading-spinner"></div>
     </div>
-    <h1 class="logo">GomoTV</h1>
-    <button id="theme-toggle" class="theme-toggle">🌓</button>
-  </header>
-
-  <div class="search-bar-container">
-    <div class="search-bar">
-      <input type="text" id="search-input" placeholder="Search movies or shows..." value="">
-      <button id="search-button">Search</button>
-    </div>
-  </div>
-
-  <nav class="hamburger-menu" id="hamburger-menu">
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="genre.html">Genre</a></li>
-      <li><a href="country.html">Country</a></li>
-      <li><a href="#">Movies</a></li>
-      <li><a href="#">TV Shows</a></li>
-    </ul>
-  </nav>
-
-  <main>
-    <div id="pagination-top" class="pagination"></div>
-    <div class="search-results-grid" id="results-grid">
-      <p class="search-prompt">Enter a search term to find movies and TV shows</p>
-    </div>
-    <div id="pagination" class="pagination"></div>
-  </main>
-
-  <div id="modal-container"></div>
-
-  <script>
-    // Configuration
-    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
-    const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
-    
-    // Get search parameters from URL
-    const params = new URLSearchParams(window.location.search);
-    const query = params.get("q");
-    let currentPage = parseInt(params.get("page")) || 1;
-    
-    // DOM Elements
-    const searchInput = document.getElementById('search-input');
-    const searchButton = document.getElementById('search-button');
-    const resultsGrid = document.getElementById('results-grid');
-    const paginationTop = document.getElementById('pagination-top');
-    const paginationBottom = document.getElementById('pagination');
-    const menuToggle = document.getElementById('menu-toggle');
-    const hamburgerMenu = document.getElementById('hamburger-menu');
-    const themeToggle = document.getElementById('theme-toggle');
-
-    // Initialize the page
-    document.addEventListener('DOMContentLoaded', function() {
-      // Set up theme toggle
-      initThemeToggle();
-      
-      // If there's a search query, fetch results
-      if (query) {
-        searchInput.value = query;
-        fetchSearchResults(query, currentPage);
-      }
-      
-      // Set up search functionality
-      setupSearch();
-      
-      // Set up hamburger menu toggle
-      setupMenuToggle();
-    });
-
-    // Search functionality
-    function setupSearch() {
-      searchButton.addEventListener('click', performSearch);
-      searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') performSearch();
-      });
-    }
-    
-    function performSearch() {
-      const searchTerm = searchInput.value.trim();
-      if (searchTerm.length > 1) {
-        window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
-      } else {
-        alert('Please enter at least 2 characters');
-      }
-    }
-
-    // Menu toggle functionality
-    function setupMenuToggle() {
-      if (menuToggle && hamburgerMenu) {
-        menuToggle.addEventListener('click', function() {
-          hamburgerMenu.style.display = hamburgerMenu.style.display === 'block' ? 'none' : 'block';
-        });
-      }
-    }
-
-    // Theme toggle functionality
-    function initThemeToggle() {
-      if (!themeToggle) return;
-      
-      // Set initial theme from localStorage or default to dark
-      const currentTheme = localStorage.getItem('theme') || 'dark';
-      document.body.classList.add(currentTheme);
-      
-      themeToggle.addEventListener('click', function() {
-        const isDark = document.body.classList.contains('dark');
-        document.body.classList.toggle('dark', !isDark);
-        document.body.classList.toggle('light', isDark);
-        localStorage.setItem('theme', isDark ? 'light' : 'dark');
-      });
-    }
-
-    // Fetch search results from TMDB API
-    async function fetchSearchResults(query, page = 1) {
-      // Show loading state
-      resultsGrid.innerHTML = '<div class="loading"></div>';
-      
-      try {
-        const response = await fetch(
-          `https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`
-        );
-        
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        
-        const data = await response.json();
-        
-        // Check if we got any results
-        if (!data.results || data.results.length === 0) {
-          showNoResults(query);
-          return;
-        }
-        
-        // Display the results
-        displayResults(data.results);
-        
-        // Set up pagination if needed
-        if (data.total_pages > 1) {
-          setupPagination(data.total_pages);
-        } else {
-          clearPagination();
-        }
-        
-      } catch (error) {
-        console.error('Error fetching search results:', error);
-        showErrorState();
-      }
-    }
-    
-    function showNoResults(query) {
-      resultsGrid.innerHTML = `
-        <p class="no-results">
-          No results found for "${query}"<br>
-          Try different keywords
-        </p>
-      `;
-      clearPagination();
-    }
-    
-    function showErrorState() {
-      resultsGrid.innerHTML = `
-        <p class="no-results">
-          Failed to load search results<br>
-          Please try again later
-        </p>
-      `;
-      clearPagination();
-    }
-    
-    function clearPagination() {
-      paginationTop.innerHTML = '';
-      paginationBottom.innerHTML = '';
-    }
-
-    // Display search results
-    function displayResults(items) {
-      resultsGrid.innerHTML = items.map(item => {
-        const title = item.title || item.name || 'Untitled';
-        const year = (item.release_date || item.first_air_date || '').substring(0, 4);
-        const posterPath = item.poster_path || item.backdrop_path;
-        const imageUrl = posterPath ? `${IMG_BASE}${posterPath}` : 'https://via.placeholder.com/500x750?text=No+Poster';
-        const mediaType = item.media_type === 'tv' ? 'TV Show' : 'Movie';
-        const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
-        
-        return `
-          <div class="poster-wrapper">
-            <img src="${imageUrl}" 
-                 alt="${title}" 
-                 data-id="${item.id}" 
-                 data-type="${item.media_type}"
-                 loading="lazy">
-            <div class="poster-label">${title}</div>
-            <div class="poster-meta">
-              <span>⭐ ${rating}</span>
-              <span>${mediaType}</span>
-              ${year ? `<span>📅 ${year}</span>` : ''}
+  `;
+  
+  // Fetch media details
+  fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}`)
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not ok');
+      return response.json();
+    })
+    .then(data => {
+      renderModal(data, type, id);
+    })
+    .catch(error => {
+      console.error('Error fetching media details:', error);
+      // Fallback to simple modal if error occurs
+      document.getElementById('modal-container').innerHTML = `
+        <div class="modal">
+          <div class="modal-content">
+            <span class="close-btn">×</span>
+            <div class="modal-body">
+              <p>Error loading content. Please try again.</p>
+              <button onclick="window.location.href='player.html?type=${type}&id=${id}'">
+                Open in Player
+              </button>
             </div>
           </div>
-        `;
-      }).join('');
-      
-      // Set up click events for all result items
-      setupResultClickEvents();
-    }
-    
-    function setupResultClickEvents() {
-      document.querySelectorAll('.poster-wrapper').forEach(poster => {
-        poster.addEventListener('click', function() {
-          const img = poster.querySelector('img');
-          openModal(img.dataset.id, img.dataset.type);
-        });
-      });
-    }
+        </div>
+      `;
+      setupModalEvents(id, type);
+    });
+}
 
-    // Pagination controls
-    function setupPagination(totalPages) {
-      // Limit to maximum 5 visible page buttons
-      const maxVisiblePages = 5;
-      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-      let endPage = startPage + maxVisiblePages - 1;
-      
-      if (endPage > totalPages) {
-        endPage = totalPages;
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-      }
-      
-      let paginationHTML = '';
-      
-      // Previous button
-      if (currentPage > 1) {
-        paginationHTML += `<button onclick="goToPage(${currentPage - 1})">&laquo; Prev</button>`;
-      }
-      
-      // First page button (if needed)
-      if (startPage > 1) {
-        paginationHTML += `<button onclick="goToPage(1)">1</button>`;
-        if (startPage > 2) {
-          paginationHTML += `<span class="ellipsis">...</span>`;
-        }
-      }
-      
-      // Page number buttons
-      for (let i = startPage; i <= endPage; i++) {
-        paginationHTML += `
-          <button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>
-            ${i}
-          </button>
-        `;
-      }
-      
-      // Last page button (if needed)
-      if (endPage < totalPages) {
-        if (endPage < totalPages - 1) {
-          paginationHTML += `<span class="ellipsis">...</span>`;
-        }
-        paginationHTML += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
-      }
-      
-      // Next button
-      if (currentPage < totalPages) {
-        paginationHTML += `<button onclick="goToPage(${currentPage + 1})">Next &raquo;</button>`;
-      }
-      
-      // Update both pagination containers
-      paginationTop.innerHTML = paginationHTML;
-      paginationBottom.innerHTML = paginationHTML;
+function renderModal(data, type, id) {
+  const title = data.title || data.name;
+  const year = (data.release_date || data.first_air_date || '').substring(0, 4);
+  const rating = data.vote_average ? data.vote_average.toFixed(1) : 'N/A';
+  const overview = data.overview || 'No description available.';
+  const genres = data.genres ? data.genres.map(g => g.name).join(' • ') : '';
+  const backdropUrl = getImageUrl(data.backdrop_path, true);
+  
+  const modalHTML = `
+    <div class="modal">
+      <div class="modal-content">
+        <span class="close-btn">×</span>
+        
+        <!-- Hero Section -->
+        <div class="modal-header" style="background-image: url('${backdropUrl}')">
+          <div class="modal-header-overlay"></div>
+          <div class="modal-header-content">
+            <h1 class="modal-title">${title.toUpperCase()}</h1>
+          </div>
+        </div>
+        
+        <!-- Server Selection -->
+        <div class="server-selection">
+          <select class="server-selector" id="server-select">
+            ${SERVERS.map(server => `
+              <option value="${server.id}">${server.name}</option>
+            `).join('')}
+          </select>
+        </div>
+        
+        <!-- Media Details -->
+        <div class="media-details">
+          <h2 class="media-title">${title}</h2>
+          <div class="media-meta">
+            <span class="rating">⭐ ${rating}</span>
+            <span class="type">${type === 'movie' ? 'Movie' : 'TV Show'}</span>
+            ${genres ? `<span class="genres">${genres}</span>` : ''}
+            ${year ? `<span class="year">${year}</span>` : ''}
+          </div>
+          <p class="media-overview">${overview}</p>
+        </div>
+        
+        <!-- Player Container -->
+        <div class="player-container">
+          <div class="player-loading">
+            <div class="loading-spinner"></div>
+            <p>Loading player...</p>
+          </div>
+          <iframe id="player-iframe" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('modal-container').innerHTML = modalHTML;
+  document.body.style.overflow = 'hidden';
+  
+  setupModalEvents(id, type);
+}
+
+function setupModalEvents(id, type) {
+  const modal = document.querySelector('.modal');
+  if (!modal) return;
+  
+  // Close button
+  modal.querySelector('.close-btn').addEventListener('click', closeModal);
+  
+  // Click outside to close
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+  
+  // Server selection change
+  const serverSelector = document.getElementById('server-select');
+  if (serverSelector) {
+    serverSelector.addEventListener('change', function() {
+      loadPlayer(this.value, id, type);
+    });
+    
+    // Load initial player
+    loadPlayer(serverSelector.value, id, type);
+  }
+}
+
+function loadPlayer(serverId, id, type) {
+  const iframe = document.getElementById('player-iframe');
+  const loading = document.querySelector('.player-loading');
+  
+  if (!iframe || !loading) return;
+  
+  const server = SERVERS.find(s => s.id === serverId);
+  if (!server) return;
+  
+  loading.style.display = 'flex';
+  iframe.style.display = 'none';
+  iframe.src = server.url(type, id);
+  
+  iframe.onload = function() {
+    loading.style.display = 'none';
+    iframe.style.display = 'block';
+  };
+  
+  iframe.onerror = function() {
+    loading.innerHTML = '<p>Failed to load player. Please try another server.</p>';
+  };
+}
+
+function closeModal() {
+  const modal = document.querySelector('.modal');
+  if (modal) {
+    modal.classList.add('fade-out');
+    setTimeout(() => {
+      modal.remove();
+      document.body.style.overflow = '';
+    }, 300);
+  }
+}
+
+// Add CSS styles dynamically
+const modalStyles = document.createElement('style');
+modalStyles.textContent = `
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+    opacity: 0;
+    animation: fadeIn 0.3s forwards;
+  }
+  
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+  
+  .modal.fade-out {
+    animation: fadeOut 0.3s forwards;
+  }
+  
+  @keyframes fadeOut {
+    to { opacity: 0; }
+  }
+  
+  .modal-content {
+    background-color: #1a1a1a;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 800px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-header {
+    height: 250px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  
+  .modal-header-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+  }
+  
+  .modal-header-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    z-index: 2;
+  }
+  
+  .modal-title {
+    font-size: 1.8rem;
+    margin: 0;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  }
+  
+  .close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    z-index: 10;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .server-selection {
+    padding: 15px;
+    background: rgba(0,0,0,0.7);
+  }
+  
+  .server-selector {
+    width: 100%;
+    padding: 10px;
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  
+  .media-details {
+    padding: 20px;
+  }
+  
+  .media-title {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: white;
+  }
+  
+  .media-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+    color: #ccc;
+    font-size: 0.9rem;
+  }
+  
+  .media-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .media-overview {
+    line-height: 1.6;
+    color: #eee;
+    margin-bottom: 0;
+  }
+  
+  .player-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: black;
+  }
+  
+  .player-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    z-index: 1;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(229, 9, 20, 0.3);
+    border-top-color: #e50914;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  #player-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: none;
+  }
+  
+  .modal-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.9);
+    z-index: 10000;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .modal {
+      padding: 10px;
     }
     
-    function goToPage(page) {
-      window.location.href = `search.html?q=${encodeURIComponent(query)}&page=${page}`;
+    .modal-header {
+      height: 200px;
     }
-  </script>
-</body>
-</html>
+    
+    .modal-title {
+      font-size: 1.4rem;
+    }
+    
+    .media-details {
+      padding: 15px;
+    }
+  }
+`;
+
+document.head.appendChild(modalStyles);
