@@ -792,7 +792,6 @@ body.light ::-webkit-scrollbar-thumb {
 }
 /* All Movies Modal Styling */
 .all-movies-modal-container {
-.tvshows-modal-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -807,7 +806,6 @@ body.light ::-webkit-scrollbar-thumb {
 }
 
 .all-movies-modal-container .modal-content {
-.tvshows-modal-container .modal-content,
   background: #0f0f0f;
   border-radius: 10px;
   width: 100%;
@@ -819,7 +817,6 @@ body.light ::-webkit-scrollbar-thumb {
 }
 
 .all-movies-modal-container h2 {
-.tvshows-modal-container h2 {
   color: #e50914;
   font-size: 1.8rem;
   margin-bottom: 20px;
@@ -829,7 +826,6 @@ body.light ::-webkit-scrollbar-thumb {
 }
 
 .all-movies-modal-container .icon {
-.tvshows-modal-container .icon {
   font-size: 1.5rem;
 }
 
