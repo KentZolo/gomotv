@@ -1037,3 +1037,55 @@ body.light ::-webkit-scrollbar-thumb {
   align-items: center;
   gap: 10px;
 }
+/* Genre Submenu Styles */
+.genre-submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding-left: 20px;
+}
+
+.genre-submenu.active {
+  max-height: 1000px; /* Adjust based on content */
+}
+
+.genre-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: 10px 0;
+}
+
+.genre-toggle::after {
+  content: "▼";
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+  margin-left: 5px;
+}
+
+.genre-toggle.active::after {
+  transform: rotate(180deg);
+}
+
+.genre-submenu a {
+  display: block;
+  padding: 8px 0;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s;
+}
+
+.genre-submenu a:hover {
+  color: #e50914;
+}
+
+/* Light theme adjustments */
+body.light .genre-submenu a {
+  color: #333333;
+}
+
+body.light .genre-submenu a:hover {
+  color: #e50914;
+}
