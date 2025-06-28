@@ -1,209 +1,363 @@
-// Shared Modal Player for GomoTV
-const SERVERS = [
-  { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
-  { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
-  { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
-];
-
-async function openModal(id, type) {
-  try {
-    // Get current URL parameters
-    const params = new URLSearchParams(window.location.search);
-    const currentQuery = params.get('q');
-    const currentPage = params.get('page') || '1';
-    const genreName = params.get('name');
-    const genreId = params.get('id');
-    const countryCode = params.get('country');
-    
-    // Build new URL with modal parameters
-    let newUrl = window.location.pathname + '?';
-    if (currentQuery) newUrl += `q=${encodeURIComponent(currentQuery)}&`;
-    if (currentPage !== '1') newUrl += `page=${currentPage}&`;
-    if (genreName) newUrl += `name=${encodeURIComponent(genreName)}&`;
-    if (genreId) newUrl += `id=${genreId}&`;
-    if (countryCode) newUrl += `country=${countryCode}&`;
-    newUrl += `modalId=${id}&modalType=${type}`;
-    
-    history.pushState({ modal: true }, '', newUrl);
-
-    // Show loading state
-    const modalContainer = document.getElementById('modal-container');
-    modalContainer.innerHTML = `
-      <div class="modal">
-        <div class="modal-content">
-          <div class="loading-large"></div>
-        </div>
-      </div>
-    `;
-    document.body.style.overflow = 'hidden';
-
-    // Fetch details from TMDB API
-    const response = await fetch(
-      `https://api.themoviedb.org/3/${type}/${id}?api_key=77312bdd4669c80af3d08e0bf719d7ff`
-    );
-    
-    if (!response.ok) throw new Error('Failed to fetch details');
-    
-    const data = await response.json();
-    
-    // Create modal HTML
-    modalContainer.innerHTML = createModalHTML(data, type, id);
-    
-    // Set up modal functionality
-    setupModalEvents(id, type);
-    
-    // Load default server
-    loadDefaultServer(id, type);
-    
-  } catch (error) {
-    console.error('Error opening modal:', error);
-    showModalError();
-  }
-}
-
-function createModalHTML(data, type, id) {
-  const title = data.title || data.name;
-  const year = (data.release_date || data.first_air_date || '').substring(0, 4);
-  const rating = data.vote_average ? data.vote_average.toFixed(1) : 'N/A';
-  const overview = data.overview || 'No overview available.';
-  const genres = data.genres ? data.genres.map(g => g.name).join(', ') : '';
-  const backdropUrl = data.backdrop_path 
-    ? `https://image.tmdb.org/t/p/w1280${data.backdrop_path}`
-    : 'https://via.placeholder.com/1280x720?text=No+Backdrop';
-  
-  return `
-    <div class="modal">
-      <div class="modal-content">
-        <span class="close-btn">&times;</span>
-        
-        <div class="modal-header" style="background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('${backdropUrl}')">
-          <h2>${title} ${year ? `(${year})` : ''}</h2>
-          <div class="meta-info">
-            <span>⭐ ${rating}</span>
-            <span>${type === 'movie' ? 'Movie' : 'TV Show'}</span>
-            ${genres ? `<span>${genres}</span>` : ''}
-          </div>
-        </div>
-        
-        <div class="modal-body">
-          <h3>Overview</h3>
-          <p>${overview}</p>
-          
-          <select id="server-select" class="server-selector">
-            ${SERVERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
-          </select>
-          
-          <div class="player-container">
-            <div class="loading-server">Loading player...</div>
-            <iframe id="player-frame" frameborder="0" allowfullscreen></iframe>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function setupModalEvents(id, type) {
-  const modal = document.querySelector('.modal');
-  const closeBtn = document.querySelector('.close-btn');
-  const serverSelect = document.getElementById('server-select');
-  
-  closeBtn.addEventListener('click', closeModal);
-  modal.addEventListener('click', function(e) {
-    if (e.target === modal) closeModal();
-  });
-  
-  serverSelect.addEventListener('change', function() {
-    const server = SERVERS.find(s => s.id === this.value);
-    if (server) loadServer(server.url(type, id));
-  });
-  
-  // Handle back button
-  window.addEventListener('popstate', function(e) {
-    if (document.querySelector('.modal')) closeModal();
-  });
-}
-
-function loadDefaultServer(id, type) {
-  let currentServerIndex = 0;
-  
-  function tryNextServer() {
-    if (currentServerIndex >= SERVERS.length) {
-      document.querySelector('.loading-server').textContent = 'No working server found';
-      return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Results - GomoTV</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="shared-modal.js"></script>
+  <style>
+    /* Additional styles specific to search page */
+    .search-prompt {
+      text-align: center;
+      padding: 40px;
+      grid-column: 1 / -1;
+      color: #aaa;
+      font-size: 1.2rem;
     }
     
-    const server = SERVERS[currentServerIndex];
-    document.getElementById('server-select').value = server.id;
-    loadServer(server.url(type, id), () => {
-      currentServerIndex++;
-      tryNextServer();
-    });
-  }
-  
-  tryNextServer();
-}
-
-function loadServer(url, onError) {
-  const iframe = document.getElementById('player-frame');
-  const loading = document.querySelector('.loading-server');
-  
-  loading.style.display = 'flex';
-  iframe.style.display = 'none';
-  
-  iframe.src = url;
-  iframe.onload = function() {
-    loading.style.display = 'none';
-    iframe.style.display = 'block';
-  };
-  
-  iframe.onerror = function() {
-    if (onError) onError();
-  };
-}
-
-function showModalError() {
-  document.getElementById('modal-container').innerHTML = `
-    <div class="modal">
-      <div class="modal-content">
-        <span class="close-btn">&times;</span>
-        <h2>Error</h2>
-        <p>Failed to load details. Please try again.</p>
-      </div>
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      grid-column: 1 / -1;
+      color: #e50914;
+    }
+    
+    .search-bar-container {
+      padding: 15px;
+      background: #111;
+      position: sticky;
+      top: 60px;
+      z-index: 99;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    
+    .search-bar {
+      display: flex;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    #search-input {
+      flex: 1;
+      padding: 12px 15px;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px 0 0 4px;
+      background: #fff;
+      color: #000;
+    }
+    
+    #search-button {
+      padding: 0 20px;
+      background: #e50914;
+      color: white;
+      border: none;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    
+    #search-button:hover {
+      background: #c40812;
+    }
+    
+    @media (max-width: 768px) {
+      .search-bar-container {
+        padding: 10px;
+        top: 56px;
+      }
+      
+      #search-input {
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+      
+      #search-button {
+        padding: 0 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="menu-toggle" id="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
     </div>
-  `;
-  
-  document.querySelector('.close-btn').addEventListener('click', closeModal);
-}
+    <h1 class="logo">GomoTV</h1>
+    <button id="theme-toggle" class="theme-toggle">🌓</button>
+  </header>
 
-function closeModal() {
-  const modalContainer = document.getElementById('modal-container');
-  modalContainer.innerHTML = '';
-  document.body.style.overflow = '';
-  
-  // Restore original URL without modal parameters
-  const params = new URLSearchParams(window.location.search);
-  params.delete('modalId');
-  params.delete('modalType');
-  
-  history.replaceState(
-    null,
-    '',
-    window.location.pathname + (params.toString() ? `?${params.toString()}` : '')
-  );
-}
+  <div class="search-bar-container">
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search movies or shows..." value="">
+      <button id="search-button">Search</button>
+    </div>
+  </div>
 
-// Initialize modal if URL has modal parameters
-document.addEventListener('DOMContentLoaded', function() {
-  const params = new URLSearchParams(window.location.search);
-  const modalId = params.get('modalId');
-  const modalType = params.get('modalType');
-  
-  if (modalId && modalType) {
-    openModal(modalId, modalType);
-  }
-});
+  <nav class="hamburger-menu" id="hamburger-menu">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="genre.html">Genre</a></li>
+      <li><a href="country.html">Country</a></li>
+      <li><a href="#">Movies</a></li>
+      <li><a href="#">TV Shows</a></li>
+    </ul>
+  </nav>
 
-// Make function available globally
-window.openModal = openModal;
-window.closeModal = closeModal;
+  <main>
+    <div id="pagination-top" class="pagination"></div>
+    <div class="search-results-grid" id="results-grid">
+      <p class="search-prompt">Enter a search term to find movies and TV shows</p>
+    </div>
+    <div id="pagination" class="pagination"></div>
+  </main>
+
+  <div id="modal-container"></div>
+
+  <script>
+    // Configuration
+    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+    const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
+    
+    // Get search parameters from URL
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get("q");
+    let currentPage = parseInt(params.get("page")) || 1;
+    
+    // DOM Elements
+    const searchInput = document.getElementById('search-input');
+    const searchButton = document.getElementById('search-button');
+    const resultsGrid = document.getElementById('results-grid');
+    const paginationTop = document.getElementById('pagination-top');
+    const paginationBottom = document.getElementById('pagination');
+    const menuToggle = document.getElementById('menu-toggle');
+    const hamburgerMenu = document.getElementById('hamburger-menu');
+    const themeToggle = document.getElementById('theme-toggle');
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set up theme toggle
+      initThemeToggle();
+      
+      // If there's a search query, fetch results
+      if (query) {
+        searchInput.value = query;
+        fetchSearchResults(query, currentPage);
+      }
+      
+      // Set up search functionality
+      setupSearch();
+      
+      // Set up hamburger menu toggle
+      setupMenuToggle();
+    });
+
+    // Search functionality
+    function setupSearch() {
+      searchButton.addEventListener('click', performSearch);
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') performSearch();
+      });
+    }
+    
+    function performSearch() {
+      const searchTerm = searchInput.value.trim();
+      if (searchTerm.length > 1) {
+        window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+      } else {
+        alert('Please enter at least 2 characters');
+      }
+    }
+
+    // Menu toggle functionality
+    function setupMenuToggle() {
+      if (menuToggle && hamburgerMenu) {
+        menuToggle.addEventListener('click', function() {
+          hamburgerMenu.style.display = hamburgerMenu.style.display === 'block' ? 'none' : 'block';
+        });
+      }
+    }
+
+    // Theme toggle functionality
+    function initThemeToggle() {
+      if (!themeToggle) return;
+      
+      // Set initial theme from localStorage or default to dark
+      const currentTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(currentTheme);
+      
+      themeToggle.addEventListener('click', function() {
+        const isDark = document.body.classList.contains('dark');
+        document.body.classList.toggle('dark', !isDark);
+        document.body.classList.toggle('light', isDark);
+        localStorage.setItem('theme', isDark ? 'light' : 'dark');
+      });
+    }
+
+    // Fetch search results from TMDB API
+    async function fetchSearchResults(query, page = 1) {
+      // Show loading state
+      resultsGrid.innerHTML = '<div class="loading"></div>';
+      
+      try {
+        const response = await fetch(
+          `https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`
+        );
+        
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        
+        const data = await response.json();
+        
+        // Check if we got any results
+        if (!data.results || data.results.length === 0) {
+          showNoResults(query);
+          return;
+        }
+        
+        // Display the results
+        displayResults(data.results);
+        
+        // Set up pagination if needed
+        if (data.total_pages > 1) {
+          setupPagination(data.total_pages);
+        } else {
+          clearPagination();
+        }
+        
+      } catch (error) {
+        console.error('Error fetching search results:', error);
+        showErrorState();
+      }
+    }
+    
+    function showNoResults(query) {
+      resultsGrid.innerHTML = `
+        <p class="no-results">
+          No results found for "${query}"<br>
+          Try different keywords
+        </p>
+      `;
+      clearPagination();
+    }
+    
+    function showErrorState() {
+      resultsGrid.innerHTML = `
+        <p class="no-results">
+          Failed to load search results<br>
+          Please try again later
+        </p>
+      `;
+      clearPagination();
+    }
+    
+    function clearPagination() {
+      paginationTop.innerHTML = '';
+      paginationBottom.innerHTML = '';
+    }
+
+    // Display search results
+    function displayResults(items) {
+      resultsGrid.innerHTML = items.map(item => {
+        const title = item.title || item.name || 'Untitled';
+        const year = (item.release_date || item.first_air_date || '').substring(0, 4);
+        const posterPath = item.poster_path || item.backdrop_path;
+        const imageUrl = posterPath ? `${IMG_BASE}${posterPath}` : 'https://via.placeholder.com/500x750?text=No+Poster';
+        const mediaType = item.media_type === 'tv' ? 'TV Show' : 'Movie';
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
+        
+        return `
+          <div class="poster-wrapper">
+            <img src="${imageUrl}" 
+                 alt="${title}" 
+                 data-id="${item.id}" 
+                 data-type="${item.media_type}"
+                 loading="lazy">
+            <div class="poster-label">${title}</div>
+            <div class="poster-meta">
+              <span>⭐ ${rating}</span>
+              <span>${mediaType}</span>
+              ${year ? `<span>📅 ${year}</span>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // Set up click events for all result items
+      setupResultClickEvents();
+    }
+    
+    function setupResultClickEvents() {
+      document.querySelectorAll('.poster-wrapper').forEach(poster => {
+        poster.addEventListener('click', function() {
+          const img = poster.querySelector('img');
+          openModal(img.dataset.id, img.dataset.type);
+        });
+      });
+    }
+
+    // Pagination controls
+    function setupPagination(totalPages) {
+      // Limit to maximum 5 visible page buttons
+      const maxVisiblePages = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+      let endPage = startPage + maxVisiblePages - 1;
+      
+      if (endPage > totalPages) {
+        endPage = totalPages;
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+      
+      let paginationHTML = '';
+      
+      // Previous button
+      if (currentPage > 1) {
+        paginationHTML += `<button onclick="goToPage(${currentPage - 1})">&laquo; Prev</button>`;
+      }
+      
+      // First page button (if needed)
+      if (startPage > 1) {
+        paginationHTML += `<button onclick="goToPage(1)">1</button>`;
+        if (startPage > 2) {
+          paginationHTML += `<span class="ellipsis">...</span>`;
+        }
+      }
+      
+      // Page number buttons
+      for (let i = startPage; i <= endPage; i++) {
+        paginationHTML += `
+          <button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>
+            ${i}
+          </button>
+        `;
+      }
+      
+      // Last page button (if needed)
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          paginationHTML += `<span class="ellipsis">...</span>`;
+        }
+        paginationHTML += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
+      }
+      
+      // Next button
+      if (currentPage < totalPages) {
+        paginationHTML += `<button onclick="goToPage(${currentPage + 1})">Next &raquo;</button>`;
+      }
+      
+      // Update both pagination containers
+      paginationTop.innerHTML = paginationHTML;
+      paginationBottom.innerHTML = paginationHTML;
+    }
+    
+    function goToPage(page) {
+      window.location.href = `search.html?q=${encodeURIComponent(query)}&page=${page}`;
+    }
+  </script>
+</body>
+</html>
