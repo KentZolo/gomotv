@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Genre - GomoTV</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="shared-modal.js"></script>
 </head>
 <body>
   <header class="navbar">
@@ -49,7 +48,7 @@
   </nav>
 
   <main>
-    <!-- Inalis na ang genre grid section -->
+    <h2 class="genre-title" id="genre-title"></h2>
     <div id="pagination-top" class="pagination"></div>
     <div class="search-results-grid" id="results-grid">
       <p class="search-prompt">Select a genre from the menu to view movies</p>
@@ -59,47 +58,7 @@
 
   <div id="modal-container"></div>
 
-  <script>
-    // Configuration
-    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
-    const params = new URLSearchParams(location.search);
-    const genreId = params.get('id');
-    const genreName = params.get('name');
-    let currentPage = parseInt(params.get('page')) || 1;
-
-    function setupGenreToggle() {
-  const genreToggle = document.getElementById('genre-toggle');
-  const genreSubmenu = document.getElementById('genre-submenu');
-  
-  if (genreToggle && genreSubmenu) {
-    genreToggle.addEventListener('click', function(e) {
-      e.stopPropagation();
-      this.classList.toggle('active');
-      genreSubmenu.classList.toggle('active');
-    });
-    
-    // Close when clicking outside
-    document.addEventListener('click', function(e) {
-      if (!genreSubmenu.contains(e.target) && e.target !== genreToggle) {
-        genreToggle.classList.remove('active');
-        genreSubmenu.classList.remove('active');
-      }
-    });
-  }
-}
-
-// Initialize
-window.addEventListener('DOMContentLoaded', () => {
-  initThemeToggle();
-  setupMenuToggle();
-  setupMenuSearch();
-  setupGenreToggle(); 
-      
-      if (genreId && genreName) {
-        document.title = `${genreName} - GomoTV`;
-        fetchGenreMovies(genreId, currentPage);
-      }
-    });
-  </script>
+  <script src="shared-modal.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
