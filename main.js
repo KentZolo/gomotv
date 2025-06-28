@@ -506,57 +506,6 @@ function setupTVShowsLink() {
   });
 }
 
-// Add this function to handle Top IMDB link
-function setupTopIMDBLink() {
-  const topIMDBLink = document.getElementById('top-imdb-link');
-  if (!topIMDBLink) return;
-
-  topIMDBLink.addEventListener('click', async (e) => {
-    e.preventDefault();
-    
-    // Close hamburger menu
-    document.getElementById('hamburger-menu').style.display = 'none';
-    
-    // Scroll to Top IMDB section if it exists
-    const topIMDBSection = document.querySelector('.top-imdb-list');
-    if (topIMDBSection) {
-      topIMDBSection.scrollIntoView({ behavior: 'smooth' });
-      return;
-    }
-    
-    // If section doesn't exist, create it dynamically
-    createTopIMDBSection();
-  });
-}
-
-// Function to create Top IMDB section dynamically
-async function createTopIMDBSection() {
-  const mainContent = document.querySelector('main') || document.body;
-  
-  // Create section
-  const section = document.createElement('section');
-  section.className = 'media-section';
-  section.innerHTML = `
-    <h2>Top IMDB</h2>
-    <div class="search-results-grid homepage-grid top-imdb-list"></div>
-  `;
-  
-  // Insert after TV Shows section or at the end
-  const tvShowsSection = document.querySelector('.tv-list')?.parentElement;
-  if (tvShowsSection) {
-    tvShowsSection.after(section);
-  } else {
-    mainContent.appendChild(section);
-  }
-  
-  // Load and display content
-  await fetchAndDisplayTopIMDB();
-  
-  // Scroll to the new section
-  section.scrollIntoView({ behavior: 'smooth' });
-}
-
-
 // Initialize Everything
 window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
