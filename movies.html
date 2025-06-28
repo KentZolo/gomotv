@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Movies - GomoTV</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="shared-modal.js"></script>
+  <style>
+    .pagination-disclaimer {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 25px 20px;
+      margin-top: -10px;
+      font-size: 0.75rem;
+      color: #aaa;
+      line-height: 1.6;
+      border-top: 1px solid #333;
+      background: rgba(0,0,0,0.1);
+      border-radius: 0 0 8px 8px;
+    }
+    body.light .pagination-disclaimer {
+      color: #666;
+      border-top: 1px solid #ddd;
+      background: rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <button onclick="history.back()" class="menu-toggle">←</button>
+    <h1 class="logo">🎬 All Movies</h1>
+    <button id="theme-toggle" class="theme-toggle">🌓</button>
+  </header>
+
+  <main>
+    <div id="pagination-top" class="pagination"></div>
+    <div class="search-results-grid" id="results-grid"></div>
+    <div id="pagination" class="pagination"></div>
+  </main>
+
+  <div id="modal-container"></div>
+
+  <script>
+    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+    let currentPage = parseInt(new URLSearchParams(location.search).get('page')) || 1;
+
+    function addDisclaimer() {
+      if (!document.querySelector('.pagination-disclaimer')) {
+        const disclaimer = document.createElement('div');
+        disclaimer.className = 'pagination-disclaimer';
+        disclaimer.innerHTML = `
+          <p>⚠️ Disclaimer: GomoTV does not host any videos. Content provided by third-party servers.</p>
+        `;
+        const pagination = document.getElementById('pagination');
+        if (pagination) {
+          pagination.parentNode.insertBefore(disclaimer, pagination.nextSibling);
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initThemeToggle();
+      fetchMovies(currentPage);
+    });
+
+    function getImageUrl(path) {
+      return path ? `https://image.tmdb.org/t/p/w500${path}` : 'https://via.placeholder.com/500x750?text=No+Poster';
+    }
+
+    async function fetchMovies(page = 1) {
+      try {
+        const res = await fetch(
+          `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`
+        );
+        const data = await res.json();
+        renderResults(data.results);
+        renderPagination(data.total_pages);
+        addDisclaimer();
+      } catch (error) {
+        console.error('Error fetching movies:', error);
+        document.getElementById('results-grid').innerHTML = `
+          <p class="no-results">Failed to load movies. Please try again later.</p>
+        `;
+      }
+    }
+
+    function renderResults(items) {
+      const container = document.getElementById("results-grid");
+      container.innerHTML = items.map(item => {
+        const title = item.title;
+        const year = item.release_date?.slice(0, 4) || '';
+        const img = getImageUrl(item.poster_path);
+        const rating = item.vote_average?.toFixed(1) || 'N/A';
+
+        return `
+          <div class="poster-wrapper">
+            <img src="${img}" alt="${title}" data-id="${item.id}" data-type="movie">
+            <div class="poster-label">${title}</div>
+            <div class="poster-meta">
+              <span>⭐ ${rating}</span>
+              <span>📅 ${year}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.poster-wrapper img').forEach(img => {
+        img.addEventListener('click', () => {
+          openModal(img.dataset.id, img.dataset.type);
+        });
+      });
+    }
+
+    function renderPagination(totalPages) {
+      const pagTop = document.getElementById('pagination-top');
+      const pagBottom = document.getElementById('pagination');
+      if (totalPages <= 1) {
+        pagTop.innerHTML = '';
+        pagBottom.innerHTML = '';
+        return;
+      }
+
+      let buttons = '';
+      const minPage = Math.max(1, currentPage - 2);
+      const maxPage = Math.min(totalPages, currentPage + 2);
+
+      if (currentPage > 1) buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
+      for (let i = minPage; i <= maxPage; i++) {
+        buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+      }
+      if (currentPage < totalPages) buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
+
+      pagTop.innerHTML = buttons;
+      pagBottom.innerHTML = buttons;
+      addDisclaimer();
+    }
+
+    function goToPage(page) {
+      location.href = `movies.html?page=${page}`;
+    }
+
+    function initThemeToggle() {
+      const toggleBtn = document.getElementById('theme-toggle');
+      if (!toggleBtn) return;
+      const currentTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(currentTheme);
+      toggleBtn.addEventListener('click', () => {
+        const isDark = document.body.classList.contains('dark');
+        document.body.classList.toggle('dark', !isDark);
+        document.body.classList.toggle('light', isDark);
+        localStorage.setItem('theme', isDark ? 'light' : 'dark');
+      });
+    }
+  </script>
+</body>
+</html>
