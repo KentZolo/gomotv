@@ -31,13 +31,23 @@ body {
   color: #e50914;
   margin-left: 10px;
 }
+
+.theme-toggle {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-left: auto;
+}
+
 /* ===== HAMBURGER MENU SYSTEM ===== */
 .menu-toggle {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 30px;
-  height: 22px;
+  width: 28px;
+  height: 20px;
   background: none;
   border: none;
   cursor: pointer;
@@ -56,17 +66,9 @@ body {
   transform-origin: center;
 }
 
-.theme-toggle {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.5rem;
-  cursor: pointer;
-  margin-left: auto;
-}
 /* Active state for hamburger icon */
 .menu-toggle.active span:nth-child(1) {
-  transform: translateY(9px) rotate(45deg);
+  transform: translateY(8px) rotate(45deg);
 }
 
 .menu-toggle.active span:nth-child(2) {
@@ -75,7 +77,7 @@ body {
 }
 
 .menu-toggle.active span:nth-child(3) {
-  transform: translateY(-9px) rotate(-45deg);
+  transform: translateY(-8px) rotate(-45deg);
 }
 
 .hamburger-menu {
@@ -84,10 +86,10 @@ body {
   left: -100%;
   width: 280px;
   height: 100vh;
-  background-color: #111111;
+  background-color: #111;
   z-index: 1000;
   transition: all 0.3s ease;
-  padding: 70px 20px 20px;
+  padding: 70px 15px 20px;
   overflow-y: auto;
   box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
 }
@@ -122,31 +124,32 @@ body {
 }
 
 .hamburger-menu li {
-  margin: 12px 0;
-  position: relative;
+  margin: 10px 0;
 }
 
 .hamburger-menu a {
   color: #ffffff;
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 0.95rem;
   display: block;
   padding: 8px 12px;
-  transition: all 0.3s;
+  transition: all 0.2s;
   border-radius: 4px;
 }
 
 .hamburger-menu a:hover {
   color: #e50914;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
+/* Adjusted Search Bar Container in Drawer */
 .menu-search-bar {
   display: flex;
-  margin-bottom: 15px;
+  margin: 0 10px 15px;
   border-radius: 4px;
   overflow: hidden;
   background: #222;
+  max-width: calc(100% - 20px);
 }
 
 #menu-search-input {
@@ -156,6 +159,7 @@ body {
   background: #fff;
   color: #000;
   font-size: 0.9rem;
+  min-width: 0; /* Prevents stretching */
 }
 
 #menu-search-input:focus {
@@ -164,45 +168,23 @@ body {
 }
 
 #menu-search-button {
-  padding: 0 15px;
+  padding: 0 12px;
   background: #e50914;
   color: white;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
 }
 
 #menu-search-button:hover {
   background: #c40812;
 }
 
-/* Light theme adjustments */
-body.light .menu-toggle span {
-  background-color: #333333;
-}
-
-body.light .hamburger-menu {
-  background-color: #ffffff;
-  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
-}
-
-body.light .hamburger-menu a {
-  color: #333333;
-}
-
-body.light .hamburger-menu a:hover {
-  color: #e50914;
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-body.light .menu-search-bar {
-  background: #f0f0f0;
-}
-
-/* You can keep your existing search bar styles as they are */
+/* Main Search Bar (outside drawer) */
 .search-bar-container {
-  padding: 15px 20px;
-  background-color: #111111;
+  padding: 12px 15px;
+  background-color: #111;
   position: sticky;
   top: 60px;
   z-index: 900;
@@ -212,33 +194,63 @@ body.light .menu-search-bar {
   display: flex;
   max-width: 800px;
   margin: 0 auto;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 #search-input {
   flex: 1;
-  padding: 12px 15px;
-  font-size: 1rem;
+  padding: 10px 15px;
+  font-size: 0.95rem;
   border: none;
-  border-radius: 4px 0 0 4px;
-  background-color: #ffffff;
-  color: #000000;
+  background-color: #fff;
+  color: #000;
+  min-width: 0; /* Prevents stretching */
 }
 
 #search-button {
-  padding: 0 20px;
+  padding: 0 16px;
   background-color: #e50914;
-  color: #ffffff;
+  color: #fff;
   border: none;
-  border-radius: 0 4px 4px 0;
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
 }
 
 #search-button:hover {
   background-color: #c40812;
 }
-  
+
+/* Light theme adjustments */
+body.light .menu-toggle span {
+  background-color: #333;
+}
+
+body.light .hamburger-menu {
+  background-color: #fff;
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+}
+
+body.light .hamburger-menu a {
+  color: #333;
+}
+
+body.light .hamburger-menu a:hover {
+  color: #e50914;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+body.light .menu-search-bar {
+  background: #f0f0f0;
+}
+
+body.light .search-bar-container {
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
 /* ===== CONTENT SECTIONS ===== */
 .featured {
   positioion: relative;
