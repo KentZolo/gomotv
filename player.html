@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player - GomoTV</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Player-specific styles */
+    .player-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 1000;
+    }
+    .player-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+      z-index: 2;
+    }
+    .back-btn {
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #player-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="player-container">
+    <div class="player-header">
+      <button class="back-btn" onclick="window.history.back()">← Back</button>
+    </div>
+    <iframe id="player-iframe" allowfullscreen></iframe>
+  </div>
+
+  <script>
+    // Get media info from URL
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type');
+    const id = params.get('id');
+    const server = params.get('server') || 'vidsrccc';
+
+    // Supported servers
+    const SERVERS = {
+      vidsrccc: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}`,
+      vidsrc: (t, id) => `https://vidsrc.to/embed/${t}/${id}`,
+      apimocine: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true`
+    };
+
+    // Load player
+    if (type && id && SERVERS[server]) {
+      document.getElementById('player-iframe').src = SERVERS[server](type, id);
+    } else {
+      alert('Invalid player parameters');
+      window.history.back();
+    }
+  </script>
+</body>
+</html>
