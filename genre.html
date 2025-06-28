@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Genre - GomoTV</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Genres - GomoTV</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="navbar">
@@ -13,52 +13,39 @@
       <span></span>
       <span></span>
     </div>
-    <h1 class="logo">GomoTV</h1>
+    <h1 class="logo">Genres</h1>
     <button id="theme-toggle" class="theme-toggle">🌓</button>
   </header>
 
-  <div class="menu-overlay" id="menu-overlay"></div>
-
   <nav class="hamburger-menu" id="hamburger-menu">
-    <div class="menu-search-bar">
-      <input type="text" id="menu-search-input" placeholder="Search movies or shows...">
-      <button id="menu-search-button">🔍</button>
-    </div>
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li>
-        <div class="genre-toggle" id="genre-toggle">Genre</div>
-        <div class="genre-submenu" id="genre-submenu">
-          <a href="genre.html?name=Action&id=28">Action</a>
-          <a href="genre.html?name=Animation&id=16">Animation</a>
-          <a href="genre.html?name=Comedy&id=35">Comedy</a>
-          <a href="genre.html?name=Drama&id=18">Drama</a>
-          <a href="genre.html?name=Fantasy&id=14">Fantasy</a>
-          <a href="genre.html?name=Horror&id=27">Horror</a>
-          <a href="genre.html?name=Romance&id=10749">Romance</a>
-          <a href="genre.html?name=Sci-Fi&id=878">Sci-Fi</a>
-          <a href="genre.html?name=Thriller&id=53">Thriller</a>
-        </div>
-      </li>
-      <li><a href="country.html">Country</a></li>
-      <li><a href="movies.html">Movies</a></li>
-      <li><a href="tvshows.html">TV Shows</a></li>
-      <li><a href="topimdb.html">Top IMDB</a></li>
-    </ul>
+    <!-- Your existing menu items -->
   </nav>
 
   <main>
-    <h2 class="genre-title" id="genre-title"></h2>
-    <div id="pagination-top" class="pagination"></div>
-    <div class="search-results-grid" id="results-grid">
-      <p class="search-prompt">Select a genre from the menu to view movies</p>
-    </div>
-    <div id="pagination" class="pagination"></div>
+    <section class="genre-section">
+      <h2>Movie Genres</h2>
+      <div class="genre-grid" id="genre-grid">
+        <!-- Genres will be populated here -->
+      </div>
+    </section>
+
+    <section class="media-section">
+      <h2 id="genre-title">Select a Genre</h2>
+      <div id="pagination-top" class="pagination"></div>
+      <div class="search-results-grid" id="results-grid">
+        <div class="loading"></div>
+      </div>
+      <div id="pagination" class="pagination"></div>
+      <div class="pagination-disclaimer">
+        <p>⚠️ Disclaimer: GomoTV does not host any videos. Content provided by third-party servers.</p>
+        <p>Support creators via <a href="https://www.justwatch.com" target="_blank">official platforms</a>.</p>
+      </div>
+    </section>
   </main>
 
   <div id="modal-container"></div>
+  <footer class="footer">© 2025 - GomoTV. All content is property of its respective owners.</footer>
 
-  <script src="shared-modal.js"></script>
   <script src="main.js"></script>
 </body>
 </html>
