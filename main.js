@@ -174,36 +174,51 @@ async function openModal(id, type) {
   }
 }
 
+// Update your createModal function only
 function createModal(data, type, id) {
   const title = data.title || data.name;
   const year = (data.release_date || data.first_air_date || '').slice(0, 4);
   const rating = data.vote_average?.toFixed(1) || 'N/A';
   const overview = data.overview || 'No description available.';
-  const genres = data.genres?.map(g => g.name).join(', ');
+  const genres = data.genres?.map(g => g.name).join(' • ');
+  const backdropUrl = getImageUrl(data.backdrop_path, true);
 
   const modal = document.createElement('div');
   modal.className = 'modal';
   modal.innerHTML = `
     <div class="modal-content">
       <span class="close-btn">×</span>
-      <div class="modal-header">
-        <h2>${title} (${year})</h2>
-        <div class="meta-info">
-          <span>⭐ ${rating}</span>
-          <span>${type.toUpperCase()}</span>
-          ${genres ? `<span>${genres}</span>` : ''}
+      
+      <!-- Hero Section with Backdrop -->
+      <div class="modal-header" style="background-image: url('${backdropUrl}')">
+        <div class="modal-header-content">
+          <h1 class="modal-title">${title.toUpperCase()}</h1>
         </div>
       </div>
-      <div class="modal-body">
-        <h3>Overview</h3>
-        <p>${overview}</p>
+      
+      <!-- Server Selector -->
+      <div class="server-selector-container">
         <select class="server-selector" id="server-select">
           ${SERVERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
         </select>
-        <div class="player-container">
-          <div class="loading-server">Loading player...</div>
-          <iframe id="player-frame" allowfullscreen></iframe>
+      </div>
+      
+      <!-- Movie/TV Show Details -->
+      <div class="movie-details">
+        <h2 class="movie-title">${title}</h2>
+        <div class="movie-meta">
+          <span>⭐ ${rating}</span>
+          <span>${type === 'movie' ? 'Movie' : 'TV Show'}</span>
+          ${genres ? `<span>${genres}</span>` : ''}
+          ${year ? `<span>📅 ${year}</span>` : ''}
         </div>
+        <p class="movie-overview">${overview}</p>
+      </div>
+      
+      <!-- Player Container -->
+      <div class="player-container">
+        <div class="loading-server">Loading player...</div>
+        <iframe id="player-frame" allowfullscreen></iframe>
       </div>
     </div>
   `;
