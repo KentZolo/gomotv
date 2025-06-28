@@ -1,17 +1,8 @@
-// API Configuration
 const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
-// Streaming Servers
-const SERVERS = [
-  { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
-  { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
-  { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
-];
-
-// Core Functions ======================================================
-
+// Core Functions
 function getImageUrl(path, isBackdrop = false) {
   if (!path) {
     return isBackdrop
@@ -21,19 +12,7 @@ function getImageUrl(path, isBackdrop = false) {
   return `${IMG_BASE}${path}`;
 }
 
-function determineQuality(releaseDate) {
-  if (!releaseDate) return 'HD';
-  const now = new Date();
-  const released = new Date(releaseDate);
-  const diffDays = Math.floor((now - released) / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 7) return 'CAM';
-  if (diffDays < 21) return 'TS';
-  return 'HD';
-}
-
-// Banner Slider =======================================================
-
+// Banner Slider
 let bannerIndex = 0;
 let bannerItems = [];
 
@@ -70,6 +49,7 @@ function showBannerSlide(index) {
 function setupBannerNavigation() {
   document.querySelector('.prev').addEventListener('click', prevSlide);
   document.querySelector('.next').addEventListener('click', nextSlide);
+
   setInterval(nextSlide, 5000);
 }
 
@@ -83,8 +63,7 @@ function nextSlide() {
   showBannerSlide(bannerIndex);
 }
 
-// Content Loading =====================================================
-
+// Content Loading
 async function fetchAndDisplay(endpoint, containerSelector, type) {
   try {
     const container = document.querySelector(containerSelector);
@@ -131,6 +110,18 @@ function displayMedia(items, containerSelector, defaultType) {
   setupPosterClickEvents(containerSelector);
 }
 
+function determineQuality(releaseDate) {
+  if (!releaseDate) return 'HD';
+
+  const now = new Date();
+  const released = new Date(releaseDate);
+  const diffDays = Math.floor((now - released) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 7) return 'CAM';
+  if (diffDays < 21) return 'TS';
+  return 'HD';
+}
+
 function setupPosterClickEvents(containerSelector) {
   const posters = document.querySelectorAll(`${containerSelector} .poster-wrapper`);
   if (!posters) return;
@@ -145,116 +136,12 @@ function setupPosterClickEvents(containerSelector) {
   });
 }
 
-// Genre Functions =====================================================
-
-function initGenrePage() {
-  // Populate genre grid if exists
-  const genreGrid = document.getElementById('genre-grid');
-  if (genreGrid) {
-    genreGrid.innerHTML = GENRES.map(genre => `
-      <a href="genre.html?id=${genre.id}&name=${encodeURIComponent(genre.name)}" 
-         class="genre-link">
-        ${genre.name}
-      </a>
-    `).join('');
-  }
-
-  // Check if viewing specific genre
-  const params = new URLSearchParams(location.search);
-  const genreId = params.get('id');
-  const genreName = params.get('name');
-  
-  if (genreId && genreName) {
-    document.title = `${genreName} - GomoTV`;
-    const genreTitle = document.getElementById('genre-title');
-    if (genreTitle) genreTitle.textContent = `${genreName} Movies`;
-    fetchGenreMovies(genreId);
-  }
-}
-
-async function fetchGenreMovies(genreId, page = 1) {
-  try {
-    const container = document.getElementById('results-grid');
-    if (!container) return;
-    
-    container.innerHTML = '<div class="loading"></div>';
-    
-    const response = await fetch(
-      `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}`
-    );
-    const data = await response.json();
-    
-    if (data.results && data.results.length > 0) {
-      displayGenreResults(data.results);
-      renderGenrePagination(data.total_pages, page, genreId);
-    } else {
-      container.innerHTML = '<p class="no-results">No movies found in this genre.</p>';
-    }
-  } catch (error) {
-    console.error('Error fetching genre movies:', error);
-    const container = document.getElementById('results-grid');
-    if (container) {
-      container.innerHTML = '<p class="error-message">Failed to load movies. Please try again later.</p>';
-    }
-  }
-}
-
-function displayGenreResults(movies) {
-  const container = document.getElementById('results-grid');
-  if (!container) return;
-  
-  container.innerHTML = movies.map(movie => `
-    <div class="poster-wrapper">
-      <img src="${getImageUrl(movie.poster_path)}" 
-           alt="${movie.title}" 
-           data-id="${movie.id}" 
-           data-type="movie"
-           loading="lazy">
-      <div class="poster-label">${movie.title}</div>
-      <div class="poster-meta">${movie.release_date?.slice(0, 4) || ''}</div>
-    </div>
-  `).join('');
-
-  // Add click handlers
-  document.querySelectorAll('.poster-wrapper img').forEach(img => {
-    img.addEventListener('click', () => {
-      openModal(img.dataset.id, img.dataset.type);
-    });
-  });
-}
-
-function renderGenrePagination(totalPages, currentPage, genreId) {
-  const pagTop = document.getElementById('pagination-top');
-  const pagBottom = document.getElementById('pagination');
-  
-  if (totalPages <= 1) {
-    if (pagTop) pagTop.innerHTML = '';
-    if (pagBottom) pagBottom.innerHTML = '';
-    return;
-  }
-
-  let buttons = '';
-  const minPage = Math.max(1, currentPage - 2);
-  const maxPage = Math.min(totalPages, currentPage + 2);
-
-  if (currentPage > 1) {
-    buttons += `<a href="genre.html?id=${genreId}&page=${currentPage - 1}" class="page-link">‹ Prev</a>`;
-  }
-  
-  for (let i = minPage; i <= maxPage; i++) {
-    buttons += `<a href="genre.html?id=${genreId}&page=${i}" 
-                 class="page-link ${i === currentPage ? 'active' : ''}">${i}</a>`;
-  }
-  
-  if (currentPage < totalPages) {
-    buttons += `<a href="genre.html?id=${genreId}&page=${currentPage + 1}" class="page-link">Next ›</a>`;
-  }
-
-  if (pagTop) pagTop.innerHTML = buttons;
-  if (pagBottom) pagBottom.innerHTML = buttons;
-}
-
-// Modal Functions =====================================================
+// Modal Player
+const SERVERS = [
+  { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
+  { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
+  { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
+];
 
 async function openModal(id, type) {
   try {
@@ -387,8 +274,7 @@ function closeModal(modal) {
   }
 }
 
-// UI Components =======================================================
-
+// Hamburger Menu Toggle - UPDATED VERSION
 function setupMenuToggle() {
   const menuBtn = document.getElementById('menu-toggle');
   const menu = document.getElementById('hamburger-menu');
@@ -423,6 +309,7 @@ function setupMenuToggle() {
   });
 }
 
+// Hamburger Menu Search
 function setupMenuSearch() {
   const menuSearchInput = document.getElementById('menu-search-input');
   const menuSearchButton = document.getElementById('menu-search-button');
@@ -448,6 +335,7 @@ function setupMenuSearch() {
   });
 }
 
+// Theme Toggle
 function initThemeToggle() {
   const toggleBtn = document.getElementById('theme-toggle');
   if (!toggleBtn) return;
@@ -463,66 +351,27 @@ function initThemeToggle() {
   });
 }
 
-// Initialization ======================================================
-// Check for genre parameter on page load
-const urlParams = new URLSearchParams(window.location.search);
-const genreId = urlParams.get('genre');
-
-if (genreId) {
-  // If genre parameter exists, load movies for that genre
-  fetchGenreMovies(genreId);
-  
-  // Update page title
-  const genre = GENRES.find(g => g.id == genreId);
-  if (genre) {
-    document.title = `${genre.name} Movies - GomoTV`;
-    // You can also update a heading if you have one
-    const heading = document.querySelector('h1');
-    if (heading) heading.textContent = `${genre.name} Movies`;
-  }
-}
-
-function setupGenreSubmenu() {
-  const genreToggles = document.querySelectorAll('.genre-toggle');
-  
-  genreToggles.forEach(toggle => {
-    toggle.addEventListener('click', (e) => {
-      e.preventDefault();
-      const submenu = toggle.nextElementSibling;
-      toggle.classList.toggle('active');
-      submenu.classList.toggle('active');
-    });
-  });
-}
-
+// Initialize Everything
 window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   setupMenuToggle();
   setupMenuSearch();
-  setupGenreSubmenu(); 
   
-  // Initialize genre page if we're on it
-  initGenrePage();
-  
-  // Initialize banner if exists
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
   }
 
-  // Initialize homepage content
   if (document.querySelector('.movie-list')) {
     fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
     fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
     fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
   }
 
-  // Check for modal in URL
   const params = new URLSearchParams(location.search);
   if (params.get('id') && params.get('type')) {
     openModal(params.get('id'), params.get('type'));
   }
 
-  // Handle back button for modal
   window.addEventListener('popstate', (e) => {
     if (e.state?.modal) {
       const modal = document.querySelector('.modal');
