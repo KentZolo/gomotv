@@ -487,15 +487,6 @@ function initThemeToggle() {
 }
 
 // Initialization ======================================================
-function populateGenreMenu() {
-  const genreSubmenu = document.querySelector('.genre-submenu');
-  if (!genreSubmenu) return;
-  
-  genreSubmenu.innerHTML = GENRES.map(genre => 
-    `<a href="genre.html?id=${genre.id}&name=${encodeURIComponent(genre.name)}">${genre.name}</a>`
-  ).join('');
-}
-
 function setupGenreSubmenu() {
   const genreToggles = document.querySelectorAll('.genre-toggle');
   
@@ -514,7 +505,6 @@ window.addEventListener('DOMContentLoaded', () => {
   setupMenuToggle();
   setupMenuSearch();
   setupGenreSubmenu(); 
-  setupGenreSubmenu()
   
   // Initialize genre page if we're on it
   initGenrePage();
