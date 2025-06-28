@@ -351,11 +351,33 @@ function initThemeToggle() {
   });
 }
 
-// Initialize Everything
+function setupGenreToggle() {
+  const genreToggle = document.getElementById('genre-toggle');
+  const genreSubmenu = document.getElementById('genre-submenu');
+  
+  if (genreToggle && genreSubmenu) {
+    genreToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      this.classList.toggle('active');
+      genreSubmenu.classList.toggle('active');
+    });
+    
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!genreSubmenu.contains(e.target) && e.target !== genreToggle) {
+        genreToggle.classList.remove('active');
+        genreSubmenu.classList.remove('active');
+      }
+    });
+  }
+}
+
+// Initialize
 window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   setupMenuToggle();
   setupMenuSearch();
+  setupGenreToggle();
   
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
