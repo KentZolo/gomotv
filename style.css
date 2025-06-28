@@ -1089,3 +1089,47 @@ body.light .genre-submenu a {
 body.light .genre-submenu a:hover {
   color: #e50914;
 }
+.genre-section {
+  padding: 20px;
+}
+
+.genre-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.genre-link {
+  display: block;
+  background-color: #222;
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.genre-link:hover {
+  background-color: #e50914;
+  transform: translateY(-3px);
+}
+
+.page-link {
+  padding: 8px 12px;
+  background-color: #222;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  margin: 0 5px;
+  transition: background-color 0.3s;
+}
+
+.page-link:hover {
+  background-color: #333;
+}
+
+.page-link.active {
+  background-color: #e50914;
+}
