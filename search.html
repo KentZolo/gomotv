@@ -384,66 +384,6 @@
       });
     }
 
-    // Modal Player Functions
-    async function openModal(id, type) {
-      try {
-        // 1. Get media details
-        const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}`);
-        const data = await res.json();
-
-        // 2. Create modal
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
-          <div class="modal-content">
-            <button class="close-btn">×</button>
-            <div class="player-container">
-              <div class="loading-server">Loading player...</div>
-              <iframe id="player-frame" allowfullscreen></iframe>
-            </div>
-          </div>
-        `;
-
-        // 3. Add to page
-        document.getElementById('modal-container').appendChild(modal);
-        document.body.style.overflow = 'hidden';
-
-        // 4. Load player
-        loadPlayer(modal, id, type);
-
-        // 5. Setup close button
-        modal.querySelector('.close-btn').addEventListener('click', () => {
-          modal.remove();
-          document.body.style.overflow = '';
-        });
-
-      } catch (error) {
-        alert('Failed to load player');
-        console.error(error);
-      }
-    }
-
-    function loadPlayer(modal, id, type) {
-      const iframe = modal.querySelector('#player-frame');
-      const loading = modal.querySelector('.loading-server');
-
-      // Try each server until one works
-      function tryServer(index) {
-        if (index >= SERVERS.length) {
-          loading.textContent = 'No working server found';
-          return;
-        }
-
-        const server = SERVERS[index];
-        iframe.src = server.url(type, id);
-        
-        iframe.onload = () => loading.style.display = 'none';
-        iframe.onerror = () => tryServer(index + 1);
-      }
-
-      tryServer(0); // Start with first server
-    }
-
     // Pagination controls
     function setupPagination(totalPages) {
       const maxVisiblePages = 5;
