@@ -67,6 +67,8 @@ function nextSlide() {
 async function fetchAndDisplay(endpoint, containerSelector, type) {
   try {
     const container = document.querySelector(containerSelector);
+    if (!container) return;
+    
     container.innerHTML = '<div class="loading"></div>';
 
     const res = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}`);
@@ -86,6 +88,8 @@ async function fetchAndDisplay(endpoint, containerSelector, type) {
 
 function displayMedia(items, containerSelector, defaultType) {
   const container = document.querySelector(containerSelector);
+  if (!container) return;
+  
   container.innerHTML = items.map(item => {
     const title = item.title || item.name;
     const imageUrl = getImageUrl(item.poster_path);
@@ -96,7 +100,7 @@ function displayMedia(items, containerSelector, defaultType) {
     return `
       <div class="poster-wrapper">
         ${quality ? `<div class="poster-badge">${quality}</div>` : ''}
-        <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="${type}">
+        <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="${type}" loading="lazy">
         <div class="poster-label">${title}</div>
         <div class="poster-meta">📅 ${year}</div>
       </div>
@@ -119,10 +123,15 @@ function determineQuality(releaseDate) {
 }
 
 function setupPosterClickEvents(containerSelector) {
-  document.querySelectorAll(`${containerSelector} .poster-wrapper`).forEach(poster => {
+  const posters = document.querySelectorAll(`${containerSelector} .poster-wrapper`);
+  if (!posters) return;
+  
+  posters.forEach(poster => {
     poster.addEventListener('click', () => {
       const img = poster.querySelector('img');
-      openModal(img.dataset.id, img.dataset.type);
+      if (img) {
+        openModal(img.dataset.id, img.dataset.type);
+      }
     });
   });
 }
@@ -155,7 +164,7 @@ async function openModal(id, type) {
     loadDefaultServer(modal, type, id);
   } catch (err) {
     console.error('Modal error:', err);
-    alert('Failed to load movie details');
+    alert('Failed to load details');
     
     // Re-show all-movies modal if it exists
     const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
@@ -203,24 +212,33 @@ function createModal(data, type, id) {
 }
 
 function setupModalEvents(modal, id, type) {
-  modal.querySelector('.close-btn').addEventListener('click', () => closeModal(modal));
+  const closeBtn = modal.querySelector('.close-btn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => closeModal(modal));
+  }
 
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal(modal);
   });
 
-  modal.querySelector('#server-select').addEventListener('change', (e) => {
-    const server = SERVERS.find(s => s.id === e.target.value);
-    if (server) {
-      const iframe = modal.querySelector('#player-frame');
-      iframe.src = server.url(type, id);
-    }
-  });
+  const serverSelect = modal.querySelector('#server-select');
+  if (serverSelect) {
+    serverSelect.addEventListener('change', (e) => {
+      const server = SERVERS.find(s => s.id === e.target.value);
+      if (server) {
+        const iframe = modal.querySelector('#player-frame');
+        if (iframe) {
+          iframe.src = server.url(type, id);
+        }
+      }
+    });
+  }
 }
 
 function loadDefaultServer(modal, type, id) {
   const iframe = modal.querySelector('#player-frame');
   const loading = modal.querySelector('.loading-server');
+  if (!iframe || !loading) return;
 
   function tryServer(index) {
     if (index >= SERVERS.length) {
@@ -245,11 +263,11 @@ function loadDefaultServer(modal, type, id) {
 }
 
 function closeModal(modal) {
+  if (!modal) return;
   modal.remove();
   document.body.style.overflow = '';
   history.back();
   
-  // Re-show all-movies modal if it exists
   const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
   if (existingAllMoviesModal) {
     existingAllMoviesModal.style.display = 'flex';
@@ -265,11 +283,6 @@ function setupMenuToggle() {
 
   menuBtn.addEventListener('click', () => {
     menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-
-    if (menu.style.display === 'block') {
-      const menuSearchInput = document.getElementById('menu-search-input');
-      if (menuSearchInput) setTimeout(() => menuSearchInput.focus(), 100);
-    }
   });
 
   // Close menu when clicking on any link
@@ -338,13 +351,11 @@ function setupAllMoviesLink() {
   allMoviesLink.addEventListener('click', async (e) => {
     e.preventDefault();
     
-    // Close any existing modal first
     const existingModal = document.querySelector('.modal');
     if (existingModal) {
       existingModal.remove();
     }
     
-    // Create modal container
     const container = document.createElement('div');
     container.className = 'all-movies-modal-container';
     container.innerHTML = `
@@ -361,14 +372,14 @@ function setupAllMoviesLink() {
     document.body.appendChild(container);
     document.body.style.overflow = 'hidden';
     
-    // Close button handler
     const closeBtn = container.querySelector('.close-btn');
-    closeBtn.addEventListener('click', () => {
-      container.remove();
-      document.body.style.overflow = '';
-    });
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        container.remove();
+        document.body.style.overflow = '';
+      });
+    }
     
-    // Load first page of movies
     const moviesGrid = container.querySelector('#all-movies-grid');
     const pagination = container.querySelector('#all-movies-pagination');
     
@@ -385,6 +396,8 @@ function setupAllMoviesLink() {
 }
 
 function renderMoviesPagination(container, totalPages, currentPage) {
+  if (!container) return;
+  
   let buttons = '';
   const maxVisiblePages = 5;
   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
@@ -423,17 +436,17 @@ function renderMoviesPagination(container, totalPages, currentPage) {
   
   container.innerHTML = buttons;
   
-  // Add event listeners to pagination buttons
   container.querySelectorAll('button[data-page]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const page = parseInt(btn.dataset.page);
       const moviesGrid = document.getElementById('all-movies-grid');
-      moviesGrid.innerHTML = '<div class="loading"></div>';
-      
-      const data = await fetchAllMovies(page);
-      if (data.results.length > 0) {
-        displayMedia(data.results, '#all-movies-grid', 'movie');
-        renderMoviesPagination(container, data.total_pages, page);
+      if (moviesGrid) {
+        moviesGrid.innerHTML = '<div class="loading"></div>';
+        const data = await fetchAllMovies(page);
+        if (data.results.length > 0) {
+          displayMedia(data.results, '#all-movies-grid', 'movie');
+          renderMoviesPagination(container, data.total_pages, page);
+        }
       }
     });
   });
@@ -444,7 +457,7 @@ async function fetchAllTVShows(page = 1) {
   try {
     const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`);
     const data = await res.json();
-    data.results = data.results.filter(show => show.poster_path); // Remove shows without posters
+    data.results = data.results.filter(show => show.poster_path);
     return data;
   } catch (err) {
     console.error('Fetch TV shows error:', err);
@@ -459,13 +472,11 @@ function setupTVShowsLink() {
   tvShowsLink.addEventListener('click', async (e) => {
     e.preventDefault();
     
-    // Close any existing modal first
     const existingModal = document.querySelector('.modal');
     if (existingModal) {
       existingModal.remove();
     }
     
-    // Create modal container
     const container = document.createElement('div');
     container.className = 'modal';
     container.innerHTML = `
@@ -483,14 +494,14 @@ function setupTVShowsLink() {
     document.getElementById('modal-container').appendChild(container);
     document.body.style.overflow = 'hidden';
     
-    // Close button handler
     const closeBtn = container.querySelector('.close-btn');
-    closeBtn.addEventListener('click', () => {
-      container.remove();
-      document.body.style.overflow = '';
-    });
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        container.remove();
+        document.body.style.overflow = '';
+      });
+    }
     
-    // Load first page of TV shows
     const tvShowsGrid = container.querySelector('#tvshows-grid');
     const pagination = container.querySelector('#tvshows-pagination');
     
@@ -512,8 +523,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setupMenuToggle();
   setupMenuSearch();
   setupAllMoviesLink();
-  setupTVShowsLink(); 
-  setupTopIMDBLink();
+  setupTVShowsLink();
   
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
