@@ -432,13 +432,90 @@ function renderMoviesPagination(container, totalPages, currentPage) {
   });
 }
 
+/* ========== NEW TV SHOWS FEATURE ========== */
+async function fetchAllTVShows(page = 1) {
+  try {
+    const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`);
+    const data = await res.json();
+    data.results = data.results.filter(show => show.poster_path); // Remove shows without posters
+    return data;
+  } catch (err) {
+    console.error('Fetch TV shows error:', err);
+    return { results: [], total_pages: 0 };
+  }
+}
+
+function setupTVShowsLink() {
+  const tvShowsLink = document.getElementById('tvshows-link');
+  if (!tvShowsLink) return;
+
+  tvShowsLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    const container = document.createElement('div');
+    container.className = 'tvshows-modal-container';
+    container.innerHTML = `
+      <div class="modal">
+        <div class="modal-content">
+          <span class="close-btn">×</span>
+          <h2>📺 All TV Shows</h2>
+          <div class="search-results-grid" id="tvshows-grid"></div>
+          <div class="pagination" id="tvshows-pagination"></div>
+          <div class="pagination-disclaimer">
+            <p>⚠️ Content provided by third-party servers</p>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(container);
+    document.body.style.overflow = 'hidden';
+    
+    // Load TV shows
+    const tvShowsGrid = container.querySelector('#tvshows-grid');
+    tvShowsGrid.innerHTML = '<div class="loading"></div>';
+    
+    const data = await fetchAllTVShows();
+    if (data.results.length > 0) {
+      displayMedia(data.results, '#tvshows-grid', 'tv');
+      renderMoviesPagination( // Reuse same pagination function
+        container.querySelector('#tvshows-pagination'),
+        data.total_pages,
+        1
+      );
+    }
+
+    // Close button
+    container.querySelector('.close-btn').addEventListener('click', () => {
+      container.remove();
+      document.body.style.overflow = '';
+    });
+
+    // Pagination
+    container.querySelectorAll('.page-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const page = parseInt(btn.dataset.page);
+        tvShowsGrid.innerHTML = '<div class="loading"></div>';
+        const newData = await fetchAllTVShows(page);
+        displayMedia(newData.results, '#tvshows-grid', 'tv');
+        renderMoviesPagination(
+          container.querySelector('#tvshows-pagination'),
+          newData.total_pages,
+          page
+        );
+      });
+    });
+  });
+}
+
 // Initialize Everything
 window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   setupMenuToggle();
   setupMenuSearch();
   setupAllMoviesLink();
-
+  setupTVShowsLink(); 
+  
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
   }
