@@ -271,6 +271,13 @@ function setupMenuToggle() {
       if (menuSearchInput) setTimeout(() => menuSearchInput.focus(), 100);
     }
   });
+
+  // Close menu when clicking on any link
+  document.querySelectorAll('#hamburger-menu a').forEach(link => {
+    link.addEventListener('click', () => {
+      menu.style.display = 'none';
+    });
+  });
 }
 
 // Hamburger Menu Search
@@ -432,7 +439,7 @@ function renderMoviesPagination(container, totalPages, currentPage) {
   });
 }
 
-/* ========== NEW TV SHOWS FEATURE ========== */
+// TV Shows Functionality
 async function fetchAllTVShows(page = 1) {
   try {
     const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`);
@@ -452,59 +459,50 @@ function setupTVShowsLink() {
   tvShowsLink.addEventListener('click', async (e) => {
     e.preventDefault();
     
+    // Close any existing modal first
+    const existingModal = document.querySelector('.modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    
+    // Create modal container
     const container = document.createElement('div');
-    container.className = 'tvshows-modal-container';
+    container.className = 'modal';
     container.innerHTML = `
-      <div class="modal">
-        <div class="modal-content">
-          <span class="close-btn">×</span>
-          <h2>📺 All TV Shows</h2>
-          <div class="search-results-grid" id="tvshows-grid"></div>
-          <div class="pagination" id="tvshows-pagination"></div>
-          <div class="pagination-disclaimer">
-            <p>⚠️ Content provided by third-party servers</p>
-          </div>
+      <div class="modal-content" style="max-width: 90vw; max-height: 90vh; overflow-y: auto;">
+        <span class="close-btn">×</span>
+        <h2>📺 All TV Shows</h2>
+        <div class="search-results-grid" id="tvshows-grid"></div>
+        <div class="pagination" id="tvshows-pagination"></div>
+        <div class="pagination-disclaimer">
+          <p>⚠️ Content provided by third-party servers</p>
         </div>
       </div>
     `;
     
-    document.body.appendChild(container);
+    document.getElementById('modal-container').appendChild(container);
     document.body.style.overflow = 'hidden';
     
-    // Load TV shows
+    // Close button handler
+    const closeBtn = container.querySelector('.close-btn');
+    closeBtn.addEventListener('click', () => {
+      container.remove();
+      document.body.style.overflow = '';
+    });
+    
+    // Load first page of TV shows
     const tvShowsGrid = container.querySelector('#tvshows-grid');
+    const pagination = container.querySelector('#tvshows-pagination');
+    
     tvShowsGrid.innerHTML = '<div class="loading"></div>';
     
     const data = await fetchAllTVShows();
     if (data.results.length > 0) {
       displayMedia(data.results, '#tvshows-grid', 'tv');
-      renderMoviesPagination( // Reuse same pagination function
-        container.querySelector('#tvshows-pagination'),
-        data.total_pages,
-        1
-      );
+      renderMoviesPagination(pagination, data.total_pages, 1);
+    } else {
+      tvShowsGrid.innerHTML = '<p class="error-message">No TV shows found</p>';
     }
-
-    // Close button
-    container.querySelector('.close-btn').addEventListener('click', () => {
-      container.remove();
-      document.body.style.overflow = '';
-    });
-
-    // Pagination
-    container.querySelectorAll('.page-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const page = parseInt(btn.dataset.page);
-        tvShowsGrid.innerHTML = '<div class="loading"></div>';
-        const newData = await fetchAllTVShows(page);
-        displayMedia(newData.results, '#tvshows-grid', 'tv');
-        renderMoviesPagination(
-          container.querySelector('#tvshows-pagination'),
-          newData.total_pages,
-          page
-        );
-      });
-    });
   });
 }
 
