@@ -6,64 +6,6 @@
   <title>Genre - GomoTV</title>
   <link rel="stylesheet" href="style.css" />
   <script src="shared-modal.js"></script>
-  <style>
-    /* Collapsible genre menu styles */
-    .genre-submenu {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-      padding-left: 15px;
-    }
-    
-    .genre-submenu.active {
-      max-height: 500px;
-    }
-    
-    .genre-toggle {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      padding: 8px 0;
-    }
-    
-    .genre-toggle::after {
-      content: "▼";
-      font-size: 0.8rem;
-      transition: transform 0.3s ease;
-    }
-    
-    .genre-toggle.active::after {
-      transform: rotate(180deg);
-    }
-    
-    .genre-submenu a {
-      display: block;
-      padding: 8px 0;
-      color: #ffffff;
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: color 0.3s;
-    }
-    
-    .genre-submenu a:hover {
-      color: #e50914;
-    }
-    
-    /* Light theme adjustments */
-    body.light .genre-submenu a {
-      color: #333333;
-    }
-    
-    body.light .genre-submenu a:hover {
-      color: #e50914;
-    }
-
-    /* Remove the main genre grid styles */
-    .genre-list, .genre-grid {
-      display: none;
-    }
-  </style>
 </head>
 <body>
   <header class="navbar">
@@ -125,33 +67,39 @@
     const genreName = params.get('name');
     let currentPage = parseInt(params.get('page')) || 1;
 
-    // Initialize the page
-    document.addEventListener('DOMContentLoaded', function() {
-      initThemeToggle();
-      setupMenuToggle();
-      setupMenuSearch();
-      setupGenreToggle();
+    function setupGenreToggle() {
+  const genreToggle = document.getElementById('genre-toggle');
+  const genreSubmenu = document.getElementById('genre-submenu');
+  
+  if (genreToggle && genreSubmenu) {
+    genreToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      this.classList.toggle('active');
+      genreSubmenu.classList.toggle('active');
+    });
+    
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!genreSubmenu.contains(e.target) && e.target !== genreToggle) {
+        genreToggle.classList.remove('active');
+        genreSubmenu.classList.remove('active');
+      }
+    });
+  }
+}
+
+// Initialize
+window.addEventListener('DOMContentLoaded', () => {
+  initThemeToggle();
+  setupMenuToggle();
+  setupMenuSearch();
+  setupGenreToggle(); 
       
       if (genreId && genreName) {
         document.title = `${genreName} - GomoTV`;
         fetchGenreMovies(genreId, currentPage);
       }
     });
-
-    // Genre toggle functionality
-    function setupGenreToggle() {
-      const genreToggle = document.getElementById('genre-toggle');
-      const genreSubmenu = document.getElementById('genre-submenu');
-      
-      genreToggle.addEventListener('click', function() {
-        this.classList.toggle('active');
-        genreSubmenu.classList.toggle('active');
-      });
-    }
-
-    // [Rest of your JavaScript functions remain the same...]
-    // (Keep all your existing fetchGenreMovies, renderResults, etc. functions)
-    
   </script>
 </body>
 </html>
