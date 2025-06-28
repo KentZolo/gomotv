@@ -147,6 +147,170 @@
     body.light .hamburger-menu a:hover {
       color: #e50914;
     }
+
+    /* Modal Player Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal-content {
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 800px;
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 1.8rem;
+  color: white;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-header {
+  padding: 30px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.modal-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.9));
+}
+
+.modal-header h2 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.modal-header .meta-info {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.modal-header .meta-info span {
+  font-size: 0.9rem;
+  color: #cccccc;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-body h3 {
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  color: #e50914;
+}
+
+.modal-body p {
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+
+.server-selector {
+  margin: 15px 0;
+  padding: 8px;
+  background: #222;
+  color: white;
+  border: 1px solid #444;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.player-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  margin-top: 20px;
+  background-color: #000000;
+}
+
+.player-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.loading-server {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  z-index: 1;
+}
+
+/* Light theme modal styles */
+body.light .modal-content {
+  background-color: #ffffff;
+  color: #333333;
+}
+
+body.light .modal-header {
+  color: #333333;
+}
+
+body.light .modal-header .meta-info span {
+  color: #666666;
+}
+
+body.light .close-btn {
+  color: #333333;
+}
+
+body.light .server-selector {
+  background: #f0f0f0;
+  color: #333;
+  border-color: #ddd;
+}
   </style>
 </head>
 <body>
@@ -217,6 +381,137 @@
     const menuSearchInput = document.getElementById('menu-search-input');
     const menuSearchButton = document.getElementById('menu-search-button');
 
+    // Server configurations
+const SERVERS = [
+  { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
+  { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
+  { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
+];
+
+// Modal functions
+async function openModal(id, type) {
+  try {
+    history.pushState({ modal: true }, "", `?id=${id}&type=${type}`);
+
+    const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}`);
+    const data = await res.json();
+
+    const modal = createModal(data, type, id);
+    document.getElementById('modal-container').appendChild(modal);
+    document.body.style.overflow = 'hidden';
+
+    setupModalEvents(modal, id, type);
+    loadDefaultServer(modal, type, id);
+  } catch (err) {
+    console.error('Modal error:', err);
+    alert('Failed to load details');
+  }
+}
+
+function createModal(data, type, id) {
+  const title = data.title || data.name;
+  const year = (data.release_date || data.first_air_date || '').slice(0, 4);
+  const rating = data.vote_average?.toFixed(1) || 'N/A';
+  const overview = data.overview || 'No description available.';
+  const genres = data.genres?.map(g => g.name).join(', ');
+
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <span class="close-btn">×</span>
+      <div class="modal-header">
+        <h2>${title} (${year})</h2>
+        <div class="meta-info">
+          <span>⭐ ${rating}</span>
+          <span>${type.toUpperCase()}</span>
+          ${genres ? `<span>${genres}</span>` : ''}
+        </div>
+      </div>
+      <div class="modal-body">
+        <h3>Overview</h3>
+        <p>${overview}</p>
+        <select class="server-selector" id="server-select">
+          ${SERVERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        </select>
+        <div class="player-container">
+          <div class="loading-server">Loading player...</div>
+          <iframe id="player-frame" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return modal;
+}
+
+function setupModalEvents(modal, id, type) {
+  const closeBtn = modal.querySelector('.close-btn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => closeModal(modal));
+  }
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal(modal);
+  });
+
+  const serverSelect = modal.querySelector('#server-select');
+  if (serverSelect) {
+    serverSelect.addEventListener('change', (e) => {
+      const server = SERVERS.find(s => s.id === e.target.value);
+      if (server) {
+        const iframe = modal.querySelector('#player-frame');
+        if (iframe) {
+          iframe.src = server.url(type, id);
+        }
+      }
+    });
+  }
+}
+
+function loadDefaultServer(modal, type, id) {
+  const iframe = modal.querySelector('#player-frame');
+  const loading = modal.querySelector('.loading-server');
+  if (!iframe || !loading) return;
+
+  function tryServer(index) {
+    if (index >= SERVERS.length) {
+      loading.textContent = 'No working server found';
+      return;
+    }
+
+    const server = SERVERS[index];
+    iframe.src = server.url(type, id);
+    loading.style.display = 'flex';
+
+    iframe.onload = () => {
+      loading.style.display = 'none';
+    };
+
+    iframe.onerror = () => {
+      tryServer(index + 1);
+    };
+  }
+
+  tryServer(0);
+}
+
+function closeModal(modal) {
+  if (!modal) return;
+  modal.remove();
+  document.body.style.overflow = '';
+  history.back();
+}
+
+// Handle browser back button for modal
+window.addEventListener('popstate', (e) => {
+  if (e.state?.modal) {
+    const modal = document.querySelector('.modal');
+    if (modal) modal.remove();
+    document.body.style.overflow = '';
+  }
+});
+
     // Initialize the page
     document.addEventListener('DOMContentLoaded', function() {
       initThemeToggle();
@@ -225,7 +520,14 @@
         searchInput.value = query;
         fetchSearchResults(query, currentPage);
       }
-      
+
+        // Check for modal parameters
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('id') && params.get('type')) {
+    openModal(params.get('id'), params.get('type'));
+  }
+});
+    
       setupSearch();
       setupMenuToggle();
       setupMenuSearch();
@@ -417,12 +719,14 @@
     }
     
     function setupResultClickEvents() {
-      document.querySelectorAll('.poster-wrapper').forEach(poster => {
-        poster.addEventListener('click', function() {
-          const img = poster.querySelector('img');
-          openModal(img.dataset.id, img.dataset.type);
-        });
-      });
+  document.querySelectorAll('.poster-wrapper').forEach(poster => {
+    poster.addEventListener('click', function() {
+      const img = poster.querySelector('img');
+      if (img) {
+        openModal(img.dataset.id, img.dataset.type);
+      }
+    });
+  });
     }
 
     // Pagination controls
@@ -481,5 +785,6 @@
       // Implement your modal opening logic here
     }
   </script>
+  <div id="modal-container"></div>
 </body>
 </html>
