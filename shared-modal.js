@@ -18,7 +18,7 @@ const SERVERS = [
   }
 ];
 
-// Utility Functions
+// Utility function to get image URL
 function getImageUrl(path, isBackdrop = false) {
   if (!path) {
     return isBackdrop
@@ -28,11 +28,8 @@ function getImageUrl(path, isBackdrop = false) {
   return `${IMG_BASE}${isBackdrop ? 'w1280' : 'w500'}${path}`;
 }
 
-// Main Modal Implementation
+// Main modal function
 function openModal(id, type) {
-  // Close any existing modal first
-  closeModal();
-  
   // Create modal container if it doesn't exist
   if (!document.getElementById('modal-container')) {
     const container = document.createElement('div');
@@ -58,21 +55,8 @@ function openModal(id, type) {
     })
     .catch(error => {
       console.error('Error fetching media details:', error);
-      // Fallback to simple modal if error occurs
-      document.getElementById('modal-container').innerHTML = `
-        <div class="modal">
-          <div class="modal-content">
-            <span class="close-btn">×</span>
-            <div class="modal-body">
-              <p>Error loading content. Please try again.</p>
-              <button onclick="window.location.href='player.html?type=${type}&id=${id}'">
-                Open in Player
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-      setupModalEvents(id, type);
+      // Fallback to opening in player.html
+      window.location.href = `player.html?type=${type}&id=${id}`;
     });
 }
 
