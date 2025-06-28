@@ -837,3 +837,56 @@ body.light ::-webkit-scrollbar-thumb {
   color: #aaa;
   font-size: 0.8rem;
 }
+/* TV SHOWS MODAL STYLES */
+.tv-modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tv-modal-container .modal-content {
+  background: #0f0f0f;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 8px;
+  padding: 25px;
+  position: relative;
+}
+
+.tv-modal-container .close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 1.8rem;
+  color: white;
+  cursor: pointer;
+  background: rgba(0,0,0,0.5);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.tv-modal-container .close-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.tv-modal-container h2 {
+  color: #e50914;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
