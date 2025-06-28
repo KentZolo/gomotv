@@ -26,399 +26,511 @@ const GENRES = [
   { id: 37, name: "Western" }
 ];
 
-// Image URL utility
+// Core Functions
 function getImageUrl(path, isBackdrop = false) {
-  if (!path) {
-    return isBackdrop
-      ? 'https://via.placeholder.com/1920x1080?text=No+Banner'
-      : 'https://via.placeholder.com/500x750?text=No+Poster';
-  }
-  return `${IMG_BASE}${path}`;
+  if (!path) {
+    return isBackdrop
+      ? 'https://via.placeholder.com/1920x1080?text=No+Banner'
+      : 'https://via.placeholder.com/500x750?text=No+Poster';
+  }
+  return `${IMG_BASE}${path}`;
 }
 
-// ========== BANNER SLIDER ==========
+// Banner Slider
 let bannerIndex = 0;
 let bannerItems = [];
 
 async function loadBannerSlider() {
-  try {
-    const res = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}`);
-    const data = await res.json();
-    bannerItems = data.results.slice(0, 10);
+  try {
+    const res = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}`);
+    const data = await res.json();
+    bannerItems = data.results.slice(0, 10);
 
-    if (bannerItems.length > 0) {
-      showBannerSlide(bannerIndex);
-      setupBannerNavigation();
-    }
-  } catch (err) {
-    console.error('Banner error:', err);
-    document.getElementById('poster-summary').textContent = 'Failed to load featured content';
-  }
+    if (bannerItems.length > 0) {
+      showBannerSlide(bannerIndex);
+      setupBannerNavigation();
+    }
+  } catch (err) {
+    console.error('Banner error:', err);
+    document.getElementById('poster-summary').textContent = 'Failed to load featured content';
+  }
 }
 
 function showBannerSlide(index) {
-  const item = bannerItems[index];
-  const img = document.getElementById('poster-img');
+  const item = bannerItems[index];
+  const img = document.getElementById('poster-img');
 
-  img.src = getImageUrl(item.backdrop_path, true);
-  img.alt = item.title;
-  img.dataset.id = item.id;
-  img.dataset.type = 'movie';
+  img.src = getImageUrl(item.backdrop_path, true);
+  img.alt = item.title;
+  img.dataset.id = item.id;
+  img.dataset.type = 'movie';
 
-  document.getElementById('poster-meta').textContent =
-    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
-  document.getElementById('poster-summary').textContent = item.title;
+  document.getElementById('poster-meta').textContent =
+    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
+  document.getElementById('poster-summary').textContent = item.title;
 }
 
 function setupBannerNavigation() {
-  document.querySelector('.prev').addEventListener('click', () => {
-    bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
-    showBannerSlide(bannerIndex);
-  });
+  document.querySelector('.prev').addEventListener('click', prevSlide);
+  document.querySelector('.next').addEventListener('click', nextSlide);
 
-  document.querySelector('.next').addEventListener('click', () => {
-    bannerIndex = (bannerIndex + 1) % bannerItems.length;
-    showBannerSlide(bannerIndex);
-  });
-
-  setInterval(() => {
-    bannerIndex = (bannerIndex + 1) % bannerItems.length;
-    showBannerSlide(bannerIndex);
-  }, 5000);
+  setInterval(nextSlide, 5000);
 }
 
-// ========== FETCH CONTENT ==========
+function prevSlide() {
+  bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
+  showBannerSlide(bannerIndex);
+}
+
+function nextSlide() {
+  bannerIndex = (bannerIndex + 1) % bannerItems.length;
+  showBannerSlide(bannerIndex);
+}
+
+// Content Loading
 async function fetchAndDisplay(endpoint, containerSelector, type) {
-  try {
-    const container = document.querySelector(containerSelector);
-    if (!container) return;
+  try {
+    const container = document.querySelector(containerSelector);
+    if (!container) return;
+    
+    container.innerHTML = '<div class="loading"></div>';
 
-    container.innerHTML = '<div class="loading"></div>';
-    const res = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}`);
-    const data = await res.json();
+    const res = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}`);
+    const data = await res.json();
 
-    if (data.results && data.results.length > 0) {
-      displayMedia(data.results, containerSelector, type);
-    } else {
-      container.innerHTML = '<p class="error-message">No content available</p>';
-    }
-  } catch (err) {
-    console.error(`Failed to load content:`, err);
-    document.querySelector(containerSelector).innerHTML =
-      '<p class="error-message">Failed to load content</p>';
-  }
+    if (data.results && data.results.length > 0) {
+      displayMedia(data.results, containerSelector, type);
+    } else {
+      container.innerHTML = '<p class="error-message">No content available</p>';
+    }
+  } catch (err) {
+    console.error(`Failed to load content:`, err);
+    document.querySelector(containerSelector).innerHTML =
+      '<p class="error-message">Failed to load content</p>';
+  }
 }
 
 function displayMedia(items, containerSelector, defaultType) {
-  const container = document.querySelector(containerSelector);
-  if (!container) return;
+  const container = document.querySelector(containerSelector);
+  if (!container) return;
+  
+  container.innerHTML = items.map(item => {
+    const title = item.title || item.name;
+    const imageUrl = getImageUrl(item.poster_path);
+    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+    const type = item.media_type || defaultType;
+    const quality = determineQuality(item.release_date || item.first_air_date);
 
-  container.innerHTML = items.map(item => {
-    const title = item.title || item.name;
-    const imageUrl = getImageUrl(item.poster_path);
-    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-    const type = item.media_type || defaultType;
-    const quality = determineQuality(item.release_date || item.first_air_date);
+    return `
+      <div class="poster-wrapper">
+        ${quality ? `<div class="poster-badge">${quality}</div>` : ''}
+        <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="${type}" loading="lazy">
+        <div class="poster-label">${title}</div>
+        <div class="poster-meta">${year}</div>
+      </div>
+    `;
+  }).join('');
 
-    return `
-      <div class="poster-wrapper">
-        ${quality ? `<div class="poster-badge">${quality}</div>` : ''}
-        <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="${type}" loading="lazy">
-        <div class="poster-label">${title}</div>
-        <div class="poster-meta">${year}</div>
-      </div>
-    `;
-  }).join('');
-
-  setupPosterClickEvents(containerSelector);
+  setupPosterClickEvents(containerSelector);
 }
 
 function determineQuality(releaseDate) {
-  if (!releaseDate) return 'HD';
-  const now = new Date();
-  const released = new Date(releaseDate);
-  const diffDays = Math.floor((now - released) / (1000 * 60 * 60 * 24));
-  if (diffDays < 7) return 'CAM';
-  if (diffDays < 21) return 'TS';
-  return 'HD';
+  if (!releaseDate) return 'HD';
+
+  const now = new Date();
+  const released = new Date(releaseDate);
+  const diffDays = Math.floor((now - released) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 7) return 'CAM';
+  if (diffDays < 21) return 'TS';
+  return 'HD';
 }
 
 function setupPosterClickEvents(containerSelector) {
-  document.querySelectorAll(`${containerSelector} .poster-wrapper`).forEach(poster => {
-    poster.addEventListener('click', () => {
-      const img = poster.querySelector('img');
-      if (img) {
-        openModal(img.dataset.id, img.dataset.type);
-      }
-    });
-  });
+  const posters = document.querySelectorAll(`${containerSelector} .poster-wrapper`);
+  if (!posters) return;
+  
+  posters.forEach(poster => {
+    poster.addEventListener('click', () => {
+      const img = poster.querySelector('img');
+      if (img) {
+        openModal(img.dataset.id, img.dataset.type);
+      }
+    });
+  });
 }
 
-// ========== MODAL PLAYER ==========
+// Modal Player
 const SERVERS = [
-  { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
-  { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
-  { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
+  { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
+  { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
+  { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
 ];
 
 async function openModal(id, type) {
-  try {
-    const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
-    const data = await res.json();
+  try {
+    // Close any existing all-movies modal first
+    const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
+    if (existingAllMoviesModal) {
+      existingAllMoviesModal.style.display = 'none';
+    }
 
-    const modal = createModal(data, type, id);
-    document.getElementById('modal-container').appendChild(modal);
-    document.body.style.overflow = 'hidden';
+    history.pushState({ modal: true }, "", `?id=${id}&type=${type}`);
 
-    setupModalEvents(modal, id, type);
-    loadDefaultServer(modal, type, id);
-  } catch (err) {
-    console.error('Modal error:', err);
-    alert('Failed to load details');
-  }
+    const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
+    const data = await res.json();
+
+    const modal = createModal(data, type, id);
+    document.getElementById('modal-container').appendChild(modal);
+    document.body.style.overflow = 'hidden';
+
+    setupModalEvents(modal, id, type);
+    loadDefaultServer(modal, type, id);
+  } catch (err) {
+    console.error('Modal error:', err);
+    alert('Failed to load details');
+    
+    // Re-show all-movies modal if it exists
+    const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
+    if (existingAllMoviesModal) {
+      existingAllMoviesModal.style.display = 'flex';
+    }
+  }
 }
 
 function createModal(data, type, id) {
-  const title = data.title || data.name;
-  const year = (data.release_date || data.first_air_date || '').slice(0, 4);
-  const rating = data.vote_average?.toFixed(1) || 'N/A';
-  const overview = data.overview || 'No description available.';
-  const genres = data.genres?.map(g => g.name).join(', ');
+  const title = data.title || data.name;
+  const year = (data.release_date || data.first_air_date || '').slice(0, 4);
+  const rating = data.vote_average?.toFixed(1) || 'N/A';
+  const overview = data.overview || 'No description available.';
+  const genres = data.genres?.map(g => g.name).join(', ');
 
-  const modal = document.createElement('div');
-  modal.className = 'modal';
-  modal.innerHTML = `
-    <div class="modal-content">
-      <span class="close-btn">×</span>
-      <div class="modal-header">
-        <h2>${title} (${year})</h2>
-        <div class="meta-info">
-          <span>⭐ ${rating}</span>
-          <span>${type.toUpperCase()}</span>
-          ${genres ? `<span>${genres}</span>` : ''}
-        </div>
-      </div>
-      <div class="modal-body">
-        <h3>Overview</h3>
-        <p>${overview}</p>
-        <select class="server-selector" id="server-select">
-          ${SERVERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
-        </select>
-        <div class="player-container">
-          <div class="loading-server">Loading player...</div>
-          <iframe id="player-frame" allowfullscreen></iframe>
-        </div>
-      </div>
-    </div>
-  `;
-  return modal;
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <span class="close-btn">×</span>
+      <div class="modal-header">
+        <h2>${title} (${year})</h2>
+        <div class="meta-info">
+          <span>⭐ ${rating}</span>
+          <span>${type.toUpperCase()}</span>
+          ${genres ? `<span>${genres}</span>` : ''}
+        </div>
+      </div>
+      <div class="modal-body">
+        <h3>Overview</h3>
+        <p>${overview}</p>
+        <select class="server-selector" id="server-select">
+          ${SERVERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        </select>
+        <div class="player-container">
+          <div class="loading-server">Loading player...</div>
+          <iframe id="player-frame" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return modal;
 }
 
 function setupModalEvents(modal, id, type) {
-  modal.querySelector('.close-btn').addEventListener('click', () => closeModal(modal));
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal(modal);
-  });
+  const closeBtn = modal.querySelector('.close-btn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => closeModal(modal));
+  }
 
-  const serverSelect = modal.querySelector('#server-select');
-  serverSelect.addEventListener('change', (e) => {
-    const server = SERVERS.find(s => s.id === e.target.value);
-    if (server) modal.querySelector('#player-frame').src = server.url(type, id);
-  });
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal(modal);
+  });
+
+  const serverSelect = modal.querySelector('#server-select');
+  if (serverSelect) {
+    serverSelect.addEventListener('change', (e) => {
+      const server = SERVERS.find(s => s.id === e.target.value);
+      if (server) {
+        const iframe = modal.querySelector('#player-frame');
+        if (iframe) {
+          iframe.src = server.url(type, id);
+        }
+      }
+    });
+  }
 }
 
 function loadDefaultServer(modal, type, id) {
-  const iframe = modal.querySelector('#player-frame');
-  const loading = modal.querySelector('.loading-server');
-  if (!iframe || !loading) return;
+  const iframe = modal.querySelector('#player-frame');
+  const loading = modal.querySelector('.loading-server');
+  if (!iframe || !loading) return;
 
-  let index = 0;
-  function tryNextServer() {
-    if (index >= SERVERS.length) {
-      loading.textContent = 'No working server found';
-      return;
-    }
-    iframe.src = SERVERS[index].url(type, id);
-    iframe.onload = () => loading.style.display = 'none';
-    iframe.onerror = () => {
-      index++;
-      tryNextServer();
-    };
-  }
-  tryNextServer();
+  function tryServer(index) {
+    if (index >= SERVERS.length) {
+      loading.textContent = 'No working server found';
+      return;
+    }
+
+    const server = SERVERS[index];
+    iframe.src = server.url(type, id);
+    loading.style.display = 'flex';
+
+    iframe.onload = () => {
+      loading.style.display = 'none';
+    };
+
+    iframe.onerror = () => {
+      tryServer(index + 1);
+    };
+  }
+
+  tryServer(0);
 }
 
 function closeModal(modal) {
-  modal.remove();
-  document.body.style.overflow = '';
+  if (!modal) return;
+  modal.remove();
+  document.body.style.overflow = '';
+  history.back();
+  
+  const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
+  if (existingAllMoviesModal) {
+    existingAllMoviesModal.style.display = 'flex';
+  }
 }
 
-// ========== MENU / SEARCH ==========
+// Hamburger Menu Toggle - UPDATED VERSION
 function setupMenuToggle() {
-  const btn = document.getElementById('menu-toggle');
-  const menu = document.getElementById('hamburger-menu');
-  const overlay = document.createElement('div');
-  overlay.className = 'menu-overlay';
-  document.body.appendChild(overlay);
+  const menuBtn = document.getElementById('menu-toggle');
+  const menu = document.getElementById('hamburger-menu');
+  const overlay = document.createElement('div');
+  overlay.className = 'menu-overlay';
+  document.body.appendChild(overlay);
 
-  if (!btn || !menu) return;
+  if (!menuBtn || !menu) return;
 
-  btn.addEventListener('click', () => {
-    btn.classList.toggle('active');
-    menu.classList.toggle('active');
-    overlay.classList.toggle('active');
-    document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
-  });
+  menuBtn.addEventListener('click', () => {
+    menuBtn.classList.toggle('active');
+    menu.classList.toggle('active');
+    overlay.classList.toggle('active');
+    document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+  });
 
-  overlay.addEventListener('click', () => {
-    btn.classList.remove('active');
-    menu.classList.remove('active');
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
-  });
+  overlay.addEventListener('click', () => {
+    menuBtn.classList.remove('active');
+    menu.classList.remove('active');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  });
 
-  document.querySelectorAll('#hamburger-menu a').forEach(link => {
-    link.addEventListener('click', () => {
-      btn.classList.remove('active');
-      menu.classList.remove('active');
-      overlay.classList.remove('active');
-      document.body.style.overflow = '';
-    });
-  });
+  // Close menu when clicking on any link
+  document.querySelectorAll('#hamburger-menu a').forEach(link => {
+    link.addEventListener('click', () => {
+      menuBtn.classList.remove('active');
+      menu.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  });
 }
 
+// Hamburger Menu Search
 function setupMenuSearch() {
-  const input = document.getElementById('menu-search-input');
-  const btn = document.getElementById('menu-search-button');
+  const menuSearchInput = document.getElementById('menu-search-input');
+  const menuSearchButton = document.getElementById('menu-search-button');
 
-  if (!btn || !input) return;
+  if (!menuSearchButton || !menuSearchInput) return;
 
-  function doSearch() {
-    const q = input.value.trim();
-    if (q.length >= 2) {
-      window.location.href = `search.html?q=${encodeURIComponent(q)}`;
-    } else {
-      alert('Please enter at least 2 characters');
-    }
-  }
+  function performMenuSearch() {
+    const searchTerm = menuSearchInput.value.trim();
+    if (searchTerm.length >= 2) {
+      document.getElementById('hamburger-menu').classList.remove('active');
+      document.querySelector('.menu-overlay').classList.remove('active');
+      document.getElementById('menu-toggle').classList.remove('active');
+      document.body.style.overflow = '';
+      window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+    } else {
+      alert('Please enter at least 2 characters');
+    }
+  }
 
-  btn.addEventListener('click', doSearch);
-  input.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') doSearch();
-  });
+  menuSearchButton.addEventListener('click', performMenuSearch);
+  menuSearchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') performMenuSearch();
+  });
 }
 
-// ========== THEME TOGGLE ==========
+// Theme Toggle
 function initThemeToggle() {
-  const toggle = document.getElementById('theme-toggle');
-  if (!toggle) return;
+  const toggleBtn = document.getElementById('theme-toggle');
+  if (!toggleBtn) return;
 
-  const current = localStorage.getItem('theme') || 'dark';
-  document.body.classList.add(current);
+  const currentTheme = localStorage.getItem('theme') || 'dark';
+  document.body.classList.add(currentTheme);
 
-  toggle.addEventListener('click', () => {
-    const isDark = document.body.classList.contains('dark');
-    document.body.classList.toggle('dark', !isDark);
-    document.body.classList.toggle('light', isDark);
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-  });
+  toggleBtn.addEventListener('click', () => {
+    const isDark = document.body.classList.contains('dark');
+    document.body.classList.toggle('dark', !isDark);
+    document.body.classList.toggle('light', isDark);
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  });
 }
 
-// ========== GENRE PAGE ==========
+function setupGenreToggle() {
+  const genreToggle = document.getElementById('genre-toggle');
+  const genreSubmenu = document.getElementById('genre-submenu');
+  
+  if (genreToggle && genreSubmenu) {
+    genreToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      this.classList.toggle('active');
+      genreSubmenu.classList.toggle('active');
+    });
+    
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!genreSubmenu.contains(e.target) && e.target !== genreToggle) {
+        genreToggle.classList.remove('active');
+        genreSubmenu.classList.remove('active');
+      }
+    });
+  }
+}
+
+// Initialize genre page
 function initGenrePage() {
-  const genreGrid = document.getElementById('genre-grid');
-  if (genreGrid) {
-    genreGrid.innerHTML = GENRES.map(g =>
-      `<a href="genre.html?id=${g.id}&name=${encodeURIComponent(g.name)}" class="genre-link">${g.name}</a>`
-    ).join('');
-  }
+  // Populate genre grid
+  const genreGrid = document.getElementById('genre-grid');
+  if (genreGrid) {
+    genreGrid.innerHTML = GENRES.map(genre => `
+      <a href="genre.html?id=${genre.id}&name=${encodeURIComponent(genre.name)}" 
+         class="genre-link">
+        ${genre.name}
+      </a>
+    `).join('');
+  }
 
-  const params = new URLSearchParams(location.search);
-  const genreId = params.get('id');
-  const genreName = params.get('name');
-  const page = parseInt(params.get('page')) || 1;
-
-  if (genreId && genreName) {
-    document.title = `${genreName} - GomoTV`;
-    document.getElementById('genre-title').textContent = `${genreName} Movies`;
-    fetchGenreMovies(genreId, page);
-  }
+  // Check if we're viewing a specific genre
+  const params = new URLSearchParams(location.search);
+  const genreId = params.get('id');
+  const genreName = params.get('name');
+  
+  if (genreId && genreName) {
+    document.title = `${genreName} - GomoTV`;
+    document.getElementById('genre-title').textContent = `${genreName} Movies`;
+    fetchGenreMovies(genreId);
+  }
 }
 
+// Fetch movies by genre
 async function fetchGenreMovies(genreId, page = 1) {
-  try {
-    const container = document.getElementById('results-grid');
-    container.innerHTML = '<div class="loading"></div>';
-    const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}`);
-    const data = await res.json();
-
-    if (data.results?.length) {
-      displayGenreResults(data.results);
-      renderGenrePagination(data.total_pages, page, genreId);
-    } else {
-      container.innerHTML = '<p class="no-results">No movies found in this genre.</p>';
-    }
-  } catch (err) {
-    console.error(err);
-    document.getElementById('results-grid').innerHTML = '<p class="error-message">Failed to load movies.</p>';
-  }
+  try {
+    const container = document.getElementById('results-grid');
+    container.innerHTML = '<div class="loading"></div>';
+    
+    const response = await fetch(
+      `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}`
+    );
+    const data = await response.json();
+    
+    if (data.results && data.results.length > 0) {
+      displayGenreResults(data.results);
+      renderGenrePagination(data.total_pages, page, genreId);
+    } else {
+      container.innerHTML = '<p class="no-results">No movies found in this genre.</p>';
+    }
+  } catch (error) {
+    console.error('Error fetching genre movies:', error);
+    document.getElementById('results-grid').innerHTML = 
+      '<p class="error-message">Failed to load movies. Please try again later.</p>';
+  }
 }
 
+// Display genre results
 function displayGenreResults(movies) {
-  const container = document.getElementById('results-grid');
-  container.innerHTML = movies.map(m => `
-    <div class="poster-wrapper">
-      <img src="${getImageUrl(m.poster_path)}" alt="${m.title}" data-id="${m.id}" data-type="movie">
-      <div class="poster-label">${m.title}</div>
-      <div class="poster-meta">${m.release_date?.slice(0, 4) || ''}</div>
-    </div>
-  `).join('');
+  const container = document.getElementById('results-grid');
+  container.innerHTML = movies.map(movie => `
+    <div class="poster-wrapper">
+      <img src="${getImageUrl(movie.poster_path)}" 
+           alt="${movie.title}" 
+           data-id="${movie.id}" 
+           data-type="movie"
+           loading="lazy">
+      <div class="poster-label">${movie.title}</div>
+      <div class="poster-meta">${movie.release_date?.slice(0, 4) || ''}</div>
+    </div>
+  `).join('');
 
-  setupPosterClickEvents('#results-grid');
+  // Add click handlers
+  document.querySelectorAll('.poster-wrapper img').forEach(img => {
+    img.addEventListener('click', () => {
+      openModal(img.dataset.id, img.dataset.type);
+    });
+  });
 }
 
-function renderGenrePagination(total, current, genreId) {
-  const top = document.getElementById('pagination-top');
-  const bottom = document.getElementById('pagination');
-  if (total <= 1) return top.innerHTML = bottom.innerHTML = '';
+// Render pagination for genre page
+function renderGenrePagination(totalPages, currentPage, genreId) {
+  const pagTop = document.getElementById('pagination-top');
+  const pagBottom = document.getElementById('pagination');
+  
+  if (totalPages <= 1) {
+    pagTop.innerHTML = '';
+    pagBottom.innerHTML = '';
+    return;
+  }
 
-  let html = '';
-  for (let i = 1; i <= total; i++) {
-    if (Math.abs(i - current) <= 2 || i === 1 || i === total) {
-      html += `<a href="?id=${genreId}&page=${i}" class="page-link ${i === current ? 'active' : ''}">${i}</a>`;
-    } else if (i === current - 3 || i === current + 3) {
-      html += `<span class="pagination-ellipsis">...</span>`;
-    }
-  }
-  top.innerHTML = bottom.innerHTML = html;
+  let buttons = '';
+  const minPage = Math.max(1, currentPage - 2);
+  const maxPage = Math.min(totalPages, currentPage + 2);
+
+  if (currentPage > 1) {
+    buttons += `<a href="genre.html?id=${genreId}&page=${currentPage - 1}" class="page-link">‹ Prev</a>`;
+  }
+  
+  for (let i = minPage; i <= maxPage; i++) {
+    buttons += `<a href="genre.html?id=${genreId}&page=${i}" 
+                 class="page-link ${i === currentPage ? 'active' : ''}">${i}</a>`;
+  }
+  
+  if (currentPage < totalPages) {
+    buttons += `<a href="genre.html?id=${genreId}&page=${currentPage + 1}" class="page-link">Next ›</a>`;
+  }
+
+  pagTop.innerHTML = buttons;
+  pagBottom.innerHTML = buttons;
 }
 
-// ========== INITIALIZE ==========
+// Update DOMContentLoaded event
 window.addEventListener('DOMContentLoaded', () => {
-  initThemeToggle();
-  setupMenuToggle();
-  setupMenuSearch();
+  initThemeToggle();
+  setupMenuToggle();
+  setupMenuSearch();
+  
+  // Initialize genre page if we're on it
+  if (document.getElementById('genre-grid')) {
+    initGenrePage();
+  }
+  
+  if (document.querySelector('.banner-slider')) {
+    loadBannerSlider();
+  }
 
-  if (document.getElementById('genre-grid') || document.getElementById('results-grid')) {
-    initGenrePage();
-  }
+  if (document.querySelector('.movie-list')) {
+    fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
+    fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
+    fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
+  }
 
-  if (document.querySelector('.banner-slider')) loadBannerSlider();
+  const params = new URLSearchParams(location.search);
+  if (params.get('id') && params.get('type')) {
+    openModal(params.get('id'), params.get('type'));
+  }
 
-  if (document.querySelector('.movie-list')) {
-    fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
-    fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
-    fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
-  }
-
-  const params = new URLSearchParams(location.search);
-  if (params.get('id') && params.get('type')) {
-    openModal(params.get('id'), params.get('type'));
-  }
-
-  window.addEventListener('popstate', () => {
-    const modal = document.querySelector('.modal');
-    if (modal) modal.remove();
-    document.body.style.overflow = '';
-  });
+  window.addEventListener('popstate', (e) => {
+    if (e.state?.modal) {
+      const modal = document.querySelector('.modal');
+      if (modal) modal.remove();
+      document.body.style.overflow = '';
+    }
+  });
 });
