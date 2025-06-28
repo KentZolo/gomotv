@@ -520,20 +520,20 @@ window.addEventListener('popstate', (e) => {
         searchInput.value = query;
         fetchSearchResults(query, currentPage);
       }
-
-        // Check for modal parameters
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('id') && params.get('type')) {
-    openModal(params.get('id'), params.get('type'));
-  }
-});
-    
+      
       setupSearch();
       setupMenuToggle();
       setupMenuSearch();
       addDisclaimer();
     });
 
+           // Check for modal parameters
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('id') && params.get('type')) {
+    openModal(params.get('id'), params.get('type'));
+  }
+});
+    
     // Search functionality
     function setupSearch() {
       searchButton.addEventListener('click', performSearch);
