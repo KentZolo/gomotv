@@ -5,7 +5,6 @@ const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
 // Genre Data
 const GENRES = [
-  { id: 28, name: "Action" },
   { id: 12, name: "Adventure" },
   { id: 16, name: "Animation" },
   { id: 35, name: "Comedy" },
