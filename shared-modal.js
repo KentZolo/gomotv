@@ -1,3 +1,9 @@
+/**
+ * Shared Modal Component for GomoTV
+ * Overrides default modal behavior while maintaining all existing functionality
+ */
+
+// Configuration
 const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
 const IMG_BASE = 'https://image.tmdb.org/t/p/';
 const SERVERS = [
@@ -29,52 +35,46 @@ function getImageUrl(path, isBackdrop = false) {
 }
 
 // Main Modal Implementation
-function openModal(id, type) {
-  // Close any existing modal first
-  closeModal();
-  
-  // Create modal container if it doesn't exist
-  if (!document.getElementById('modal-container')) {
-    const container = document.createElement('div');
-    container.id = 'modal-container';
-    document.body.appendChild(container);
-  }
-  
-  // Show loading state
-  document.getElementById('modal-container').innerHTML = `
-    <div class="modal-loading">
-      <div class="loading-spinner"></div>
-    </div>
-  `;
-  
-  // Fetch media details
-  fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}`)
-    .then(response => {
-      if (!response.ok) throw new Error('Network response was not ok');
-      return response.json();
-    })
-    .then(data => {
-      renderModal(data, type, id);
-    })
-    .catch(error => {
-      console.error('Error fetching media details:', error);
-      // Fallback to simple modal if error occurs
+document.addEventListener('DOMContentLoaded', function() {
+  // Only override if openModal exists
+  if (typeof window.openModal === 'function') {
+    const originalOpenModal = window.openModal;
+    
+    window.openModal = function(id, type) {
+      // Close any existing modal first
+      closeModal();
+      
+      // Create modal container if it doesn't exist
+      if (!document.getElementById('modal-container')) {
+        const container = document.createElement('div');
+        container.id = 'modal-container';
+        document.body.appendChild(container);
+      }
+      
+      // Show loading state
       document.getElementById('modal-container').innerHTML = `
-        <div class="modal">
-          <div class="modal-content">
-            <span class="close-btn">×</span>
-            <div class="modal-body">
-              <p>Error loading content. Please try again.</p>
-              <button onclick="window.location.href='player.html?type=${type}&id=${id}'">
-                Open in Player
-              </button>
-            </div>
-          </div>
+        <div class="modal-loading">
+          <div class="loading-spinner"></div>
         </div>
       `;
-      setupModalEvents(id, type);
-    });
-}
+      
+      // Fetch media details
+      fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}`)
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+        })
+        .then(data => {
+          renderModal(data, type, id);
+        })
+        .catch(error => {
+          console.error('Error fetching media details:', error);
+          // Fallback to original modal if error occurs
+          originalOpenModal(id, type);
+        });
+    };
+  }
+});
 
 function renderModal(data, type, id) {
   const title = data.title || data.name;
@@ -196,9 +196,8 @@ function closeModal() {
   }
 }
 
-// Add CSS styles dynamically
-const modalStyles = document.createElement('style');
-modalStyles.textContent = `
+// CSS (will be added dynamically)
+const modalStyles = `
   .modal {
     position: fixed;
     top: 0;
@@ -410,4 +409,7 @@ modalStyles.textContent = `
   }
 `;
 
-document.head.appendChild(modalStyles);
+// Inject styles
+const styleElement = document.createElement('style');
+styleElement.innerHTML = modalStyles;
+document.head.appendChild(styleElement);
