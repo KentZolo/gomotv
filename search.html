@@ -31,29 +31,6 @@
       z-index: 99;
       box-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
-    
-    /* Shared disclaimer styles */
-    .pagination-disclaimer {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 25px 20px;
-      margin-top: -10px;
-      font-size: 0.75rem;
-      color: #aaa;
-      line-height: 1.6;
-      border-top: 1px solid #333;
-      background: rgba(0,0,0,0.1);
-      border-radius: 0 0 8px 8px;
-    }
-    .pagination-disclaimer a {
-      color: #e50914;
-      text-decoration: none;
-    }
-    body.light .pagination-disclaimer {
-      color: #666;
-      border-top: 1px solid #ddd;
-      background: rgba(0,0,0,0.05);
-    }
 
     @media (max-width: 768px) {
       .search-bar-container {
@@ -74,6 +51,23 @@
     <button id="theme-toggle" class="theme-toggle">🌓</button>
   </header>
 
+  <div class="menu-overlay" id="menu-overlay"></div>
+
+  <nav class="hamburger-menu" id="hamburger-menu">
+    <div class="menu-search-bar">
+      <input type="text" id="menu-search-input" placeholder="Search movies or shows...">
+      <button id="menu-search-button">🔍</button>
+    </div>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="genre.html">Genre</a></li>
+      <li><a href="country.html">Country</a></li>
+      <li><a href="movies.html">Movies</a></li>
+      <li><a href="tvshows.html">TV Shows</a></li>
+      <li><a href="topimdb.html">Top IMDB</a></li>
+    </ul>
+  </nav>
+
   <div class="search-bar-container">
     <div class="search-bar">
       <input type="text" id="search-input" placeholder="Search movies or shows..." value="">
@@ -81,23 +75,12 @@
     </div>
   </div>
 
-  <nav class="hamburger-menu" id="hamburger-menu">
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="genre.html">Genre</a></li>
-      <li><a href="country.html">Country</a></li>
-      <li><a href="#">Movies</a></li>
-      <li><a href="#">TV Shows</a></li>
-    </ul>
-  </nav>
-
   <main>
     <div id="pagination-top" class="pagination"></div>
     <div class="search-results-grid" id="results-grid">
       <p class="search-prompt">Enter a search term to find movies and TV shows</p>
     </div>
     <div id="pagination" class="pagination"></div>
-    <!-- Disclaimer will be auto-added here by JavaScript -->
   </main>
 
   <div id="modal-container"></div>
@@ -120,23 +103,10 @@
     const paginationBottom = document.getElementById('pagination');
     const menuToggle = document.getElementById('menu-toggle');
     const hamburgerMenu = document.getElementById('hamburger-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
     const themeToggle = document.getElementById('theme-toggle');
-
-    // Auto-add disclaimer function
-    function addDisclaimer() {
-      if (!document.querySelector('.pagination-disclaimer')) {
-        const disclaimer = document.createElement('div');
-        disclaimer.className = 'pagination-disclaimer';
-        disclaimer.innerHTML = `
-          <p>⚠️ Disclaimer: GomoTV does not host any videos. Content provided by third-party servers.</p>
-          <p>Support creators via <a href="https://www.justwatch.com" target="_blank">official platforms</a>.</p>
-        `;
-        const pagination = document.getElementById('pagination');
-        if (pagination) {
-          pagination.parentNode.insertBefore(disclaimer, pagination.nextSibling);
-        }
-      }
-    }
+    const menuSearchInput = document.getElementById('menu-search-input');
+    const menuSearchButton = document.getElementById('menu-search-button');
 
     // Initialize the page
     document.addEventListener('DOMContentLoaded', function() {
@@ -149,6 +119,7 @@
       
       setupSearch();
       setupMenuToggle();
+      setupMenuSearch();
     });
 
     // Search functionality
@@ -170,17 +141,57 @@
 
     // Menu toggle functionality
     function setupMenuToggle() {
-      if (menuToggle && hamburgerMenu) {
-        menuToggle.addEventListener('click', function() {
-          hamburgerMenu.style.display = hamburgerMenu.style.display === 'block' ? 'none' : 'block';
+      menuToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menuToggle.classList.toggle('active');
+        hamburgerMenu.classList.toggle('active');
+        menuOverlay.classList.toggle('active');
+        document.body.style.overflow = hamburgerMenu.classList.contains('active') ? 'hidden' : '';
+      });
+
+      menuOverlay.addEventListener('click', function() {
+        menuToggle.classList.remove('active');
+        hamburgerMenu.classList.remove('active');
+        this.classList.remove('active');
+        document.body.style.overflow = '';
+      });
+
+      // Close menu when clicking on any link
+      document.querySelectorAll('#hamburger-menu a').forEach(link => {
+        link.addEventListener('click', function() {
+          menuToggle.classList.remove('active');
+          hamburgerMenu.classList.remove('active');
+          menuOverlay.classList.remove('active');
+          document.body.style.overflow = '';
         });
+      });
+    }
+
+    // Menu search functionality
+    function setupMenuSearch() {
+      menuSearchButton.addEventListener('click', performMenuSearch);
+      menuSearchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') performMenuSearch();
+      });
+    }
+
+    function performMenuSearch() {
+      const searchTerm = menuSearchInput.value.trim();
+      if (searchTerm.length >= 2) {
+        // Close menu when searching
+        menuToggle.classList.remove('active');
+        hamburgerMenu.classList.remove('active');
+        menuOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        
+        window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+      } else {
+        alert('Please enter at least 2 characters');
       }
     }
 
     // Theme toggle functionality
     function initThemeToggle() {
-      if (!themeToggle) return;
-      
       const currentTheme = localStorage.getItem('theme') || 'dark';
       document.body.classList.add(currentTheme);
       
@@ -247,7 +258,6 @@
     function clearPagination() {
       paginationTop.innerHTML = '';
       paginationBottom.innerHTML = '';
-      addDisclaimer(); // Still add disclaimer even if no pagination
     }
 
     // Display search results
@@ -271,21 +281,22 @@
             <div class="poster-meta">
               <span>⭐ ${rating}</span>
               <span>${mediaType}</span>
-              ${year ? `<span>📅 ${year}</span>` : ''}
+              ${year ? `<span>${year}</span>` : ''}
             </div>
           </div>
         `;
       }).join('');
       
       setupResultClickEvents();
-      addDisclaimer(); // Add disclaimer after showing results
     }
     
     function setupResultClickEvents() {
       document.querySelectorAll('.poster-wrapper').forEach(poster => {
         poster.addEventListener('click', function() {
           const img = poster.querySelector('img');
-          openModal(img.dataset.id, img.dataset.type);
+          if (img) {
+            openModal(img.dataset.id, img.dataset.type); // Uses shared modal
+          }
         });
       });
     }
@@ -333,7 +344,6 @@
       
       paginationTop.innerHTML = paginationHTML;
       paginationBottom.innerHTML = paginationHTML;
-      addDisclaimer(); // Add disclaimer after pagination updates
     }
     
     function goToPage(page) {
