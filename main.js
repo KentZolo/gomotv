@@ -464,6 +464,24 @@ function initThemeToggle() {
 }
 
 // Initialization ======================================================
+// Check for genre parameter on page load
+const urlParams = new URLSearchParams(window.location.search);
+const genreId = urlParams.get('genre');
+
+if (genreId) {
+  // If genre parameter exists, load movies for that genre
+  fetchGenreMovies(genreId);
+  
+  // Update page title
+  const genre = GENRES.find(g => g.id == genreId);
+  if (genre) {
+    document.title = `${genre.name} Movies - GomoTV`;
+    // You can also update a heading if you have one
+    const heading = document.querySelector('h1');
+    if (heading) heading.textContent = `${genre.name} Movies`;
+  }
+}
+
 function setupGenreSubmenu() {
   const genreToggles = document.querySelectorAll('.genre-toggle');
   
