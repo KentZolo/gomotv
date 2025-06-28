@@ -335,6 +335,27 @@ function setupMenuSearch() {
   });
 }
 
+function setupGenreToggle() {
+  const genreToggle = document.getElementById('genre-toggle');
+  const genreSubmenu = document.getElementById('genre-submenu');
+  
+  if (genreToggle && genreSubmenu) {
+    genreToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      this.classList.toggle('active');
+      genreSubmenu.classList.toggle('active');
+    });
+    
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!genreSubmenu.contains(e.target) {
+        genreToggle.classList.remove('active');
+        genreSubmenu.classList.remove('active');
+      }
+    });
+  }
+}
+
 // Theme Toggle
 function initThemeToggle() {
   const toggleBtn = document.getElementById('theme-toggle');
@@ -356,6 +377,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   setupMenuToggle();
   setupMenuSearch();
+  setupGenreToggle();
   
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
