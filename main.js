@@ -380,30 +380,3 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-
-function setupGenreToggle() {
-  const genreToggle = document.getElementById('genre-toggle');
-  const genreSubmenu = document.getElementById('genre-submenu');
-  
-  if (genreToggle && genreSubmenu) {
-    genreToggle.addEventListener('click', function(e) {
-      e.stopPropagation();
-      this.classList.toggle('active');
-      genreSubmenu.classList.toggle('active');
-    });
-    
-    // Close when clicking outside
-    document.addEventListener('click', function(e) {
-      if (!genreSubmenu.contains(e.target) {
-        genreToggle.classList.remove('active');
-        genreSubmenu.classList.remove('active');
-      }
-    });
-  }
-}
-
-// Call this in your DOMContentLoaded event
-document.addEventListener('DOMContentLoaded', function() {
-  setupGenreToggle();
-  // Your other initialization code...
-})
