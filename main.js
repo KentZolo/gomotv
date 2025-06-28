@@ -102,7 +102,7 @@ function displayMedia(items, containerSelector, defaultType) {
         ${quality ? `<div class="poster-badge">${quality}</div>` : ''}
         <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="${type}" loading="lazy">
         <div class="poster-label">${title}</div>
-        <div class="poster-meta">📅 ${year}</div>
+        <div class="poster-meta">${year}</div>
       </div>
     `;
   }).join('');
