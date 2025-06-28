@@ -487,11 +487,24 @@ function initThemeToggle() {
 }
 
 // Initialization ======================================================
+function setupGenreSubmenu() {
+  const genreToggles = document.querySelectorAll('.genre-toggle');
+  
+  genreToggles.forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      const submenu = toggle.nextElementSibling;
+      toggle.classList.toggle('active');
+      submenu.classList.toggle('active');
+    });
+  });
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   setupMenuToggle();
   setupMenuSearch();
+  setupGenreSubmenu(); 
   
   // Initialize genre page if we're on it
   initGenrePage();
