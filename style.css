@@ -862,7 +862,6 @@ body.light ::-webkit-scrollbar-thumb {
 
 /* Shared styles with Movies modal */
 .tvshows-modal-container .modal-content,
-.all-movies-modal-container .modal-content {
   background: #0f0f0f;
   width: 90%;
   max-width: 1200px;
@@ -873,7 +872,6 @@ body.light ::-webkit-scrollbar-thumb {
 }
 
 .tvshows-modal-container .pagination,
-.all-movies-modal-container .pagination {
   display: flex;
   justify-content: center;
   gap: 10px;
