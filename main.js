@@ -67,8 +67,6 @@ function nextSlide() {
 async function fetchAndDisplay(endpoint, containerSelector, type) {
   try {
     const container = document.querySelector(containerSelector);
-    if (!container) return;
-    
     container.innerHTML = '<div class="loading"></div>';
 
     const res = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}`);
@@ -88,8 +86,6 @@ async function fetchAndDisplay(endpoint, containerSelector, type) {
 
 function displayMedia(items, containerSelector, defaultType) {
   const container = document.querySelector(containerSelector);
-  if (!container) return;
-  
   container.innerHTML = items.map(item => {
     const title = item.title || item.name;
     const imageUrl = getImageUrl(item.poster_path);
@@ -100,9 +96,9 @@ function displayMedia(items, containerSelector, defaultType) {
     return `
       <div class="poster-wrapper">
         ${quality ? `<div class="poster-badge">${quality}</div>` : ''}
-        <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="${type}" loading="lazy">
+        <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="${type}">
         <div class="poster-label">${title}</div>
-        <div class="poster-meta">${year}</div>
+        <div class="poster-meta">📅 ${year}</div>
       </div>
     `;
   }).join('');
@@ -123,15 +119,10 @@ function determineQuality(releaseDate) {
 }
 
 function setupPosterClickEvents(containerSelector) {
-  const posters = document.querySelectorAll(`${containerSelector} .poster-wrapper`);
-  if (!posters) return;
-  
-  posters.forEach(poster => {
+  document.querySelectorAll(`${containerSelector} .poster-wrapper`).forEach(poster => {
     poster.addEventListener('click', () => {
       const img = poster.querySelector('img');
-      if (img) {
-        openModal(img.dataset.id, img.dataset.type);
-      }
+      openModal(img.dataset.id, img.dataset.type);
     });
   });
 }
@@ -164,7 +155,7 @@ async function openModal(id, type) {
     loadDefaultServer(modal, type, id);
   } catch (err) {
     console.error('Modal error:', err);
-    alert('Failed to load details');
+    alert('Failed to load movie details');
     
     // Re-show all-movies modal if it exists
     const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
@@ -212,33 +203,24 @@ function createModal(data, type, id) {
 }
 
 function setupModalEvents(modal, id, type) {
-  const closeBtn = modal.querySelector('.close-btn');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => closeModal(modal));
-  }
+  modal.querySelector('.close-btn').addEventListener('click', () => closeModal(modal));
 
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal(modal);
   });
 
-  const serverSelect = modal.querySelector('#server-select');
-  if (serverSelect) {
-    serverSelect.addEventListener('change', (e) => {
-      const server = SERVERS.find(s => s.id === e.target.value);
-      if (server) {
-        const iframe = modal.querySelector('#player-frame');
-        if (iframe) {
-          iframe.src = server.url(type, id);
-        }
-      }
-    });
-  }
+  modal.querySelector('#server-select').addEventListener('change', (e) => {
+    const server = SERVERS.find(s => s.id === e.target.value);
+    if (server) {
+      const iframe = modal.querySelector('#player-frame');
+      iframe.src = server.url(type, id);
+    }
+  });
 }
 
 function loadDefaultServer(modal, type, id) {
   const iframe = modal.querySelector('#player-frame');
   const loading = modal.querySelector('.loading-server');
-  if (!iframe || !loading) return;
 
   function tryServer(index) {
     if (index >= SERVERS.length) {
@@ -263,49 +245,31 @@ function loadDefaultServer(modal, type, id) {
 }
 
 function closeModal(modal) {
-  if (!modal) return;
   modal.remove();
   document.body.style.overflow = '';
   history.back();
   
+  // Re-show all-movies modal if it exists
   const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
   if (existingAllMoviesModal) {
     existingAllMoviesModal.style.display = 'flex';
   }
 }
 
-// Hamburger Menu Toggle - UPDATED VERSION
+// Hamburger Menu Toggle
 function setupMenuToggle() {
   const menuBtn = document.getElementById('menu-toggle');
   const menu = document.getElementById('hamburger-menu');
-  const overlay = document.createElement('div');
-  overlay.className = 'menu-overlay';
-  document.body.appendChild(overlay);
 
   if (!menuBtn || !menu) return;
 
   menuBtn.addEventListener('click', () => {
-    menuBtn.classList.toggle('active');
-    menu.classList.toggle('active');
-    overlay.classList.toggle('active');
-    document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
-  });
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
 
-  overlay.addEventListener('click', () => {
-    menuBtn.classList.remove('active');
-    menu.classList.remove('active');
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
-  });
-
-  // Close menu when clicking on any link
-  document.querySelectorAll('#hamburger-menu a').forEach(link => {
-    link.addEventListener('click', () => {
-      menuBtn.classList.remove('active');
-      menu.classList.remove('active');
-      overlay.classList.remove('active');
-      document.body.style.overflow = '';
-    });
+    if (menu.style.display === 'block') {
+      const menuSearchInput = document.getElementById('menu-search-input');
+      if (menuSearchInput) setTimeout(() => menuSearchInput.focus(), 100);
+    }
   });
 }
 
@@ -319,10 +283,7 @@ function setupMenuSearch() {
   function performMenuSearch() {
     const searchTerm = menuSearchInput.value.trim();
     if (searchTerm.length >= 2) {
-      document.getElementById('hamburger-menu').classList.remove('active');
-      document.querySelector('.menu-overlay').classList.remove('active');
-      document.getElementById('menu-toggle').classList.remove('active');
-      document.body.style.overflow = '';
+      document.getElementById('hamburger-menu').style.display = 'none';
       window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
     } else {
       alert('Please enter at least 2 characters');
@@ -351,11 +312,209 @@ function initThemeToggle() {
   });
 }
 
+// All Movies Functionality
+async function fetchAllMovies(page = 1) {
+  try {
+    const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`);
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error('Error fetching movies:', err);
+    return { results: [], total_pages: 0 };
+  }
+}
+
+function setupAllMoviesLink() {
+  const allMoviesLink = document.getElementById('all-movies-link');
+  if (!allMoviesLink) return;
+
+  allMoviesLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    // Close any existing modal first
+    const existingModal = document.querySelector('.modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    
+    // Create modal container
+    const container = document.createElement('div');
+    container.className = 'all-movies-modal-container';
+    container.innerHTML = `
+      <div class="modal">
+        <div class="modal-content" style="max-width: 90vw; max-height: 90vh; overflow-y: auto;">
+          <span class="close-btn">×</span>
+          <h2>All Movies</h2>
+          <div class="search-results-grid" id="all-movies-grid"></div>
+          <div class="pagination" id="all-movies-pagination"></div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(container);
+    document.body.style.overflow = 'hidden';
+    
+    // Close button handler
+    const closeBtn = container.querySelector('.close-btn');
+    closeBtn.addEventListener('click', () => {
+      container.remove();
+      document.body.style.overflow = '';
+    });
+    
+    // Load first page of movies
+    const moviesGrid = container.querySelector('#all-movies-grid');
+    const pagination = container.querySelector('#all-movies-pagination');
+    
+    moviesGrid.innerHTML = '<div class="loading"></div>';
+    
+    const data = await fetchAllMovies();
+    if (data.results.length > 0) {
+      displayMedia(data.results, '#all-movies-grid', 'movie');
+      renderMoviesPagination(pagination, data.total_pages, 1);
+    } else {
+      moviesGrid.innerHTML = '<p class="error-message">No movies found</p>';
+    }
+  });
+}
+
+function renderMoviesPagination(container, totalPages, currentPage) {
+  let buttons = '';
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = startPage + maxVisiblePages - 1;
+  
+  if (endPage > totalPages) {
+    endPage = totalPages;
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+  
+  if (currentPage > 1) {
+    buttons += `<button data-page="${currentPage - 1}">« Prev</button>`;
+  }
+  
+  if (startPage > 1) {
+    buttons += `<button data-page="1">1</button>`;
+    if (startPage > 2) {
+      buttons += `<span class="ellipsis">...</span>`;
+    }
+  }
+  
+  for (let i = startPage; i <= endPage; i++) {
+    buttons += `<button data-page="${i}" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+  }
+  
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      buttons += `<span class="ellipsis">...</span>`;
+    }
+    buttons += `<button data-page="${totalPages}">${totalPages}</button>`;
+  }
+  
+  if (currentPage < totalPages) {
+    buttons += `<button data-page="${currentPage + 1}">Next »</button>`;
+  }
+  
+  container.innerHTML = buttons;
+  
+  // Add event listeners to pagination buttons
+  container.querySelectorAll('button[data-page]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const page = parseInt(btn.dataset.page);
+      const moviesGrid = document.getElementById('all-movies-grid');
+      moviesGrid.innerHTML = '<div class="loading"></div>';
+      
+      const data = await fetchAllMovies(page);
+      if (data.results.length > 0) {
+        displayMedia(data.results, '#all-movies-grid', 'movie');
+        renderMoviesPagination(container, data.total_pages, page);
+      }
+    });
+  });
+}
+
+/* ========== NEW TV SHOWS FEATURE ========== */
+async function fetchAllTVShows(page = 1) {
+  try {
+    const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`);
+    const data = await res.json();
+    data.results = data.results.filter(show => show.poster_path); // Remove shows without posters
+    return data;
+  } catch (err) {
+    console.error('Fetch TV shows error:', err);
+    return { results: [], total_pages: 0 };
+  }
+}
+
+function setupTVShowsLink() {
+  const tvShowsLink = document.getElementById('tvshows-link');
+  if (!tvShowsLink) return;
+
+  tvShowsLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    const container = document.createElement('div');
+    container.className = 'tvshows-modal-container';
+    container.innerHTML = `
+      <div class="modal">
+        <div class="modal-content">
+          <span class="close-btn">×</span>
+          <h2>📺 All TV Shows</h2>
+          <div class="search-results-grid" id="tvshows-grid"></div>
+          <div class="pagination" id="tvshows-pagination"></div>
+          <div class="pagination-disclaimer">
+            <p>⚠️ Content provided by third-party servers</p>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(container);
+    document.body.style.overflow = 'hidden';
+    
+    // Load TV shows
+    const tvShowsGrid = container.querySelector('#tvshows-grid');
+    tvShowsGrid.innerHTML = '<div class="loading"></div>';
+    
+    const data = await fetchAllTVShows();
+    if (data.results.length > 0) {
+      displayMedia(data.results, '#tvshows-grid', 'tv');
+      renderMoviesPagination( // Reuse same pagination function
+        container.querySelector('#tvshows-pagination'),
+        data.total_pages,
+        1
+      );
+    }
+
+    // Close button
+    container.querySelector('.close-btn').addEventListener('click', () => {
+      container.remove();
+      document.body.style.overflow = '';
+    });
+
+    // Pagination
+    container.querySelectorAll('.page-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const page = parseInt(btn.dataset.page);
+        tvShowsGrid.innerHTML = '<div class="loading"></div>';
+        const newData = await fetchAllTVShows(page);
+        displayMedia(newData.results, '#tvshows-grid', 'tv');
+        renderMoviesPagination(
+          container.querySelector('#tvshows-pagination'),
+          newData.total_pages,
+          page
+        );
+      });
+    });
+  });
+}
+
 // Initialize Everything
 window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   setupMenuToggle();
   setupMenuSearch();
+  setupAllMoviesLink();
+  setupTVShowsLink(); 
   
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
