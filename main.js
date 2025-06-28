@@ -102,7 +102,7 @@ function displayMedia(items, containerSelector, defaultType) {
         ${quality ? `<div class="poster-badge">${quality}</div>` : ''}
         <img src="${imageUrl}" alt="${title}" data-id="${item.id}" data-type="${type}" loading="lazy">
         <div class="poster-label">${title}</div>
-        <div class="poster-meta">📅 ${year}</div>
+        <div class="poster-meta">${year}</div>
       </div>
     `;
   }).join('');
@@ -274,21 +274,37 @@ function closeModal(modal) {
   }
 }
 
-// Hamburger Menu Toggle
+// Hamburger Menu Toggle - UPDATED VERSION
 function setupMenuToggle() {
   const menuBtn = document.getElementById('menu-toggle');
   const menu = document.getElementById('hamburger-menu');
+  const overlay = document.createElement('div');
+  overlay.className = 'menu-overlay';
+  document.body.appendChild(overlay);
 
   if (!menuBtn || !menu) return;
 
   menuBtn.addEventListener('click', () => {
-    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    menuBtn.classList.toggle('active');
+    menu.classList.toggle('active');
+    overlay.classList.toggle('active');
+    document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+  });
+
+  overlay.addEventListener('click', () => {
+    menuBtn.classList.remove('active');
+    menu.classList.remove('active');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
   });
 
   // Close menu when clicking on any link
   document.querySelectorAll('#hamburger-menu a').forEach(link => {
     link.addEventListener('click', () => {
-      menu.style.display = 'none';
+      menuBtn.classList.remove('active');
+      menu.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
     });
   });
 }
@@ -303,7 +319,10 @@ function setupMenuSearch() {
   function performMenuSearch() {
     const searchTerm = menuSearchInput.value.trim();
     if (searchTerm.length >= 2) {
-      document.getElementById('hamburger-menu').style.display = 'none';
+      document.getElementById('hamburger-menu').classList.remove('active');
+      document.querySelector('.menu-overlay').classList.remove('active');
+      document.getElementById('menu-toggle').classList.remove('active');
+      document.body.style.overflow = '';
       window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
     } else {
       alert('Please enter at least 2 characters');
@@ -332,198 +351,11 @@ function initThemeToggle() {
   });
 }
 
-// All Movies Functionality
-async function fetchAllMovies(page = 1) {
-  try {
-    const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`);
-    const data = await res.json();
-    return data;
-  } catch (err) {
-    console.error('Error fetching movies:', err);
-    return { results: [], total_pages: 0 };
-  }
-}
-
-function setupAllMoviesLink() {
-  const allMoviesLink = document.getElementById('all-movies-link');
-  if (!allMoviesLink) return;
-
-  allMoviesLink.addEventListener('click', async (e) => {
-    e.preventDefault();
-    
-    const existingModal = document.querySelector('.modal');
-    if (existingModal) {
-      existingModal.remove();
-    }
-    
-    const container = document.createElement('div');
-    container.className = 'all-movies-modal-container';
-    container.innerHTML = `
-      <div class="modal">
-        <div class="modal-content" style="max-width: 90vw; max-height: 90vh; overflow-y: auto;">
-          <span class="close-btn">×</span>
-          <h2>All Movies</h2>
-          <div class="search-results-grid" id="all-movies-grid"></div>
-          <div class="pagination" id="all-movies-pagination"></div>
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(container);
-    document.body.style.overflow = 'hidden';
-    
-    const closeBtn = container.querySelector('.close-btn');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        container.remove();
-        document.body.style.overflow = '';
-      });
-    }
-    
-    const moviesGrid = container.querySelector('#all-movies-grid');
-    const pagination = container.querySelector('#all-movies-pagination');
-    
-    moviesGrid.innerHTML = '<div class="loading"></div>';
-    
-    const data = await fetchAllMovies();
-    if (data.results.length > 0) {
-      displayMedia(data.results, '#all-movies-grid', 'movie');
-      renderMoviesPagination(pagination, data.total_pages, 1);
-    } else {
-      moviesGrid.innerHTML = '<p class="error-message">No movies found</p>';
-    }
-  });
-}
-
-function renderMoviesPagination(container, totalPages, currentPage) {
-  if (!container) return;
-  
-  let buttons = '';
-  const maxVisiblePages = 5;
-  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-  let endPage = startPage + maxVisiblePages - 1;
-  
-  if (endPage > totalPages) {
-    endPage = totalPages;
-    startPage = Math.max(1, endPage - maxVisiblePages + 1);
-  }
-  
-  if (currentPage > 1) {
-    buttons += `<button data-page="${currentPage - 1}">« Prev</button>`;
-  }
-  
-  if (startPage > 1) {
-    buttons += `<button data-page="1">1</button>`;
-    if (startPage > 2) {
-      buttons += `<span class="ellipsis">...</span>`;
-    }
-  }
-  
-  for (let i = startPage; i <= endPage; i++) {
-    buttons += `<button data-page="${i}" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
-  }
-  
-  if (endPage < totalPages) {
-    if (endPage < totalPages - 1) {
-      buttons += `<span class="ellipsis">...</span>`;
-    }
-    buttons += `<button data-page="${totalPages}">${totalPages}</button>`;
-  }
-  
-  if (currentPage < totalPages) {
-    buttons += `<button data-page="${currentPage + 1}">Next »</button>`;
-  }
-  
-  container.innerHTML = buttons;
-  
-  container.querySelectorAll('button[data-page]').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const page = parseInt(btn.dataset.page);
-      const moviesGrid = document.getElementById('all-movies-grid');
-      if (moviesGrid) {
-        moviesGrid.innerHTML = '<div class="loading"></div>';
-        const data = await fetchAllMovies(page);
-        if (data.results.length > 0) {
-          displayMedia(data.results, '#all-movies-grid', 'movie');
-          renderMoviesPagination(container, data.total_pages, page);
-        }
-      }
-    });
-  });
-}
-
-// TV Shows Functionality
-async function fetchAllTVShows(page = 1) {
-  try {
-    const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`);
-    const data = await res.json();
-    data.results = data.results.filter(show => show.poster_path);
-    return data;
-  } catch (err) {
-    console.error('Fetch TV shows error:', err);
-    return { results: [], total_pages: 0 };
-  }
-}
-
-function setupTVShowsLink() {
-  const tvShowsLink = document.getElementById('tvshows-link');
-  if (!tvShowsLink) return;
-
-  tvShowsLink.addEventListener('click', async (e) => {
-    e.preventDefault();
-    
-    const existingModal = document.querySelector('.modal');
-    if (existingModal) {
-      existingModal.remove();
-    }
-    
-    const container = document.createElement('div');
-    container.className = 'modal';
-    container.innerHTML = `
-      <div class="modal-content" style="max-width: 90vw; max-height: 90vh; overflow-y: auto;">
-        <span class="close-btn">×</span>
-        <h2>📺 All TV Shows</h2>
-        <div class="search-results-grid" id="tvshows-grid"></div>
-        <div class="pagination" id="tvshows-pagination"></div>
-        <div class="pagination-disclaimer">
-          <p>⚠️ Content provided by third-party servers</p>
-        </div>
-      </div>
-    `;
-    
-    document.getElementById('modal-container').appendChild(container);
-    document.body.style.overflow = 'hidden';
-    
-    const closeBtn = container.querySelector('.close-btn');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        container.remove();
-        document.body.style.overflow = '';
-      });
-    }
-    
-    const tvShowsGrid = container.querySelector('#tvshows-grid');
-    const pagination = container.querySelector('#tvshows-pagination');
-    
-    tvShowsGrid.innerHTML = '<div class="loading"></div>';
-    
-    const data = await fetchAllTVShows();
-    if (data.results.length > 0) {
-      displayMedia(data.results, '#tvshows-grid', 'tv');
-      renderMoviesPagination(pagination, data.total_pages, 1);
-    } else {
-      tvShowsGrid.innerHTML = '<p class="error-message">No TV shows found</p>';
-    }
-  });
-}
-
 // Initialize Everything
 window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   setupMenuToggle();
   setupMenuSearch();
-  setupAllMoviesLink();
-  setupTVShowsLink();
   
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
