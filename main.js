@@ -356,7 +356,6 @@ window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   setupMenuToggle();
   setupMenuSearch();
-  setupGenreToggle();
   
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
@@ -403,3 +402,8 @@ function setupGenreToggle() {
   }
 }
 
+// Call this in your DOMContentLoaded event
+document.addEventListener('DOMContentLoaded', function() {
+  setupGenreToggle();
+  // Your other initialization code...
+})
