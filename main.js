@@ -372,12 +372,142 @@ function setupGenreToggle() {
   }
 }
 
-// Initialize
+// Genre Functions
+async function fetchGenreMovies(genreId, page = 1) {
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/discover/movie?api_key=77312bdd4669c80af3d08e0bf719d7ff&with_genres=${genreId}&page=${page}`
+    );
+    const data = await response.json();
+    
+    displayGenreResults(data.results);
+    setupGenrePagination(data.total_pages, page, genreId);
+    
+  } catch (error) {
+    console.error('Error fetching genre movies:', error);
+    document.getElementById('results-grid').innerHTML = 
+      '<p class="error-message">Failed to load movies. Please try again later.</p>';
+  }
+}
+
+function displayGenreResults(movies) {
+  const resultsGrid = document.getElementById('results-grid');
+  
+  if (!movies || movies.length === 0) {
+    resultsGrid.innerHTML = '<p class="no-results">No movies found in this genre.</p>';
+    return;
+  }
+  
+  resultsGrid.innerHTML = movies.map(movie => `
+    <div class="movie-card" data-id="${movie.id}" data-type="movie">
+      <img src="${movie.poster_path ? 'https://image.tmdb.org/t/p/w500' + movie.poster_path : 'https://via.placeholder.com/500x750?text=No+Poster'}" 
+           alt="${movie.title}" 
+           loading="lazy">
+      <div class="movie-info">
+        <h3>${movie.title}</h3>
+        <p>${movie.release_date ? movie.release_date.substring(0, 4) : 'N/A'}</p>
+        <p>⭐ ${movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}</p>
+      </div>
+    </div>
+  `).join('');
+  
+  // Add click event to open modal
+  document.querySelectorAll('.movie-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.getAttribute('data-id');
+      const type = card.getAttribute('data-type');
+      openModal(id, type);
+    });
+  });
+}
+
+function setupGenrePagination(totalPages, currentPage, genreId) {
+  const paginationTop = document.getElementById('pagination-top');
+  const paginationBottom = document.getElementById('pagination');
+  
+  if (totalPages <= 1) {
+    paginationTop.innerHTML = '';
+    paginationBottom.innerHTML = '';
+    return;
+  }
+  
+  const paginationHTML = generatePaginationHTML(totalPages, currentPage, genreId);
+  paginationTop.innerHTML = paginationHTML;
+  paginationBottom.innerHTML = paginationHTML;
+  
+  document.querySelectorAll('.pagination-button').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      const page = parseInt(button.getAttribute('data-page'));
+      fetchGenreMovies(genreId, page);
+    });
+  });
+}
+
+function generatePaginationHTML(totalPages, currentPage, genreId) {
+  let html = '<div class="pagination-container">';
+  
+  // Previous button
+  if (currentPage > 1) {
+    html += `<a href="#" class="pagination-button" data-page="${currentPage - 1}">‹</a>`;
+  }
+  
+  // Page numbers
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+  
+  if (endPage - startPage + 1 < maxVisiblePages) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+  
+  if (startPage > 1) {
+    html += `<a href="#" class="pagination-button" data-page="1">1</a>`;
+    if (startPage > 2) html += '<span class="pagination-ellipsis">...</span>';
+  }
+  
+  for (let i = startPage; i <= endPage; i++) {
+    html += `<a href="#" class="pagination-button ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</a>`;
+  }
+  
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) html += '<span class="pagination-ellipsis">...</span>';
+    html += `<a href="#" class="pagination-button" data-page="${totalPages}">${totalPages}</a>`;
+  }
+  
+  // Next button
+  if (currentPage < totalPages) {
+    html += `<a href="#" class="pagination-button" data-page="${currentPage + 1}">›</a>`;
+  }
+  
+  html += '</div>';
+  return html;
+}
+
+// Initialize Genre Page
+function initGenrePage() {
+  const params = new URLSearchParams(location.search);
+  const genreId = params.get('id');
+  const genreName = params.get('name');
+  
+  if (genreId && genreName) {
+    document.title = `${genreName} - GomoTV`;
+    document.getElementById('genre-title').textContent = `${genreName} Movies`;
+    fetchGenreMovies(genreId);
+  }
+}
+
+// Update DOMContentLoaded
 window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   setupMenuToggle();
   setupMenuSearch();
   setupGenreToggle();
+  
+  // Check if we're on genre page
+  if (document.getElementById('results-grid')) {
+    initGenrePage();
+  }
   
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
