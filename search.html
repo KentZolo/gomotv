@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Search Results - GomoTV</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="shared-modal.js"></script>
   <style>
     /* Search-specific styles */
     .search-prompt {
@@ -183,13 +184,7 @@
     const menuOverlay = document.getElementById('menu-overlay');
     const themeToggle = document.getElementById('theme-toggle');
     const menuSearchInput = document.getElementById('menu-search-input');
-    const menuSearchButton = document.getElementById('menu-search-button');
-
-    // Server configurations
-    const SERVERS = [
-      { id: 'vidsrc', name: 'Vidsrc', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
-      { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
-    ];
+    const menuSearchButton = document.getElementById('menu-search-button'); 
 
     // Initialize the page
     document.addEventListener('DOMContentLoaded', function() {
@@ -210,7 +205,7 @@
       }
     });
 
-    // Search functionality
+    / Search functionality
     function setupSearch() {
       searchButton.addEventListener('click', performSearch);
       searchInput.addEventListener('keypress', function(e) {
