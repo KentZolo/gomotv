@@ -109,12 +109,6 @@ body.dark .poster-label {
   background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black */
 }
 
-/* Para sa buttons at interactive elements */
-body.dark button {
-  color: #FFFFFF;
-  background-color: #E50914; /* Netflix red */
-}
-
 body.dark .navbar,
 body.dark .hamburger-menu,
 body.dark .footer {
