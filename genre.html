@@ -87,14 +87,23 @@
       <h2>Select a Genre:</h2>
       <div class="genre-grid">
         <a href="genre.html?name=Action&id=28">Action</a>
+        <a href="genre.html?name=Adventure&id=12">Adventure</a>
         <a href="genre.html?name=Animation&id=16">Animation</a>
         <a href="genre.html?name=Comedy&id=35">Comedy</a>
+        <a href="genre.html?name=Crime&id=80">Crime</a>
+        <a href="genre.html?name=Documentary&id=99">Documentary</a>
         <a href="genre.html?name=Drama&id=18">Drama</a>
+        <a href="genre.html?name=Family&id=10751">Family</a>
         <a href="genre.html?name=Fantasy&id=14">Fantasy</a>
+        <a href="genre.html?name=History&id=36">History</a>
         <a href="genre.html?name=Horror&id=27">Horror</a>
+        <a href="genre.html?name=Music&id=10402">Music</a>
+        <a href="genre.html?name=Mystery&id=9648">Mystery</a>
         <a href="genre.html?name=Romance&id=10749">Romance</a>
-        <a href="genre.html?name=Sci-Fi&id=878">Sci-Fi</a>
+        <a href="genre.html?name=Science Fiction&id=878">Sci-Fi</a>
         <a href="genre.html?name=Thriller&id=53">Thriller</a>
+        <a href="genre.html?name=War&id=10752">War</a>
+        <a href="genre.html?name=Western&id=37">Western</a>
       </div>
     </div>
   </section>
@@ -181,7 +190,7 @@
       try {
         const res = await fetch(
           `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}` +
-          `&with_genres=${id}&page=${page}`
+          `&with_genres=${id}&page=${page}&sort_by=popularity.desc`
         );
         const data = await res.json();
         
@@ -230,12 +239,16 @@
         const title = item.title || item.name;
         const year = (item.release_date || item.first_air_date || '').slice(0, 4);
         const img = getImageUrl(item.poster_path);
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
 
         return `
           <div class="poster-wrapper" data-id="${item.id}" data-type="movie">
             <img src="${img}" alt="${title}" loading="lazy">
             <div class="poster-label">${title}</div>
-            <div class="poster-meta">${year}</div>
+            <div class="poster-meta">
+              <span>${year}</span>
+              <span class="rating">⭐ ${rating}</span>
+            </div>
           </div>
         `;
       }).join('');
@@ -265,11 +278,32 @@
       const minPage = Math.max(1, currentPage - 2);
       const maxPage = Math.min(totalPages, currentPage + 2);
 
-      if (currentPage > 1) buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
+      // Previous button
+      if (currentPage > 1) {
+        buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
+      }
+
+      // First page
+      if (minPage > 1) {
+        buttons += `<button onclick="goToPage(1)">1</button>`;
+        if (minPage > 2) buttons += `<span class="ellipsis">...</span>`;
+      }
+
+      // Page range
       for (let i = minPage; i <= maxPage; i++) {
         buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
       }
-      if (currentPage < totalPages) buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
+
+      // Last page
+      if (maxPage < totalPages) {
+        if (maxPage < totalPages - 1) buttons += `<span class="ellipsis">...</span>`;
+        buttons += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
+      }
+
+      // Next button
+      if (currentPage < totalPages) {
+        buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
+      }
 
       pagTop.innerHTML = buttons;
       pagBottom.innerHTML = buttons;
