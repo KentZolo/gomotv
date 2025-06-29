@@ -57,29 +57,52 @@
   left: 0;
 }
 
-/* ===== THEME TOGGLE ICONS ===== */  
-/* DEFAULT: LIGHT MODE */
+/* DEFAULT THEME STYLES */
 body {
-  background-color: #f4f4f4; /* Light background */
-  color: #333; /* Text color (hindi magbabago) */
-  transition: background-color 0.3s ease; /* Smooth bg transition */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* DARK MODE */
+/* LIGHT THEME */
+body.light {
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+body.light .navbar,
+body.light .hamburger-menu,
+body.light .footer {
+  background-color: #ffffff;
+  color: #333;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+body.light .poster-wrapper {
+  background-color: #eeeeee;
+}
+
+body.light .poster-label {
+  color: #333;
+}
+
+/* DARK THEME */
 body.dark {
-  background-color: #0f0f0f; /* Dark background */
-  /* TEXT COLOR WILL STAY THE SAME */
+  background-color: #0f0f0f;
+  color: #ffffff;
 }
 
-/* ICONS (Light/Dark toggle visibility) */
-body.dark .light-icon,
-body.light .dark-icon {
-  opacity: 0;
+body.dark .navbar,
+body.dark .hamburger-menu,
+body.dark .footer {
+  background-color: #000000;
+  color: #ffffff;
 }
 
-body.dark .dark-icon,
-body.light .light-icon {
-  opacity: 1;
+body.dark .poster-wrapper {
+  background-color: #1a1a1a;
+}
+
+body.dark .poster-label {
+  color: #ffffff;
 }
 
 /* ===== HAMBURGER MENU SYSTEM ===== */
