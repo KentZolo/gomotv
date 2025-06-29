@@ -35,7 +35,11 @@
   <header class="navbar">
     <button onclick="history.back()" class="menu-toggle">←</button>
     <h1 class="logo" id="genre-title">Genres</h1>
-    <button id="theme-toggle" class="theme-toggle">🌓</button>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+      <span class="dark-icon">❍</span>
+      <span class="light-icon" hidden>☼</span>
+    </button>
+    <div class="theme-transition-overlay"></div>
   </header>
 
   <section style="padding: 20px;">
