@@ -91,8 +91,35 @@
       }
     }
 
+    // Initialize theme
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(savedTheme);
+      updateThemeIcons(savedTheme);
+    }
+
+    function updateThemeIcons(theme) {
+      const darkIcon = document.querySelector('.dark-icon');
+      const lightIcon = document.querySelector('.light-icon');
+      if (darkIcon && lightIcon) {
+        darkIcon.hidden = theme === 'light';
+        lightIcon.hidden = theme === 'dark';
+      }
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const isDark = body.classList.contains('dark');
+      const newTheme = isDark ? 'light' : 'dark';
+      
+      body.classList.remove('dark', 'light');
+      body.classList.add(newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcons(newTheme);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-      initThemeToggle();
+      initTheme();
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
       
       if (genreId && genreName) {
@@ -108,46 +135,55 @@
     }
 
     async function fetchGenreMovies(id, page = 1) {
-      const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${id}&page=${page}`);
-      const data = await res.json();
-      renderResults(data.results);
-      renderPagination(data.total_pages);
-      addDisclaimer(); // Add disclaimer after loading
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${id}&page=${page}`);
+        const data = await res.json();
+        renderResults(data.results);
+        renderPagination(data.total_pages);
+        addDisclaimer();
+      } catch (error) {
+        console.error('Error fetching movies:', error);
+      }
     }
 
     function renderResults(items) {
       const container = document.getElementById("results-grid");
+      if (!container) return;
+      
       container.innerHTML = items.map(item => {
         const title = item.title || item.name;
         const year = (item.release_date || item.first_air_date || '').slice(0, 4);
         const img = getImageUrl(item.poster_path);
 
         return `
-          <div class="poster-wrapper">
-            <img src="${img}" alt="${title}" data-id="${item.id}" data-type="movie">
+          <div class="poster-wrapper" data-id="${item.id}" data-type="movie">
+            <img src="${img}" alt="${title}" loading="lazy">
             <div class="poster-label">${title}</div>
             <div class="poster-meta">${year}</div>
           </div>
         `;
       }).join('');
 
-      document.querySelectorAll('.poster-wrapper').forEach(poster => {
-  poster.addEventListener('click', () => {
-    const img = poster.querySelector('img');
-    if (img && typeof openModal === 'function') {
-      openModal(img.dataset.id, img.dataset.type);
-    } else {
-      console.error('openModal is not defined or img data missing');
+      // Add click handlers after DOM update
+      setTimeout(() => {
+        document.querySelectorAll('.poster-wrapper').forEach(poster => {
+          poster.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const type = this.getAttribute('data-type');
+            if (id && type && typeof openModal === 'function') {
+              openModal(id, type);
+            }
+          });
+        });
+      }, 100);
     }
-  });
-});
 
     function renderPagination(totalPages) {
       const pagTop = document.getElementById('pagination-top');
       const pagBottom = document.getElementById('pagination');
-      if (totalPages <= 1) {
-        pagTop.innerHTML = '';
-        pagBottom.innerHTML = '';
+      if (!pagTop || !pagBottom || totalPages <= 1) {
+        if (pagTop) pagTop.innerHTML = '';
+        if (pagBottom) pagBottom.innerHTML = '';
         return;
       }
 
@@ -163,35 +199,12 @@
 
       pagTop.innerHTML = buttons;
       pagBottom.innerHTML = buttons;
-      addDisclaimer(); // Re-add if pagination changes
+      addDisclaimer();
     }
 
     function goToPage(page) {
       location.href = `genre.html?name=${encodeURIComponent(genreName)}&id=${genreId}&page=${page}`;
     }
-
-    function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  document.body.classList.add(savedTheme);
-  updateThemeIcons(savedTheme);
-}
-
-function updateThemeIcons(theme) {
-  document.querySelector('.dark-icon').hidden = theme === 'light';
-  document.querySelector('.light-icon').hidden = theme === 'dark';
-}
-
-function toggleTheme() {
-  const body = document.body;
-  const isDark = body.classList.contains('dark');
-  const newTheme = isDark ? 'light' : 'dark';
-  
-  body.classList.remove('dark', 'light');
-  body.classList.add(newTheme);
-  localStorage.setItem('theme', newTheme);
-  updateThemeIcons(newTheme);
- });
-}
   </script>
 </body>
 </html>
