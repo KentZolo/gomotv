@@ -33,12 +33,21 @@ body {
 }
 
 .theme-toggle {
-  background: none;
-  border: none;
-  color: white;
+  background: none !important; /* Walang background */
+  border: none !important;
+  padding: 0;
   font-size: 1.5rem;
   cursor: pointer;
   margin-left: auto;
+  color: inherit; /* Gamitin ang kulay ng text ng parent */
+}
+
+/* Dark/light mode icon colors */
+body.dark .theme-toggle {
+  color: white;
+}
+body.light .theme-toggle {
+  color: #333;
 }
 
 /* ===== HAMBURGER MENU SYSTEM ===== */
