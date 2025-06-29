@@ -1,317 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Genre Results - GomoTV</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    /* Disclaimer Styles */
-    .pagination-disclaimer {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 25px 20px;
-      margin-top: -10px;
-      font-size: 0.75rem;
-      color: #aaa;
-      line-height: 1.6;
-      border-top: 1px solid #333;
-      background: rgba(0,0,0,0.1);
-      border-radius: 0 0 8px 8px;
-    }
-    .pagination-disclaimer a {
-      color: #e50914;
-      text-decoration: none;
-    }
-    body.light .pagination-disclaimer {
-      color: #666;
-      border-top: 1px solid #ddd;
-      background: rgba(0,0,0,0.05);
-    }
-    
-    /* Error Message */
-    .genre-error {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 30px;
-      color: #e50914;
-    }
-    
-    /* Genre Grid Styles */
-    .genre-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 15px;
-      margin-top: 15px;
-    }
-    
-    .genre-grid a {
-      display: block;
-      padding: 15px;
-      background: rgba(229, 9, 20, 0.1);
-      border: 1px solid rgba(229, 9, 20, 0.3);
-      border-radius: 8px;
-      text-align: center;
-      text-decoration: none;
-      color: inherit;
-      transition: all 0.3s ease;
-    }
-    
-    .genre-grid a:hover {
-      background: rgba(229, 9, 20, 0.2);
-      transform: translateY(-2px);
-    }
-    
-    body.light .genre-grid a {
-      background: rgba(229, 9, 20, 0.05);
-      border-color: rgba(229, 9, 20, 0.2);
-    }
-    
-    body.light .genre-grid a:hover {
-      background: rgba(229, 9, 20, 0.1);
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch - GomoTV</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+
+    .player-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #111;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .movie-info {
+      padding: 20px;
+    }
+
+    .movie-info h1 {
+      margin: 0 0 10px;
+    }
+
+    .meta {
+      font-size: 0.9em;
+      color: #ccc;
+      margin-bottom: 10px;
+    }
+
+    .movie-info p {
+      line-height: 1.6;
+    }
+  </style>
 </head>
 <body>
-  <header class="navbar">
-    <button onclick="history.back()" class="menu-toggle">←</button>
-    <h1 class="logo" id="genre-title">Genres</h1>
-    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-      <span class="dark-icon">❍</span>
-      <span class="light-icon" hidden>☼</span>
-    </button>
-  </header>
+  <div class="player-container">
+    <iframe id="player-frame" allowfullscreen></iframe>
+  </div>
 
-  <section style="padding: 20px; display: none;" id="genre-list-section">
-    <div class="genre-list">
-      <h2>Select a Genre:</h2>
-      <div class="genre-grid">
-        <a href="genre.html?name=Action&id=28">Action</a>
-        <a href="genre.html?name=Adventure&id=12">Adventure</a>
-        <a href="genre.html?name=Animation&id=16">Animation</a>
-        <a href="genre.html?name=Comedy&id=35">Comedy</a>
-        <a href="genre.html?name=Crime&id=80">Crime</a>
-        <a href="genre.html?name=Documentary&id=99">Documentary</a>
-        <a href="genre.html?name=Drama&id=18">Drama</a>
-        <a href="genre.html?name=Family&id=10751">Family</a>
-        <a href="genre.html?name=Fantasy&id=14">Fantasy</a>
-        <a href="genre.html?name=History&id=36">History</a>
-        <a href="genre.html?name=Horror&id=27">Horror</a>
-        <a href="genre.html?name=Music&id=10402">Music</a>
-        <a href="genre.html?name=Mystery&id=9648">Mystery</a>
-        <a href="genre.html?name=Romance&id=10749">Romance</a>
-        <a href="genre.html?name=Science Fiction&id=878">Sci-Fi</a>
-        <a href="genre.html?name=Thriller&id=53">Thriller</a>
-        <a href="genre.html?name=War&id=10752">War</a>
-        <a href="genre.html?name=Western&id=37">Western</a>
-      </div>
-    </div>
-  </section>
+  <div class="movie-info">
+    <h1 id="movie-title">Loading...</h1>
+    <div class="meta">
+      <span id="movie-year"></span> • 
+      <span id="movie-rating"></span> • 
+      <span id="movie-genres"></span>
+    </div>
+    <p id="movie-overview"></p>
+  </div>
 
-  <main>
-    <div id="pagination-top" class="pagination"></div>
-    <div class="search-results-grid" id="results-grid"></div>
-    <div id="pagination" class="pagination"></div>
-  </main>
+  <script>
+    const API_KEY = 'YOUR_API_KEY';
+    const BASE_URL = 'https://api.themoviedb.org/3';
 
-  <div id="modal-container"></div>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const type = params.get('type');
 
-  <script src="shared-modal.js"></script>
-  <script>
-    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
-    const params = new URLSearchParams(location.search);
-    const genreId = params.get('id');
-    const genreName = params.get('name');
-    let currentPage = parseInt(params.get('page')) || 1;
+      if (!id || !type) return;
 
-    // Auto-add disclaimer
-    function addDisclaimer() {
-      if (!document.querySelector('.pagination-disclaimer')) {
-        const disclaimer = document.createElement('div');
-        disclaimer.className = 'pagination-disclaimer';
-        disclaimer.innerHTML = `
-          <p>⚠️ Disclaimer: GomoTV does not host any videos. Content provided by third-party servers.</p>
-          <p>Support creators via <a href="https://www.justwatch.com" target="_blank">official platforms</a>.</p>
-        `;
-        const pagination = document.getElementById('pagination');
-        if (pagination) {
-          pagination.parentNode.insertBefore(disclaimer, pagination.nextSibling);
-        }
-      }
-    }
+      try {
+        const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
+        const data = await res.json();
 
-    // Initialize theme
-    function initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.body.classList.add(savedTheme);
-      updateThemeIcons(savedTheme);
-    }
-
-    function updateThemeIcons(theme) {
-      const darkIcon = document.querySelector('.dark-icon');
-      const lightIcon = document.querySelector('.light-icon');
-      if (darkIcon && lightIcon) {
-        darkIcon.hidden = theme === 'light';
-        lightIcon.hidden = theme === 'dark';
-      }
-    }
-
-    function toggleTheme() {
-      const body = document.body;
-      const isDark = body.classList.contains('dark');
-      const newTheme = isDark ? 'light' : 'dark';
-      
-      body.classList.remove('dark', 'light');
-      body.classList.add(newTheme);
-      localStorage.setItem('theme', newTheme);
-      updateThemeIcons(newTheme);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      initTheme();
-      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-      
-      if (genreId && genreName) {
-        document.getElementById("genre-title").textContent = genreName;
-        fetchGenreMovies(genreId, currentPage);
-      } else {
-        document.getElementById('genre-list-section').style.display = 'block';
-      }
-    });
-
-    function getImageUrl(path) {
-      return path
-        ? `https://image.tmdb.org/t/p/w500${path}`
-        : 'https://via.placeholder.com/500x750?text=No+Poster';
-    }
-
-    // Main function to fetch genre-specific movies
-    async function fetchGenreMovies(id, page = 1) {
-      try {
-        const res = await fetch(
-          `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}` +
-          `&with_genres=${id}&page=${page}&sort_by=popularity.desc`
-        );
-        const data = await res.json();
-        
-        if (data.results && data.results.length > 0) {
-          renderResults(data.results);
-          renderPagination(data.total_pages);
-        } else {
-          showGenreError();
-          fetchPopularMovies(page);
-        }
-        
-      } catch (error) {
-        console.error('Error fetching genre movies:', error);
-        showGenreError();
-        fetchPopularMovies(page);
-      }
-      addDisclaimer();
-    }
-
-    // Show error message about genre matching
-    function showGenreError() {
-      const container = document.getElementById("results-grid");
-      container.innerHTML = `
-        <div class="genre-error">
-          <p>⚠️ Couldn't find enough movies in the ${genreName} genre.</p>
-          <p>Showing popular movies instead.</p>
-        </div>
-      `;
-    }
-
-    // Final fallback - popular movies
-    async function fetchPopularMovies(page = 1) {
-      const res = await fetch(
-        `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&page=${page}`
-      );
-      const data = await res.json();
-      renderResults(data.results);
-      renderPagination(data.total_pages);
-    }
-
-    function renderResults(items) {
-      const container = document.getElementById("results-grid");
-      if (!container) return;
-      
-      container.innerHTML = items.map(item => {
-        const title = item.title || item.name;
-        const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-        const img = getImageUrl(item.poster_path);
-        const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
-
-        return `
-          <div class="poster-wrapper" data-id="${item.id}" data-type="movie">
-            <img src="${img}" alt="${title}" loading="lazy">
-            <div class="poster-label">${title}</div>
-            <div class="poster-meta">
-              <span>${year}</span>
-              <span class="rating">⭐ ${rating}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      // Add click handlers
-      document.querySelectorAll('.poster-wrapper').forEach(poster => {
-        poster.addEventListener('click', function() {
-          const id = this.getAttribute('data-id');
-          const type = this.getAttribute('data-type');
-          if (id && type && typeof openModal === 'function') {
-            openModal(id, type);
-          }
-        });
-      });
-    }
-
-    function renderPagination(totalPages) {
-      const pagTop = document.getElementById('pagination-top');
-      const pagBottom = document.getElementById('pagination');
-      if (!pagTop || !pagBottom || totalPages <= 1) {
-        if (pagTop) pagTop.innerHTML = '';
-        if (pagBottom) pagBottom.innerHTML = '';
-        return;
-      }
-
-      let buttons = '';
-      const minPage = Math.max(1, currentPage - 2);
-      const maxPage = Math.min(totalPages, currentPage + 2);
-
-      // Previous button
-      if (currentPage > 1) {
-        buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
-      }
-
-      // First page
-      if (minPage > 1) {
-        buttons += `<button onclick="goToPage(1)">1</button>`;
-        if (minPage > 2) buttons += `<span class="ellipsis">...</span>`;
-      }
-
-      // Page range
-      for (let i = minPage; i <= maxPage; i++) {
-        buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
-      }
-
-      // Last page
-      if (maxPage < totalPages) {
-        if (maxPage < totalPages - 1) buttons += `<span class="ellipsis">...</span>`;
-        buttons += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
-      }
-
-      // Next button
-      if (currentPage < totalPages) {
-        buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
-      }
-
-      pagTop.innerHTML = buttons;
-      pagBottom.innerHTML = buttons;
-    }
-
-    function goToPage(page) {
-      location.href = `genre.html?name=${encodeURIComponent(genreName)}&id=${genreId}&page=${page}`;
-    }
-  </script>
+        document.title = `${data.title || data.name} - GomoTV`;
+        document.getElementById('player-frame').src = `https://vidsrc.to/embed/${type}/${id}`;
+        document.getElementById('movie-title').textContent = data.title || data.name;
+        document.getElementById('movie-year').textContent = (data.release_date || data.first_air_date || '').slice(0, 4);
+        document.getElementById('movie-rating').textContent = `⭐ ${data.vote_average?.toFixed(1) || 'N/A'}`;
+        document.getElementById('movie-genres').textContent = data.genres.map(g => g.name).join(', ');
+        document.getElementById('movie-overview').textContent = data.overview || 'No overview available.';
+      } catch (err) {
+        console.error('Error fetching movie:', err);
+      }
+    });
+  </script>
 </body>
 </html>
