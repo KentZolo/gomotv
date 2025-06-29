@@ -17,8 +17,10 @@
       font-family: 'Helvetica Neue', Arial, sans-serif;
       background-color: var(--dark-bg);
       color: var(--text);
+      transition: background-color 0.3s ease;
     }
 
+    /* Navbar - Matches index.html */
     .navbar {
       position: fixed;
       top: 0;
@@ -31,12 +33,21 @@
       align-items: center;
     }
 
-    .back-btn {
+    .menu-toggle {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
       background: none;
       border: none;
-      color: var(--text);
-      font-size: 1.5rem;
       cursor: pointer;
+    }
+
+    .menu-toggle span {
+      display: block;
+      width: 25px;
+      height: 3px;
+      background-color: var(--text);
+      transition: all 0.3s ease;
     }
 
     .logo {
@@ -45,11 +56,21 @@
       color: var(--primary);
     }
 
+    .theme-toggle {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    /* Player Section */
     .player-container {
       position: relative;
       width: 100%;
       aspect-ratio: 16/9;
       background: #000;
+      margin-top: 60px; /* Space for navbar */
     }
 
     iframe {
@@ -85,49 +106,66 @@
       100% { transform: rotate(360deg); }
     }
 
+    /* Movie Info - Enhanced to match index.html style */
     .movie-info {
       padding: 20px;
-      max-width: 800px;
+      max-width: 1200px;
       margin: 0 auto;
     }
 
     .movie-info h1 {
       margin: 0 0 10px;
       font-size: 2rem;
+      color: var(--primary);
     }
 
     .meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 15px;
       font-size: 0.9rem;
       color: var(--text-secondary);
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
 
     .meta span {
       display: flex;
       align-items: center;
+      gap: 5px;
     }
 
     .rating {
       color: var(--primary);
+      font-weight: bold;
     }
 
     .movie-info p {
       line-height: 1.6;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      font-size: 1rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
     }
 
     .btn {
       background-color: var(--primary);
       color: white;
       border: none;
-      padding: 8px 16px;
+      padding: 10px 20px;
       border-radius: 4px;
       cursor: pointer;
       font-weight: bold;
-      margin-right: 10px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #f40612;
+      transform: translateY(-2px);
     }
 
     .btn-outline {
@@ -136,17 +174,11 @@
       color: var(--text);
     }
 
-    .server-selector {
-      width: 100%;
-      padding: 10px;
-      margin: 15px 0;
-      background-color: #333;
-      color: white;
-      border: 1px solid #555;
-      border-radius: 4px;
-      font-size: 1rem;
+    .btn-outline:hover {
+      background: rgba(255,255,255,0.1);
     }
 
+    /* Responsive Design */
     @media (max-width: 768px) {
       .movie-info {
         padding: 15px;
@@ -155,16 +187,34 @@
       .movie-info h1 {
         font-size: 1.5rem;
       }
+      
+      .actions {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Updated Navbar to match index.html -->
   <header class="navbar">
-    <button onclick="history.back()" class="back-btn">←</button>
+    <button class="menu-toggle" id="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
     <h1 class="logo">GomoTV</h1>
-    <div></div> <!-- Empty div for flex spacing -->
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+      <span class="dark-icon">❍</span>
+      <span class="light-icon" hidden>☼</span>
+    </button>
   </header>
 
+  <!-- Player Section -->
   <div class="player-container">
     <div class="loading-overlay" id="loading">
       <div class="spinner"></div>
@@ -172,6 +222,7 @@
     <iframe id="player-frame" allowfullscreen allow="autoplay"></iframe>
   </div>
 
+  <!-- Movie Info Section -->
   <div class="movie-info">
     <h1 id="movie-title">Loading...</h1>
     <div class="meta">
@@ -181,13 +232,6 @@
       <span id="movie-genres"></span>
     </div>
     <p id="movie-overview"></p>
-    
-    <select id="server-select" class="server-selector">
-      <option value="vidsrccc">Vidsrc.cc</option>
-      <option value="vidsrc">Vidsrc.to</option>
-      <option value="apimocine">Apimocine</option>
-    </select>
-    
     <div class="actions">
       <button class="btn" onclick="window.location.href='index.html'">Back to Home</button>
       <button class="btn btn-outline" id="trailer-btn">Watch Trailer</button>
@@ -198,24 +242,56 @@
     // Configuration
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
     const BASE_URL = 'https://api.themoviedb.org/3';
-    
-    // Server options
-    const SERVERS = [
-      { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
-      { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
-      { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
-    ];
+    const VIDSRC_URL = 'https://vidsrc.to/embed';
 
     // DOM Elements
     const playerFrame = document.getElementById('player-frame');
     const loadingOverlay = document.getElementById('loading');
     const trailerBtn = document.getElementById('trailer-btn');
-    const serverSelect = document.getElementById('server-select');
+    const menuToggle = document.getElementById('menu-toggle');
+    const themeToggle = document.getElementById('theme-toggle');
+
+    // Theme Management (matches index.html)
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(savedTheme);
+      updateThemeIcons(savedTheme);
+    }
+
+    function updateThemeIcons(theme) {
+      const darkIcon = document.querySelector('.dark-icon');
+      const lightIcon = document.querySelector('.light-icon');
+      if (darkIcon && lightIcon) {
+        darkIcon.hidden = theme === 'light';
+        lightIcon.hidden = theme === 'dark';
+      }
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const isDark = body.classList.contains('dark');
+      const newTheme = isDark ? 'light' : 'dark';
+      
+      body.classList.remove('dark', 'light');
+      body.classList.add(newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcons(newTheme);
+    }
+
+    // Menu Toggle (matches index.html)
+    function toggleMenu() {
+      // This would link to your hamburger menu functionality
+      window.location.href = 'index.html#menu';
+    }
 
     document.addEventListener('DOMContentLoaded', async () => {
+      initTheme();
+      themeToggle.addEventListener('click', toggleTheme);
+      menuToggle.addEventListener('click', toggleMenu);
+
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
-      const type = params.get('type') || 'movie'; // Default to movie if not specified
+      const type = params.get('type') || 'movie';
 
       if (!id) {
         showError('Invalid movie/show ID');
@@ -235,9 +311,9 @@
         document.title = `${data.title || data.name} - GomoTV`;
         document.getElementById('movie-title').textContent = data.title || data.name;
         document.getElementById('movie-year').textContent = (data.release_date || data.first_air_date || '').slice(0, 4);
-        document.getElementById('movie-rating').textContent = `⭐ ${data.vote_average?.toFixed(1) || 'N/A'}`;
+        document.getElementById('movie-rating').textContent = `${data.vote_average?.toFixed(1) || 'N/A'}`;
         
-        // Format runtime (movies) or episode runtime (TV)
+        // Format runtime
         const runtime = type === 'movie' 
           ? `${data.runtime} min` 
           : data.episode_run_time?.[0] 
@@ -263,49 +339,17 @@
           trailerBtn.style.display = 'none';
         }
 
-        // Setup server selector
-        serverSelect.addEventListener('change', function() {
-          const server = SERVERS.find(s => s.id === this.value);
-          if (server) {
-            loadingOverlay.style.display = 'flex';
-            playerFrame.src = server.url(type, id);
-          }
-        });
-
-        // Load default server (try each one until one works)
-        loadDefaultServer(id, type);
+        // Load main player
+        playerFrame.src = `${VIDSRC_URL}/${type}/${id}`;
+        playerFrame.onload = () => {
+          loadingOverlay.style.display = 'none';
+        };
 
       } catch (err) {
         console.error('Error:', err);
         showError('Failed to load content. Please try again later.');
       }
     });
-
-    function loadDefaultServer(id, type) {
-      let currentServerIndex = 0;
-      
-      function tryNextServer() {
-        if (currentServerIndex >= SERVERS.length) {
-          showError('No working server found');
-          return;
-        }
-        
-        const server = SERVERS[currentServerIndex];
-        serverSelect.value = server.id;
-        playerFrame.src = server.url(type, id);
-        
-        playerFrame.onload = function() {
-          loadingOverlay.style.display = 'none';
-        };
-        
-        playerFrame.onerror = function() {
-          currentServerIndex++;
-          tryNextServer();
-        };
-      }
-      
-      tryNextServer();
-    }
 
     function showError(message) {
       loadingOverlay.innerHTML = `<p style="color: white; text-align: center;">${message}</p>`;
