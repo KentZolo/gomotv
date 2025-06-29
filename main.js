@@ -335,34 +335,40 @@ function setupMenuSearch() {
   });
 }
 
-// Theme Toggle Functionality
-function initThemeToggle() {
-  const toggleBtn = document.getElementById('theme-toggle');
-  if (!toggleBtn) return;
-
-  // Check saved theme or use dark as default
-  const savedTheme = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-  
-  document.body.classList.add(initialTheme);
-  updateThemeIcons(initialTheme);
-
-  toggleBtn.addEventListener('click', toggleTheme);
-}
-
 function toggleTheme() {
   const body = document.body;
-  const isDark = body.classList.contains('dark');
-  const newTheme = isDark ? 'light' : 'dark';
+  const overlay = document.querySelector('.theme-transition-overlay');
+  const loadingSpinner = document.createElement('div');
   
-  // Update UI
-  body.classList.remove('dark', 'light');
-  body.classList.add(newTheme);
-  updateThemeIcons(newTheme);
+  loadingSpinner.className = 'theme-loading';
+  document.body.appendChild(loadingSpinner);
   
-  // Save preference
-  localStorage.setItem('theme', newTheme);
+  // Show loading animation
+  loadingSpinner.style.display = 'block';
+  overlay.style.opacity = '1';
+  
+  // Delay the theme switch for visual effect
+  setTimeout(() => {
+    const isDark = body.classList.contains('dark');
+    const newTheme = isDark ? 'light' : 'dark';
+    
+    // Hide content during transition
+    document.documentElement.style.visibility = 'hidden';
+    
+    // Apply new theme
+    body.classList.remove('dark', 'light');
+    body.classList.add(newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcons(newTheme);
+    
+    // Complete transition
+    setTimeout(() => {
+      overlay.style.opacity = '0';
+      loadingSpinner.style.display = 'none';
+      document.documentElement.style.visibility = 'visible';
+      loadingSpinner.remove();
+    }, 800);
+  }, 300);
 }
 
 function updateThemeIcons(theme) {
@@ -372,8 +378,18 @@ function updateThemeIcons(theme) {
   if (darkIcon && lightIcon) {
     darkIcon.hidden = theme === 'light';
     lightIcon.hidden = theme === 'dark';
+    
+    // Add bounce animation
+    const activeIcon = theme === 'dark' ? darkIcon : lightIcon;
+    activeIcon.style.animation = 'bounce 0.5s';
+    setTimeout(() => {
+      activeIcon.style.animation = '';
+    }, 500);
   }
 }
+
+// Initialize
+document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
 // Initialize Everything
 window.addEventListener('DOMContentLoaded', () => {
