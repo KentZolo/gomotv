@@ -163,7 +163,7 @@
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
       
       if (genreId && genreName) {
-        document.getElementById("genre-title").textContent = "🎭 " + genreName;
+        document.getElementById("genre-title").textContent = genreName;
         fetchGenreMovies(genreId, currentPage);
       } else {
         document.getElementById('genre-list-section').style.display = 'block';
