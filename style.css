@@ -86,8 +86,33 @@ body.light .poster-label {
 
 /* DARK THEME */
 body.dark {
-  background-color: #0f0f0f;
-  color: #ffffff;
+  /* Backgrounds */
+  background-color: #121212; /* Mas deep na black */
+  
+  /* Text Hierarchy */
+  color: #E0E0E0; /* Primary text */
+}
+
+body.dark h1, 
+body.dark h2, 
+body.dark h3 {
+  color: #FFFFFF; /* Mas matinding white para sa headings */
+}
+
+body.dark .meta-text,
+body.dark .poster-meta {
+  color: #B0B0B0; /* Lighter gray para sa secondary text */
+}
+
+body.dark .poster-label {
+  color: #FFFFFF; /* Pure white para sa titles */
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black */
+}
+
+/* Para sa buttons at interactive elements */
+body.dark button {
+  color: #FFFFFF;
+  background-color: #E50914; /* Netflix red */
 }
 
 body.dark .navbar,
