@@ -375,12 +375,15 @@ function initThemeToggle() {
   updateThemeIcons(savedTheme);
 }
 
+window.addEventListener('DOMContentLoaded', () => {
+  initThemeToggle(); 
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
 // Initialize Everything
 window.addEventListener('DOMContentLoaded', () => {
   setupMenuToggle();
   setupMenuSearch();
   initThemeToggle(); 
-  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
   
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
