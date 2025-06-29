@@ -335,51 +335,45 @@ function setupMenuSearch() {
   });
 }
 
+// Theme Functions
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.body.classList.add(savedTheme);
+  updateThemeIcons(savedTheme);
+}
+
 function toggleTheme() {
   const body = document.body;
   const isDark = body.classList.contains('dark');
   const newTheme = isDark ? 'light' : 'dark';
-
-  // Apply transition only to color properties
-  body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
   
+  body.classList.add('theme-transition');
   body.classList.remove('dark', 'light');
   body.classList.add(newTheme);
   localStorage.setItem('theme', newTheme);
+  updateThemeIcons(newTheme);
   
-  // Force reflow to ensure transition works
-  void body.offsetWidth;
-  
-  // Clean up after transition
-  setTimeout(() => {
-    body.style.transition = 'none';
-  }, 300);
+  setTimeout(() => body.classList.remove('theme-transition'), 500);
 }
 
-// Theme Toggle Enhancement
-function initThemeToggle() {
-  const themeToggle = document.getElementById('theme-toggle');
+function updateThemeIcons(theme) {
+  const darkIcon = document.querySelector('.dark-icon');
+  const lightIcon = document.querySelector('.light-icon');
   
-  if (!themeToggle) return;
+  if (darkIcon && lightIcon) {
+    darkIcon.hidden = theme === 'light';
+    lightIcon.hidden = theme === 'dark';
+    
+    const activeIcon = theme === 'dark' ? darkIcon : lightIcon;
+    activeIcon.style.transform = 'scale(1.2)';
+    setTimeout(() => activeIcon.style.transform = '', 300);
+  }
+}
 
 // Initialize
 window.addEventListener('DOMContentLoaded', () => {
   initTheme();
-function initThemeToggle() {
-  const themeToggle = document.getElementById('theme-toggle');
-  
-  if (!themeToggle) return;
-
-  // Remove default behaviors
-  themeToggle.addEventListener('mousedown', (e) => {
-    e.preventDefault(); // Prevents focus state on click
-  });
-
-  // Keyboard accessibility
-  themeToggle.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleTheme(); 
+  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 
   // Initialize other components
   setupMenuToggle();
