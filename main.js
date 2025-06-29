@@ -353,13 +353,7 @@ function toggleTheme() {
   localStorage.setItem('theme', isDark ? 'light' : 'dark');
 }
 
-// Initialize Everything
-window.addEventListener('DOMContentLoaded', () => {
-  initThemeToggle();
-  setupMenuToggle();
-  setupMenuSearch();
-
-  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
 // Check saved theme on load
 if (localStorage.getItem('theme') === 'light') {
@@ -367,6 +361,11 @@ if (localStorage.getItem('theme') === 'light') {
   document.querySelector('.dark-icon').hidden = true;
   document.querySelector('.light-icon').hidden = false;
 }
+
+// Initialize Everything
+window.addEventListener('DOMContentLoaded', () => {
+  setupMenuToggle();
+  setupMenuSearch();
   
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
