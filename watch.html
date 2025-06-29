@@ -132,9 +132,9 @@
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
     const BASE_URL = 'https://api.themoviedb.org/3';
     const SERVERS = [
+      { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
       { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
       { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
-      { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
     ];
 
     document.addEventListener('DOMContentLoaded', async () => {
