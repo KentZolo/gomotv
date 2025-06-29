@@ -32,25 +32,54 @@ body {
   margin-left: 10px;
 }
 
+/* Theme Toggle Button - UPDATED */
 .theme-toggle {
-  background: none !important; /* Walang background */
-  border: none !important;
-  padding: 0;
+  background: none;
+  border: none;
+  padding: 8px;
   font-size: 1.5rem;
   cursor: pointer;
   margin-left: auto;
-  color: inherit; /* Gamitin ang kulay ng text ng parent */
+  color: inherit;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  z-index: 1002; /* Higher than hamburger menu */
+  order: 2; /* Ensures proper order in navbar */
 }
 
-/* Dark/light mode icon colors */
-body.dark .theme-toggle {
-  color: white;
-}
-body.light .theme-toggle {
-  color: #333;
+/* Icon Container */
+.theme-icon-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
 }
 
-/* Transition Overlay */
+/* Icons */
+.theme-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: all 0.3s ease;
+}
+
+/* Dark/Light Mode States */
+body.dark .light-icon,
+body.light .dark-icon {
+  opacity: 0;
+  transform: scale(0.5) rotate(90deg);
+}
+
+body.dark .dark-icon,
+body.light .light-icon {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+/* Overlay Animation */
 .theme-transition-overlay {
   position: fixed;
   top: 0;
@@ -64,45 +93,10 @@ body.light .theme-toggle {
   transition: opacity 0.5s ease;
 }
 
-/* Animation for Light Mode Transition */
-body.light {
-  transition: background-color 1s ease, color 0.8s ease;
-}
-
-body.light ::-webkit-scrollbar-thumb:hover {
-  background: #c40812;  /* Idagdag ito */
-}
-
-/* Animation for Dark Mode Transition */
+/* Body Transitions */
+body.light,
 body.dark {
-  transition: background-color 1s ease, color 0.8s ease;
-}
-
-/* Add this to your CSS */
-.theme-icon {
-  position: relative;
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-}
-
-.dark-icon, .light-icon {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-body.dark .light-icon,
-body.light .dark-icon {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-body.dark .dark-icon,
-body.light .light-icon {
-  opacity: 1;
-  transform: scale(1);
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 /* ===== HAMBURGER MENU SYSTEM ===== */
