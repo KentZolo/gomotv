@@ -340,20 +340,40 @@ function toggleTheme() {
   const isDark = body.classList.contains('dark');
   const newTheme = isDark ? 'light' : 'dark';
   
-  body.classList.remove('dark', 'light');
-  body.classList.add(newTheme);
-  localStorage.setItem('theme', newTheme);
+  // Add transition overlay for smooth change
+  const overlay = document.querySelector('.theme-transition-overlay');
+  overlay.style.opacity = '1';
+  overlay.style.pointerEvents = 'auto';
   
-  // Update icons
-  document.querySelector('.dark-icon').hidden = newTheme === 'light';
-  document.querySelector('.light-icon').hidden = newTheme === 'dark';
+  setTimeout(() => {
+    body.classList.remove('dark', 'light');
+    body.classList.add(newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcons(newTheme);
+    
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+  }, 100);
+}
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.body.classList.add(savedTheme);
+  updateThemeIcons(savedTheme);
+}
+
+function updateThemeIcons(theme) {
+  document.querySelector('.dark-icon').hidden = theme === 'light';
+  document.querySelector('.light-icon').hidden = theme === 'dark';
 }
 
 // Initialize
 window.addEventListener('DOMContentLoaded', () => {
-  initTheme();
+  initTheme(); // Idagdag ito sa simula
+  
+  // Ang iba pang initialization code...
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
-
+  
   setupMenuToggle();
   setupMenuSearch();
   if (document.querySelector('.banner-slider')) {
