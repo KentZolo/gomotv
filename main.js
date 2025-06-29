@@ -345,15 +345,15 @@ function toggleTheme() {
   loadingSpinner.className = 'theme-loading';
   document.body.appendChild(loadingSpinner);
 
-  // Show loading animation
+    // Show loading animation
   loadingSpinner.style.display = 'block';
   overlay.style.opacity = '0.7';
 
   setTimeout(() => {
     const isDark = body.classList.contains('dark');
     const newTheme = isDark ? 'light' : 'dark';
-    
-    body.classList.remove('dark', 'light');
+
+  body.classList.remove('dark', 'light');
     body.classList.add(newTheme);
     localStorage.setItem('theme', newTheme);
     updateThemeIcons(newTheme);
@@ -367,7 +367,17 @@ function toggleTheme() {
       }, 500);
     }, 500);
   }, 300);
-}
+}   
+
+ function updateThemeIcons(theme) {
+  const darkIcon = document.querySelector('.dark-icon');
+  const lightIcon = document.querySelector('.light-icon');
+  
+  if (darkIcon && lightIcon) {
+    darkIcon.hidden = theme === 'light';
+    lightIcon.hidden = theme === 'dark';
+  }
+ }
 
 function initThemeToggle() {
   const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -375,16 +385,20 @@ function initThemeToggle() {
   updateThemeIcons(savedTheme);
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  initThemeToggle(); 
-  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-
 // Initialize Everything
 window.addEventListener('DOMContentLoaded', () => {
+  // Initialize theme first
+  initThemeToggle();
+  
+  // Set up theme toggle button
+  const themeToggleBtn = document.getElementById('theme-toggle');
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', toggleTheme);
+  }
+
+  // Initialize other components
   setupMenuToggle();
   setupMenuSearch();
-  initThemeToggle(); 
-  
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
   }
