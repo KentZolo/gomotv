@@ -335,39 +335,27 @@ function setupMenuSearch() {
   });
 }
 
-// Theme Functions
-function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  document.body.classList.add(savedTheme);
-  updateThemeIcons(savedTheme);
-}
-
+// THEME TOGGLE FUNCTIONALITY (ADD THIS IF MISSING)
 function toggleTheme() {
   const body = document.body;
   const isDark = body.classList.contains('dark');
   const newTheme = isDark ? 'light' : 'dark';
   
-  body.classList.add('theme-transition');
   body.classList.remove('dark', 'light');
   body.classList.add(newTheme);
   localStorage.setItem('theme', newTheme);
-  updateThemeIcons(newTheme);
   
-  setTimeout(() => body.classList.remove('theme-transition'), 500);
+  // Update icon visibility
+  document.querySelector('.dark-icon').hidden = newTheme === 'light';
+  document.querySelector('.light-icon').hidden = newTheme === 'dark';
 }
 
-function updateThemeIcons(theme) {
-  const darkIcon = document.querySelector('.dark-icon');
-  const lightIcon = document.querySelector('.light-icon');
-  
-  if (darkIcon && lightIcon) {
-    darkIcon.hidden = theme === 'light';
-    lightIcon.hidden = theme === 'dark';
-    
-    const activeIcon = theme === 'dark' ? darkIcon : lightIcon;
-    activeIcon.style.transform = 'scale(1.2)';
-    setTimeout(() => activeIcon.style.transform = '', 300);
-  }
+// INITIALIZE THEME
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.body.classList.add(savedTheme);
+  document.querySelector('.dark-icon').hidden = savedTheme === 'light';
+  document.querySelector('.light-icon').hidden = savedTheme === 'dark';
 }
 
 // Initialize
@@ -375,7 +363,6 @@ window.addEventListener('DOMContentLoaded', () => {
   initTheme();
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 
-  // Initialize other components
   setupMenuToggle();
   setupMenuSearch();
   if (document.querySelector('.banner-slider')) {
