@@ -28,6 +28,48 @@
       border-top: 1px solid #ddd;
       background: rgba(0,0,0,0.05);
     }
+    
+    /* Error Message */
+    .genre-error {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 30px;
+      color: #e50914;
+    }
+    
+    /* Genre Grid Styles */
+    .genre-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    .genre-grid a {
+      display: block;
+      padding: 15px;
+      background: rgba(229, 9, 20, 0.1);
+      border: 1px solid rgba(229, 9, 20, 0.3);
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s ease;
+    }
+    
+    .genre-grid a:hover {
+      background: rgba(229, 9, 20, 0.2);
+      transform: translateY(-2px);
+    }
+    
+    body.light .genre-grid a {
+      background: rgba(229, 9, 20, 0.05);
+      border-color: rgba(229, 9, 20, 0.2);
+    }
+    
+    body.light .genre-grid a:hover {
+      background: rgba(229, 9, 20, 0.1);
+    }
   </style>
 </head>
 <body>
@@ -38,10 +80,9 @@
       <span class="dark-icon">❍</span>
       <span class="light-icon" hidden>☼</span>
     </button>
-    <div class="theme-transition-overlay"></div>
   </header>
 
-  <section style="padding: 20px;">
+  <section style="padding: 20px; display: none;" id="genre-list-section">
     <div class="genre-list">
       <h2>🎭 Select a Genre:</h2>
       <div class="genre-grid">
@@ -62,7 +103,6 @@
     <div id="pagination-top" class="pagination"></div>
     <div class="search-results-grid" id="results-grid"></div>
     <div id="pagination" class="pagination"></div>
-    <!-- Disclaimer will be auto-added here by JavaScript -->
   </main>
 
   <div id="modal-container"></div>
@@ -75,7 +115,7 @@
     const genreName = params.get('name');
     let currentPage = parseInt(params.get('page')) || 1;
 
-    // Auto-add disclaimer function
+    // Auto-add disclaimer
     function addDisclaimer() {
       if (!document.querySelector('.pagination-disclaimer')) {
         const disclaimer = document.createElement('div');
@@ -125,6 +165,8 @@
       if (genreId && genreName) {
         document.getElementById("genre-title").textContent = "🎭 " + genreName;
         fetchGenreMovies(genreId, currentPage);
+      } else {
+        document.getElementById('genre-list-section').style.display = 'block';
       }
     });
 
@@ -134,16 +176,50 @@
         : 'https://via.placeholder.com/500x750?text=No+Poster';
     }
 
+    // Main function to fetch genre-specific movies
     async function fetchGenreMovies(id, page = 1) {
       try {
-        const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${id}&page=${page}`);
+        const res = await fetch(
+          `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}` +
+          `&with_genres=${id}&page=${page}`
+        );
         const data = await res.json();
-        renderResults(data.results);
-        renderPagination(data.total_pages);
-        addDisclaimer();
+        
+        if (data.results && data.results.length > 0) {
+          renderResults(data.results);
+          renderPagination(data.total_pages);
+        } else {
+          showGenreError();
+          fetchPopularMovies(page);
+        }
+        
       } catch (error) {
-        console.error('Error fetching movies:', error);
+        console.error('Error fetching genre movies:', error);
+        showGenreError();
+        fetchPopularMovies(page);
       }
+      addDisclaimer();
+    }
+
+    // Show error message about genre matching
+    function showGenreError() {
+      const container = document.getElementById("results-grid");
+      container.innerHTML = `
+        <div class="genre-error">
+          <p>⚠️ Couldn't find enough movies in the ${genreName} genre.</p>
+          <p>Showing popular movies instead.</p>
+        </div>
+      `;
+    }
+
+    // Final fallback - popular movies
+    async function fetchPopularMovies(page = 1) {
+      const res = await fetch(
+        `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&page=${page}`
+      );
+      const data = await res.json();
+      renderResults(data.results);
+      renderPagination(data.total_pages);
     }
 
     function renderResults(items) {
@@ -164,18 +240,16 @@
         `;
       }).join('');
 
-      // Add click handlers after DOM update
-      setTimeout(() => {
-        document.querySelectorAll('.poster-wrapper').forEach(poster => {
-          poster.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            const type = this.getAttribute('data-type');
-            if (id && type && typeof openModal === 'function') {
-              openModal(id, type);
-            }
-          });
+      // Add click handlers
+      document.querySelectorAll('.poster-wrapper').forEach(poster => {
+        poster.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          const type = this.getAttribute('data-type');
+          if (id && type && typeof openModal === 'function') {
+            openModal(id, type);
+          }
         });
-      }, 100);
+      });
     }
 
     function renderPagination(totalPages) {
@@ -199,7 +273,6 @@
 
       pagTop.innerHTML = buttons;
       pagBottom.innerHTML = buttons;
-      addDisclaimer();
     }
 
     function goToPage(page) {
