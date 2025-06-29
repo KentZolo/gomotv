@@ -136,6 +136,17 @@
       color: var(--text);
     }
 
+    .server-selector {
+      width: 100%;
+      padding: 10px;
+      margin: 15px 0;
+      background-color: #333;
+      color: white;
+      border: 1px solid #555;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
     @media (max-width: 768px) {
       .movie-info {
         padding: 15px;
@@ -170,6 +181,13 @@
       <span id="movie-genres"></span>
     </div>
     <p id="movie-overview"></p>
+    
+    <select id="server-select" class="server-selector">
+      <option value="vidsrccc">Vidsrc.cc</option>
+      <option value="vidsrc">Vidsrc.to</option>
+      <option value="apimocine">Apimocine</option>
+    </select>
+    
     <div class="actions">
       <button class="btn" onclick="window.location.href='index.html'">Back to Home</button>
       <button class="btn btn-outline" id="trailer-btn">Watch Trailer</button>
@@ -180,12 +198,19 @@
     // Configuration
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
     const BASE_URL = 'https://api.themoviedb.org/3';
-    const VIDSRC_URL = 'https://vidsrc.to/embed';
+    
+    // Server options
+    const SERVERS = [
+      { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
+      { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
+      { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
+    ];
 
     // DOM Elements
     const playerFrame = document.getElementById('player-frame');
     const loadingOverlay = document.getElementById('loading');
     const trailerBtn = document.getElementById('trailer-btn');
+    const serverSelect = document.getElementById('server-select');
 
     document.addEventListener('DOMContentLoaded', async () => {
       const params = new URLSearchParams(window.location.search);
@@ -238,17 +263,49 @@
           trailerBtn.style.display = 'none';
         }
 
-        // Load main player
-        playerFrame.src = `${VIDSRC_URL}/${type}/${id}`;
-        playerFrame.onload = () => {
-          loadingOverlay.style.display = 'none';
-        };
+        // Setup server selector
+        serverSelect.addEventListener('change', function() {
+          const server = SERVERS.find(s => s.id === this.value);
+          if (server) {
+            loadingOverlay.style.display = 'flex';
+            playerFrame.src = server.url(type, id);
+          }
+        });
+
+        // Load default server (try each one until one works)
+        loadDefaultServer(id, type);
 
       } catch (err) {
         console.error('Error:', err);
         showError('Failed to load content. Please try again later.');
       }
     });
+
+    function loadDefaultServer(id, type) {
+      let currentServerIndex = 0;
+      
+      function tryNextServer() {
+        if (currentServerIndex >= SERVERS.length) {
+          showError('No working server found');
+          return;
+        }
+        
+        const server = SERVERS[currentServerIndex];
+        serverSelect.value = server.id;
+        playerFrame.src = server.url(type, id);
+        
+        playerFrame.onload = function() {
+          loadingOverlay.style.display = 'none';
+        };
+        
+        playerFrame.onerror = function() {
+          currentServerIndex++;
+          tryNextServer();
+        };
+      }
+      
+      tryNextServer();
+    }
 
     function showError(message) {
       loadingOverlay.innerHTML = `<p style="color: white; text-align: center;">${message}</p>`;
