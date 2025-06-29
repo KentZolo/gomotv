@@ -131,12 +131,16 @@
         `;
       }).join('');
 
-      document.querySelectorAll('.poster-wrapper img').forEach(img => {
-        img.addEventListener('click', () => {
-          openModal(img.dataset.id, img.dataset.type);
-        });
-      });
+      document.querySelectorAll('.poster-wrapper').forEach(poster => {
+  poster.addEventListener('click', () => {
+    const img = poster.querySelector('img');
+    if (img && typeof openModal === 'function') {
+      openModal(img.dataset.id, img.dataset.type);
+    } else {
+      console.error('openModal is not defined or img data missing');
     }
+  });
+});
 
     function renderPagination(totalPages) {
       const pagTop = document.getElementById('pagination-top');
