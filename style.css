@@ -64,6 +64,15 @@ body.light .theme-toggle {
   transition: opacity 0.5s ease;
 }
 
+.theme-transition * {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.theme-toggle span {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
 /* Animation for Light Mode Transition */
 body.light {
   transition: background-color 1s ease, color 0.8s ease;
