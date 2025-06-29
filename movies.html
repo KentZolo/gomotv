@@ -1,28 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Movies - GomoTV</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="shared-modal.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Movies - GomoTV</title>
+  <link rel="stylesheet" href="style.css">
   <style>
-    .pagination-disclaimer {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 25px 20px;
-      margin-top: -10px;
-      font-size: 0.75rem;
-      color: #aaa;
-      line-height: 1.6;
-      border-top: 1px solid #333;
-      background: rgba(0,0,0,0.1);
-      border-radius: 0 0 8px 8px;
+    /* Additional styles for movies page */
+    .movies-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: linear-gradient(to right, #000, #e50914);
+      color: white;
     }
-    body.light .pagination-disclaimer {
-      color: #666;
-      border-top: 1px solid #ddd;
-      background: rgba(0,0,0,0.05);
+    
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .pagination button {
+      padding: 8px 15px;
+      background: #222;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .pagination button:hover {
+      background: #333;
+    }
+    
+    .pagination button.active {
+      background: #e50914;
+    }
+    
+    .disclaimer {
+      text-align: center;
+      padding: 15px;
+      color: #aaa;
+      font-size: 0.8rem;
+      border-top: 1px solid #333;
+      margin-top: 20px;
+    }
+    
+    @media (max-width: 768px) {
+      .movies-header h1 {
+        font-size: 1.2rem;
+      }
+      
+      .pagination button {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+      }
     }
   </style>
 </head>
@@ -37,31 +74,40 @@
   </header>
 
   <main>
-    <div id="pagination-top" class="pagination"></div>
-    <div class="search-results-grid" id="results-grid"></div>
-    <div id="pagination" class="pagination"></div>
+    <div class="pagination" id="pagination-top"></div>
+    
+    <div class="search-results-grid" id="results-grid">
+      <!-- Movies will be loaded here -->
+    </div>
+    
+    <div class="pagination" id="pagination-bottom"></div>
+    
+    <div class="disclaimer">
+      <p>⚠️ Disclaimer: GomoTV doesn't host any videos. All content provided by third-party servers.</p>
+    </div>
   </main>
-
-  <div id="modal-container"></div>
 
   <script>
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
-    let currentPage = parseInt(new URLSearchParams(location.search).get('page')) || 1;
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    let currentPage = 1;
 
-    // Initialize theme
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      setupThemeToggle();
+      loadMovies();
+    });
+
+    // Theme functions
     function initTheme() {
       const savedTheme = localStorage.getItem('theme') || 'dark';
       document.body.classList.add(savedTheme);
       updateThemeIcons(savedTheme);
     }
 
-    function updateThemeIcons(theme) {
-      const darkIcon = document.querySelector('.dark-icon');
-      const lightIcon = document.querySelector('.light-icon');
-      if (darkIcon && lightIcon) {
-        darkIcon.hidden = theme === 'light';
-        lightIcon.hidden = theme === 'dark';
-      }
+    function setupThemeToggle() {
+      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
     }
 
     function toggleTheme() {
@@ -75,104 +121,132 @@
       updateThemeIcons(newTheme);
     }
 
-    function addDisclaimer() {
-      if (!document.querySelector('.pagination-disclaimer')) {
-        const disclaimer = document.createElement('div');
-        disclaimer.className = 'pagination-disclaimer';
-        disclaimer.innerHTML = `
-          <p>⚠️ Disclaimer: GomoTV does not host any videos. Content provided by third-party servers.</p>
-        `;
-        const pagination = document.getElementById('pagination');
-        if (pagination) {
-          pagination.parentNode.insertBefore(disclaimer, pagination.nextSibling);
-        }
-      }
+    function updateThemeIcons(theme) {
+      document.querySelector('.dark-icon').hidden = theme === 'light';
+      document.querySelector('.light-icon').hidden = theme === 'dark';
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      initTheme();
-      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-      fetchMovies(currentPage);
-    });
-
-    function getImageUrl(path) {
-      return path ? `https://image.tmdb.org/t/p/w500${path}` : 'https://via.placeholder.com/500x750?text=No+Poster';
-    }
-
-    async function fetchMovies(page = 1) {
+    // Movie loading functions
+    async function loadMovies(page = 1) {
+      currentPage = page;
       try {
-        const res = await fetch(
-          `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`
+        document.getElementById('results-grid').innerHTML = '<div class="loading"></div>';
+        
+        const response = await fetch(
+          `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`
         );
-        const data = await res.json();
-        renderResults(data.results);
+        const data = await response.json();
+        
+        renderMovies(data.results);
         renderPagination(data.total_pages);
-        addDisclaimer();
       } catch (error) {
-        console.error('Error fetching movies:', error);
+        console.error('Error loading movies:', error);
         document.getElementById('results-grid').innerHTML = `
-          <p class="no-results">Failed to load movies. Please try again later.</p>
+          <p class="error-message">Failed to load movies. Please try again later.</p>
         `;
       }
     }
 
-    function renderResults(items) {
-      const container = document.getElementById("results-grid");
-      container.innerHTML = items.map(item => {
-        const title = item.title;
-        const year = item.release_date?.slice(0, 4) || '';
-        const img = getImageUrl(item.poster_path);
-        const rating = item.vote_average?.toFixed(1) || 'N/A';
-
-        return `
-          <div class="poster-wrapper" data-id="${item.id}" data-type="movie">
-            <img src="${img}" alt="${title}" loading="lazy">
-            <div class="poster-label">${title}</div>
-            <div class="poster-meta">
-              <span>⭐ ${rating}</span>
-              <span>${year}</span>
-            </div>
+    function renderMovies(movies) {
+      const container = document.getElementById('results-grid');
+      container.innerHTML = movies.map(movie => `
+        <div class="poster-wrapper" data-id="${movie.id}" data-type="movie">
+          ${movie.vote_average > 7 ? '<div class="poster-badge">TOP</div>' : ''}
+          <img src="${getImageUrl(movie.poster_path)}" alt="${movie.title}" loading="lazy">
+          <div class="poster-label">${movie.title}</div>
+          <div class="poster-meta">
+            <span>⭐ ${movie.vote_average?.toFixed(1) || 'N/A'}</span>
+            <span>${movie.release_date?.slice(0, 4) || ''}</span>
           </div>
-        `;
-      }).join('');
+        </div>
+      `).join('');
 
+      // Add click event to redirect to watch.html
       document.querySelectorAll('.poster-wrapper').forEach(poster => {
-        poster.addEventListener('click', function() {
-          const id = this.getAttribute('data-id');
-          const type = this.getAttribute('data-type');
-          if (id && type && typeof openModal === 'function') {
-            openModal(id, type);
-          }
+        poster.addEventListener('click', () => {
+          const id = poster.dataset.id;
+          const type = poster.dataset.type;
+          window.location.href = `watch.html?id=${id}&type=${type}`;
         });
       });
     }
 
+    function getImageUrl(path) {
+      return path 
+        ? `https://image.tmdb.org/t/p/w500${path}`
+        : 'https://via.placeholder.com/500x750?text=No+Poster';
+    }
+
     function renderPagination(totalPages) {
-      const pagTop = document.getElementById('pagination-top');
-      const pagBottom = document.getElementById('pagination');
-      if (totalPages <= 1) {
-        pagTop.innerHTML = '';
-        pagBottom.innerHTML = '';
-        return;
-      }
+      const paginationHTML = createPaginationHTML(totalPages);
+      document.getElementById('pagination-top').innerHTML = paginationHTML;
+      document.getElementById('pagination-bottom').innerHTML = paginationHTML;
+      
+      // Add event listeners to new buttons
+      document.querySelectorAll('.pagination button').forEach(button => {
+        if (button.onclick) return;
+        const page = button.textContent;
+        if (page === '« Prev') {
+          button.onclick = () => goToPage(currentPage - 1);
+        } else if (page === 'Next »') {
+          button.onclick = () => goToPage(currentPage + 1);
+        } else if (!isNaN(page)) {
+          button.onclick = () => goToPage(parseInt(page));
+        }
+      });
+    }
 
+    function createPaginationHTML(totalPages) {
+      if (totalPages <= 1) return '';
+      
       let buttons = '';
-      const minPage = Math.max(1, currentPage - 2);
-      const maxPage = Math.min(totalPages, currentPage + 2);
-
-      if (currentPage > 1) buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
-      for (let i = minPage; i <= maxPage; i++) {
-        buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+      const maxVisiblePages = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      // Adjust if we're at the end
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
       }
-      if (currentPage < totalPages) buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
-
-      pagTop.innerHTML = buttons;
-      pagBottom.innerHTML = buttons;
-      addDisclaimer();
+      
+      // Previous button
+      if (currentPage > 1) {
+        buttons += `<button class="pagination-prev">« Prev</button>`;
+      }
+      
+      // First page and ellipsis
+      if (startPage > 1) {
+        buttons += `<button ${1 === currentPage ? 'class="active"' : ''}>1</button>`;
+        if (startPage > 2) {
+          buttons += `<span class="ellipsis">...</span>`;
+        }
+      }
+      
+      // Page numbers
+      for (let i = startPage; i <= endPage; i++) {
+        buttons += `<button ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+      }
+      
+      // Last page and ellipsis
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          buttons += `<span class="ellipsis">...</span>`;
+        }
+        buttons += `<button ${totalPages === currentPage ? 'class="active"' : ''}>${totalPages}</button>`;
+      }
+      
+      // Next button
+      if (currentPage < totalPages) {
+        buttons += `<button class="pagination-next">Next »</button>`;
+      }
+      
+      return buttons;
     }
 
     function goToPage(page) {
-      location.href = `movies.html?page=${page}`;
+      if (page < 1 || page > 500) return; // TMDB limit
+      loadMovies(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   </script>
 </body>
