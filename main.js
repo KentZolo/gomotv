@@ -337,65 +337,50 @@ function setupMenuSearch() {
 
 function toggleTheme() {
   const body = document.body;
-  const overlay = document.querySelector('.theme-transition-overlay');
+  const overlay = document.createElement('div');
+  overlay.className = 'theme-transition-overlay';
+  document.body.appendChild(overlay);
+
   const loadingSpinner = document.createElement('div');
-  
   loadingSpinner.className = 'theme-loading';
   document.body.appendChild(loadingSpinner);
-  
+
   // Show loading animation
   loadingSpinner.style.display = 'block';
-  overlay.style.opacity = '1';
-  
-  // Delay the theme switch for visual effect
+  overlay.style.opacity = '0.7';
+
   setTimeout(() => {
     const isDark = body.classList.contains('dark');
     const newTheme = isDark ? 'light' : 'dark';
     
-    // Hide content during transition
-    document.documentElement.style.visibility = 'hidden';
-    
-    // Apply new theme
     body.classList.remove('dark', 'light');
     body.classList.add(newTheme);
     localStorage.setItem('theme', newTheme);
     updateThemeIcons(newTheme);
-    
-    // Complete transition
+
     setTimeout(() => {
       overlay.style.opacity = '0';
       loadingSpinner.style.display = 'none';
-      document.documentElement.style.visibility = 'visible';
-      loadingSpinner.remove();
-    }, 800);
+      setTimeout(() => {
+        overlay.remove();
+        loadingSpinner.remove();
+      }, 500);
+    }, 500);
   }, 300);
 }
 
-function updateThemeIcons(theme) {
-  const darkIcon = document.querySelector('.dark-icon');
-  const lightIcon = document.querySelector('.light-icon');
-  
-  if (darkIcon && lightIcon) {
-    darkIcon.hidden = theme === 'light';
-    lightIcon.hidden = theme === 'dark';
-    
-    // Add bounce animation
-    const activeIcon = theme === 'dark' ? darkIcon : lightIcon;
-    activeIcon.style.animation = 'bounce 0.5s';
-    setTimeout(() => {
-      activeIcon.style.animation = '';
-    }, 500);
-  }
+function initThemeToggle() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.body.classList.add(savedTheme);
+  updateThemeIcons(savedTheme);
 }
-
-// Initialize
-document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
 // Initialize Everything
 window.addEventListener('DOMContentLoaded', () => {
   setupMenuToggle();
   setupMenuSearch();
-  initThemeToggle(); //
+  initThemeToggle(); 
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
   
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
