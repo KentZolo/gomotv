@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch - GomoTV</title>
+  <style>
+    :root {
+      --primary: #e50914;
+      --dark-bg: #141414;
+      --text: #ffffff;
+      --text-secondary: #d2d2d2;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background-color: var(--dark-bg);
+      color: var(--text);
+    }
+
+    .navbar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 15px 20px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .logo {
+      margin: 0;
+      font-size: 1.8rem;
+      color: var(--primary);
+    }
+
+    .player-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,0.8);
+      z-index: 10;
+    }
+
+    .spinner {
+      border: 4px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top: 4px solid var(--primary);
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .movie-info {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .movie-info h1 {
+      margin: 0 0 10px;
+      font-size: 2rem;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 15px;
+    }
+
+    .meta span {
+      display: flex;
+      align-items: center;
+    }
+
+    .rating {
+      color: var(--primary);
+    }
+
+    .movie-info p {
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--text-secondary);
+      color: var(--text);
+    }
+
+    @media (max-width: 768px) {
+      .movie-info {
+        padding: 15px;
+      }
+      
+      .movie-info h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <button onclick="history.back()" class="back-btn">←</button>
+    <h1 class="logo">GomoTV</h1>
+    <div></div> <!-- Empty div for flex spacing -->
+  </header>
+
+  <div class="player-container">
+    <div class="loading-overlay" id="loading">
+      <div class="spinner"></div>
+    </div>
+    <iframe id="player-frame" allowfullscreen allow="autoplay"></iframe>
+  </div>
+
+  <div class="movie-info">
+    <h1 id="movie-title">Loading...</h1>
+    <div class="meta">
+      <span id="movie-year"></span>
+      <span class="rating" id="movie-rating"></span>
+      <span id="movie-runtime"></span>
+      <span id="movie-genres"></span>
+    </div>
+    <p id="movie-overview"></p>
+    <div class="actions">
+      <button class="btn" onclick="window.location.href='index.html'">Back to Home</button>
+      <button class="btn btn-outline" id="trailer-btn">Watch Trailer</button>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const VIDSRC_URL = 'https://vidsrc.to/embed';
+
+    // DOM Elements
+    const playerFrame = document.getElementById('player-frame');
+    const loadingOverlay = document.getElementById('loading');
+    const trailerBtn = document.getElementById('trailer-btn');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const type = params.get('type') || 'movie'; // Default to movie if not specified
+
+      if (!id) {
+        showError('Invalid movie/show ID');
+        return;
+      }
+
+      try {
+        // Fetch details from TMDB
+        const detailsUrl = `${BASE_URL}/${type}/${id}?api_key=${API_KEY}`;
+        const detailsRes = await fetch(detailsUrl);
+        
+        if (!detailsRes.ok) throw new Error('Failed to fetch details');
+        
+        const data = await detailsRes.json();
+
+        // Update page info
+        document.title = `${data.title || data.name} - GomoTV`;
+        document.getElementById('movie-title').textContent = data.title || data.name;
+        document.getElementById('movie-year').textContent = (data.release_date || data.first_air_date || '').slice(0, 4);
+        document.getElementById('movie-rating').textContent = `⭐ ${data.vote_average?.toFixed(1) || 'N/A'}`;
+        
+        // Format runtime (movies) or episode runtime (TV)
+        const runtime = type === 'movie' 
+          ? `${data.runtime} min` 
+          : data.episode_run_time?.[0] 
+            ? `${data.episode_run_time[0]} min/ep` 
+            : '';
+        document.getElementById('movie-runtime').textContent = runtime;
+        
+        document.getElementById('movie-genres').textContent = data.genres?.map(g => g.name).join(', ') || 'N/A';
+        document.getElementById('movie-overview').textContent = data.overview || 'No overview available.';
+
+        // Setup trailer button
+        if (data.videos?.results?.length > 0) {
+          const trailer = data.videos.results.find(v => v.type === 'Trailer');
+          if (trailer) {
+            trailerBtn.onclick = () => {
+              playerFrame.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`;
+              trailerBtn.disabled = true;
+            };
+          } else {
+            trailerBtn.style.display = 'none';
+          }
+        } else {
+          trailerBtn.style.display = 'none';
+        }
+
+        // Load main player
+        playerFrame.src = `${VIDSRC_URL}/${type}/${id}`;
+        playerFrame.onload = () => {
+          loadingOverlay.style.display = 'none';
+        };
+
+      } catch (err) {
+        console.error('Error:', err);
+        showError('Failed to load content. Please try again later.');
+      }
+    });
+
+    function showError(message) {
+      loadingOverlay.innerHTML = `<p style="color: white; text-align: center;">${message}</p>`;
+      document.getElementById('movie-title').textContent = 'Error';
+      document.getElementById('movie-overview').textContent = message;
+    }
+  </script>
+</body>
+</html>
