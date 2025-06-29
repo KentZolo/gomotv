@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="style.css" />
   <script src="shared-modal.js"></script>
   <style>
-    /* Same style as genre.html */
     .pagination-disclaimer {
       grid-column: 1 / -1;
       text-align: center;
@@ -30,7 +29,7 @@
       background: rgba(0,0,0,0.05);
     }
     
-    /* Additional style for rating stars */
+    /* Rating badge */
     .poster-wrapper::after {
       content: "⭐ " attr(data-rating);
       position: absolute;
@@ -49,8 +48,11 @@
 <body>
   <header class="navbar">
     <button onclick="history.back()" class="menu-toggle">←</button>
-    <h1 class="logo">Top IMDB</h1>
-    <button id="theme-toggle" class="theme-toggle">🌓</button>
+    <h1 class="logo">🏆 Top IMDB</h1>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+      <span class="dark-icon">❍</span>
+      <span class="light-icon" hidden>☼</span>
+    </button>
   </header>
 
   <main>
@@ -59,7 +61,6 @@
       <div class="loading"></div>
     </div>
     <div id="pagination" class="pagination"></div>
-    <!-- Disclaimer will be auto-added here by JavaScript -->
   </main>
 
   <div id="modal-container"></div>
@@ -68,7 +69,33 @@
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
     let currentPage = parseInt(new URLSearchParams(location.search).get('page')) || 1;
 
-    // Auto-add disclaimer function
+    // Initialize theme
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(savedTheme);
+      updateThemeIcons(savedTheme);
+    }
+
+    function updateThemeIcons(theme) {
+      const darkIcon = document.querySelector('.dark-icon');
+      const lightIcon = document.querySelector('.light-icon');
+      if (darkIcon && lightIcon) {
+        darkIcon.hidden = theme === 'light';
+        lightIcon.hidden = theme === 'dark';
+      }
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const isDark = body.classList.contains('dark');
+      const newTheme = isDark ? 'light' : 'dark';
+      
+      body.classList.remove('dark', 'light');
+      body.classList.add(newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcons(newTheme);
+    }
+
     function addDisclaimer() {
       if (!document.querySelector('.pagination-disclaimer')) {
         const disclaimer = document.createElement('div');
@@ -85,7 +112,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      initThemeToggle();
+      initTheme();
+      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
       fetchTopIMDBMovies(currentPage);
     });
 
@@ -125,17 +153,21 @@
         const rating = item.vote_average?.toFixed(1) || 'N/A';
 
         return `
-          <div class="poster-wrapper" data-rating="${rating}">
-            <img src="${img}" alt="${title}" data-id="${item.id}" data-type="movie">
+          <div class="poster-wrapper" data-id="${item.id}" data-type="movie" data-rating="${rating}">
+            <img src="${img}" alt="${title}" loading="lazy">
             <div class="poster-label">${title}</div>
             <div class="poster-meta">${year}</div>
           </div>
         `;
       }).join('');
 
-      document.querySelectorAll('.poster-wrapper img').forEach(img => {
-        img.addEventListener('click', () => {
-          openModal(img.dataset.id, img.dataset.type);
+      document.querySelectorAll('.poster-wrapper').forEach(poster => {
+        poster.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          const type = this.getAttribute('data-type');
+          if (id && type && typeof openModal === 'function') {
+            openModal(id, type);
+          }
         });
       });
     }
@@ -166,19 +198,6 @@
 
     function goToPage(page) {
       location.href = `topimdb.html?page=${page}`;
-    }
-
-    function initThemeToggle() {
-      const toggleBtn = document.getElementById('theme-toggle');
-      if (!toggleBtn) return;
-      const currentTheme = localStorage.getItem('theme') || 'dark';
-      document.body.classList.add(currentTheme);
-      toggleBtn.addEventListener('click', () => {
-        const isDark = document.body.classList.contains('dark');
-        document.body.classList.toggle('dark', !isDark);
-        document.body.classList.toggle('light', isDark);
-        localStorage.setItem('theme', isDark ? 'light' : 'dark');
-      });
     }
   </script>
 </body>
