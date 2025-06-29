@@ -335,37 +335,51 @@ function setupMenuSearch() {
   });
 }
 
+// Theme Toggle Functionality
+function initThemeToggle() {
+  const toggleBtn = document.getElementById('theme-toggle');
+  if (!toggleBtn) return;
+
+  // Check saved theme or use dark as default
+  const savedTheme = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+  
+  document.body.classList.add(initialTheme);
+  updateThemeIcons(initialTheme);
+
+  toggleBtn.addEventListener('click', toggleTheme);
+}
+
 function toggleTheme() {
   const body = document.body;
   const isDark = body.classList.contains('dark');
-  const darkIcon = document.querySelector('.dark-icon');
-  const lightIcon = document.querySelector('.light-icon');
-
-  // Toggle theme
-  body.classList.remove(isDark ? 'dark' : 'light');
-  body.classList.add(isDark ? 'light' : 'dark');
-
-  // Toggle icons
-  darkIcon.hidden = !isDark;
-  lightIcon.hidden = isDark;
-
+  const newTheme = isDark ? 'light' : 'dark';
+  
+  // Update UI
+  body.classList.remove('dark', 'light');
+  body.classList.add(newTheme);
+  updateThemeIcons(newTheme);
+  
   // Save preference
-  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  localStorage.setItem('theme', newTheme);
 }
 
-document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-
-// Check saved theme on load
-if (localStorage.getItem('theme') === 'light') {
-  document.body.classList.replace('dark', 'light');
-  document.querySelector('.dark-icon').hidden = true;
-  document.querySelector('.light-icon').hidden = false;
+function updateThemeIcons(theme) {
+  const darkIcon = document.querySelector('.dark-icon');
+  const lightIcon = document.querySelector('.light-icon');
+  
+  if (darkIcon && lightIcon) {
+    darkIcon.hidden = theme === 'light';
+    lightIcon.hidden = theme === 'dark';
+  }
 }
 
 // Initialize Everything
 window.addEventListener('DOMContentLoaded', () => {
   setupMenuToggle();
   setupMenuSearch();
+  initThemeToggle(); //
   
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
