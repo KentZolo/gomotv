@@ -66,8 +66,8 @@
   <script>
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
     const params = new URLSearchParams(location.search);
-    const genreId = params.get('id');
-    const genreName = params.get('name');
+    const countryCode = params.get('country');
+    const countryName = params.get('name');
     let currentPage = parseInt(params.get('page')) || 1;
 
     // Auto-add disclaimer function
@@ -117,9 +117,12 @@
       initTheme();
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
       
-      if (genreId && genreName) {
-        document.getElementById("genre-title").textContent = "🎭 " + genreName;
-        fetchGenreMovies(genreId, currentPage);
+      if (countryCode && countryName) {
+        document.getElementById("country-title").textContent = "🌎 " + countryName;
+        fetchCountryMovies(countryCode, currentPage);
+      } else {
+        // Show country selection if no country chosen
+        document.getElementById('country-list-section').style.display = 'block';
       }
     });
 
@@ -129,9 +132,12 @@
         : 'https://via.placeholder.com/500x750?text=No+Poster';
     }
 
-    async function fetchGenreMovies(id, page = 1) {
+    async function fetchCountryMovies(countryCode, page = 1) {
       try {
-        const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${id}&page=${page}`);
+        const res = await fetch(
+          `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}` +
+          `&region=${countryCode}&page=${page}`
+        );
         const data = await res.json();
         renderResults(data.results);
         renderPagination(data.total_pages);
@@ -159,18 +165,16 @@
         `;
       }).join('');
 
-      // Add click handlers after DOM update
-      setTimeout(() => {
-        document.querySelectorAll('.poster-wrapper').forEach(poster => {
-          poster.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            const type = this.getAttribute('data-type');
-            if (id && type && typeof openModal === 'function') {
-              openModal(id, type);
-            }
-          });
+      // Add click handlers
+      document.querySelectorAll('.poster-wrapper').forEach(poster => {
+        poster.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          const type = this.getAttribute('data-type');
+          if (id && type && typeof openModal === 'function') {
+            openModal(id, type);
+          }
         });
-      }, 100);
+      });
     }
 
     function renderPagination(totalPages) {
@@ -198,7 +202,7 @@
     }
 
     function goToPage(page) {
-      location.href = `genre.html?name=${encodeURIComponent(genreName)}&id=${genreId}&page=${page}`;
+      location.href = `country.html?name=${encodeURIComponent(countryName)}&country=${countryCode}&page=${page}`;
     }
   </script>
 </body>
