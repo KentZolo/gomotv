@@ -374,8 +374,6 @@ function updateThemeIcons(theme) {
 window.addEventListener('DOMContentLoaded', () => {
   initTheme();
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
-  // ... rest of your initialization code
-});
 
   // Initialize other components
   setupMenuToggle();
