@@ -8,21 +8,22 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
 <body>
+  <!-- FIXED NAVBAR STRUCTURE -->
   <header class="navbar">
-  <div class="menu-toggle" id="menu-toggle">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-  <h1 class="logo">GomoTV</h1>
-  <div class="theme-transition-overlay"></div>
-  <!-- ILIPAT DITO ANG THEME TOGGLE SA KANANG DULO -->
-  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-    <span class="dark-icon">❍</span>
-    <span class="light-icon" hidden>☼</span>
-  </button>
+    <div class="menu-toggle" id="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <h1 class="logo">GomoTV</h1>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+      <span class="dark-icon">❍</span>
+      <span class="light-icon" hidden>☼</span>
+    </button>
+    <div class="theme-transition-overlay"></div>
   </header>
-  
+
+  <!-- HAMBURGER MENU (SEPARATE FROM NAVBAR) -->
   <nav class="hamburger-menu" id="hamburger-menu">
     <div class="menu-search-bar">
       <input type="text" id="menu-search-input" placeholder="Search movies or shows...">
@@ -38,6 +39,7 @@
     </ul>
   </nav>
 
+  <!-- REST OF YOUR CONTENT -->
   <section class="featured">
     <div class="banner-slider">
       <div class="poster-box" id="active-slide">
@@ -68,7 +70,6 @@
   </section>
 
   <div id="modal-container"></div>
-
   <footer class="footer">© 2025 - GomoTV. All content is property of its respective owners.</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
