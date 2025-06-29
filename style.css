@@ -69,29 +69,40 @@ body.light {
   transition: background-color 1s ease, color 0.8s ease;
 }
 
+body.light ::-webkit-scrollbar-thumb:hover {
+  background: #c40812;  /* Idagdag ito */
+}
+
 /* Animation for Dark Mode Transition */
 body.dark {
   transition: background-color 1s ease, color 0.8s ease;
 }
 
-/* Loading Spinner */
-.theme-loading {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: #e50914;
-  z-index: 9999;
-  animation: spin 1s linear infinite;
-  display: none;
+/* Add this to your CSS */
+.theme-icon {
+  position: relative;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
 }
 
-@keyframes spin {
-  to { transform: translate(-50%, -50%) rotate(360deg); }
+.dark-icon, .light-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+body.dark .light-icon,
+body.light .dark-icon {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+body.dark .dark-icon,
+body.light .light-icon {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* ===== HAMBURGER MENU SYSTEM ===== */
@@ -306,7 +317,7 @@ body.light .search-bar-container {
 
 /* ===== CONTENT SECTIONS ===== */
 .featured {
-  positioion: relative;
+  position: relative;
   width: 100%;
   margin-bottom: 30px;
 }
