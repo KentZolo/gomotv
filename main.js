@@ -362,6 +362,14 @@ function initThemeToggle() {
   
   if (!themeToggle) return;
 
+// Initialize
+window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+function initThemeToggle() {
+  const themeToggle = document.getElementById('theme-toggle');
+  
+  if (!themeToggle) return;
+
   // Remove default behaviors
   themeToggle.addEventListener('mousedown', (e) => {
     e.preventDefault(); // Prevents focus state on click
@@ -371,15 +379,7 @@ function initThemeToggle() {
   themeToggle.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      toggleTheme();
-    }
-  });
-}
-
-// Initialize
-window.addEventListener('DOMContentLoaded', () => {
-  initTheme();
-  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+      toggleTheme(); 
 
   // Initialize other components
   setupMenuToggle();
