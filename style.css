@@ -57,11 +57,21 @@
   left: 0;
 }
 
-/* ===== THEME TOGGLE ICONS ===== */
-.dark-icon, .light-icon {
-  transition: opacity 0.3s ease;
+/* ===== THEME TOGGLE ICONS ===== */  
+/* DEFAULT: LIGHT MODE */
+body {
+  background-color: #f4f4f4; /* Light background */
+  color: #333; /* Text color (hindi magbabago) */
+  transition: background-color 0.3s ease; /* Smooth bg transition */
 }
 
+/* DARK MODE */
+body.dark {
+  background-color: #0f0f0f; /* Dark background */
+  /* TEXT COLOR WILL STAY THE SAME */
+}
+
+/* ICONS (Light/Dark toggle visibility) */
 body.dark .light-icon,
 body.light .dark-icon {
   opacity: 0;
