@@ -117,7 +117,6 @@ body.light .light-icon {
   z-index: 1001;
   position: relative;
   transition: all 0.3s ease;
-  margin-right: auto; 
 }
 
 .menu-toggle span {
