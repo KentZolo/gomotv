@@ -21,13 +21,17 @@
     }
 
     /* ===== PLAYER FIXES ===== */
+    .player-wrapper {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
     .player-container {
       position: relative;
       width: 100%;
       height: 0;
       padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
       background: #000;
-      margin-bottom: 20px;
       border-radius: 8px;
       overflow: hidden;
     }
@@ -42,26 +46,53 @@
       z-index: 10;
     }
 
-    /* Close Button */
+    /* Close Button - MOVED OUTSIDE PLAYER */
     .close-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(0,0,0,0.7);
+      background: #e50914;
       color: white;
       border: none;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      font-size: 16px;
+      border-radius: 4px;
+      padding: 8px 15px;
+      font-size: 14px;
       cursor: pointer;
-      z-index: 20;
-      display: flex;
+      margin-bottom: 10px;
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
+      gap: 5px;
     }
 
-    /* Server Controls Styling - UPDATED */
+    .close-btn::before {
+      content: "←";
+    }
+
+    /* Loading Animation */
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #e50914;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Server Controls Styling */
     .server-controls {
       margin-bottom: 20px;
       background: #111;
@@ -114,16 +145,6 @@
 
     .server-btn.active {
       background: #e50914;
-    }
-
-    /* Loading State */
-    .loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #fff;
-      z-index: 5;
     }
 
     /* Movie Info Styling */
@@ -202,7 +223,7 @@
       text-overflow: ellipsis;
     }
 
-    /* Disclaimer Styling - UPDATED */
+    /* Disclaimer Styling */
     .disclaimer {
       padding: 20px;
       background: #111;
@@ -263,15 +284,33 @@
       .server-list {
         grid-template-columns: repeat(2, 1fr);
       }
+      
+      .close-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="player-container">
-      <button class="close-btn" id="close-btn">×</button>
-      <div class="loading" id="loading">Loading player...</div>
-      <iframe id="player-frame" allowfullscreen sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
+    <div class="player-wrapper">
+      <!-- Close button moved outside player container -->
+      <button class="close-btn" id="close-btn">Back</button>
+      
+      <div class="player-container">
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <div>Loading player...</div>
+        </div>
+        <!-- Added sandbox restrictions to prevent title overlays -->
+        <iframe 
+          id="player-frame" 
+          allowfullscreen 
+          sandbox="allow-scripts allow-same-origin allow-popups"
+          allow="autoplay; fullscreen"
+        ></iframe>
+      </div>
     </div>
 
     <div class="server-controls">
@@ -476,11 +515,17 @@
       const iframe = document.getElementById('player-frame');
       const loading = document.getElementById('loading');
       
-      loading.style.display = 'block';
+      loading.style.display = 'flex';
       iframe.style.display = 'none';
-      loading.textContent = `Loading ${server.name}...`;
+      loading.querySelector('div:last-child').textContent = `Loading ${server.name}...`;
       
-      const playerUrl = server.url(type, id);
+      // Reset iframe src first to prevent caching issues
+      iframe.src = '';
+      
+      // Add timestamp to URL to prevent caching
+      const timestamp = new Date().getTime();
+      const playerUrl = `${server.url(type, id)}&_=${timestamp}`;
+      
       iframe.src = playerUrl;
       
       iframe.onload = () => {
@@ -502,8 +547,8 @@
 
     function showError(message) {
       const loading = document.getElementById('loading');
-      loading.textContent = message;
-      loading.style.display = 'block';
+      loading.style.display = 'flex';
+      loading.innerHTML = `<div>${message}</div>`;
       document.getElementById('player-frame').style.display = 'none';
     }
   </script>
