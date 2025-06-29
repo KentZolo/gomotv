@@ -335,7 +335,6 @@ function setupMenuSearch() {
   });
 }
 
-// THEME TOGGLE FUNCTIONALITY (ADD THIS IF MISSING)
 function toggleTheme() {
   const body = document.body;
   const isDark = body.classList.contains('dark');
@@ -345,17 +344,9 @@ function toggleTheme() {
   body.classList.add(newTheme);
   localStorage.setItem('theme', newTheme);
   
-  // Update icon visibility
+  // Update icons
   document.querySelector('.dark-icon').hidden = newTheme === 'light';
   document.querySelector('.light-icon').hidden = newTheme === 'dark';
-}
-
-// INITIALIZE THEME
-function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  document.body.classList.add(savedTheme);
-  document.querySelector('.dark-icon').hidden = savedTheme === 'light';
-  document.querySelector('.light-icon').hidden = savedTheme === 'dark';
 }
 
 // Initialize
