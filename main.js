@@ -363,7 +363,6 @@ window.addEventListener('DOMContentLoaded', () => {
   initTheme();
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 
-  setupMenuToggle();
   setupMenuSearch();
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
