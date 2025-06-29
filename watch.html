@@ -42,9 +42,61 @@
       z-index: 10;
     }
 
-    /* Server Selector Styling */
+    /* Close Button */
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Server Controls Styling */
     .server-controls {
       margin-bottom: 20px;
+      background: #111;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .server-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .server-header h3 {
+      margin: 0;
+      color: #e50914;
+    }
+
+    .server-toggle {
+      background: #333;
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .server-content {
+      display: none;
+    }
+
+    .server-content.active {
+      display: block;
     }
 
     .server-selector {
@@ -96,6 +148,7 @@
       padding: 20px;
       background: #111;
       border-radius: 8px;
+      margin-bottom: 20px;
     }
 
     .movie-info h1 {
@@ -115,6 +168,54 @@
     .movie-info p {
       line-height: 1.6;
       color: #ddd;
+      margin-bottom: 20px;
+    }
+
+    /* Recommendations Section */
+    .recommendations {
+      padding: 20px;
+      background: #111;
+      border-radius: 8px;
+    }
+
+    .recommendations h2 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 22px;
+      color: #e50914;
+    }
+
+    .recommendations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+    }
+
+    .recommendation-item {
+      background: #222;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+
+    .recommendation-item:hover {
+      transform: scale(1.05);
+    }
+
+    .recommendation-poster {
+      width: 100%;
+      height: 225px;
+      object-fit: cover;
+    }
+
+    .recommendation-title {
+      padding: 10px;
+      font-size: 14px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* Responsive Adjustments */
@@ -135,26 +236,51 @@
       .server-selector {
         font-size: 14px;
       }
+
+      .recommendations-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+
+      .recommendation-poster {
+        height: 180px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .recommendations-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+
+      .recommendation-poster {
+        height: 150px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="player-container">
+      <button class="close-btn" id="close-btn">×</button>
       <div class="loading" id="loading">Loading player...</div>
       <iframe id="player-frame" allowfullscreen sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
     </div>
 
     <div class="server-controls">
-      <select class="server-selector" id="server-select">
-        <option value="">Select Server...</option>
-        <option value="apimocine">Apimocine</option>
-        <option value="vidsrccc">Vidsrc.cc</option>
-        <option value="vidsrc">Vidsrc.to</option>
-        <option value="2embed">2Embed</option>
-        <option value="superembed">SuperEmbed</option>
-      </select>
-      <div class="server-tags" id="server-tags"></div>
+      <div class="server-header" id="server-header">
+        <h3>Server Options</h3>
+        <button class="server-toggle" id="server-toggle">Show</button>
+      </div>
+      <div class="server-content" id="server-content">
+        <select class="server-selector" id="server-select">
+          <option value="">Select Server...</option>
+          <option value="apimocine">Apimocine</option>
+          <option value="vidsrccc">Vidsrc.cc</option>
+          <option value="vidsrc">Vidsrc.to</option>
+          <option value="2embed">2Embed</option>
+          <option value="superembed">SuperEmbed</option>
+        </select>
+        <div class="server-tags" id="server-tags"></div>
+      </div>
     </div>
 
     <div class="movie-info">
@@ -167,11 +293,17 @@
       </div>
       <p id="movie-overview"></p>
     </div>
+
+    <div class="recommendations" id="recommendations">
+      <h2>Recommended</h2>
+      <div class="recommendations-grid" id="recommendations-grid"></div>
+    </div>
   </div>
 
   <script>
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
     const BASE_URL = 'https://api.themoviedb.org/3';
+    const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
     const SERVERS = [
       { 
         id: 'apimocine', 
@@ -219,8 +351,12 @@
         updateMovieInfo(data, type);
         
         // Setup server controls
+        setupServerControls();
         setupServerSelector(type, id);
         createServerTags(type, id);
+        
+        // Load recommendations
+        loadRecommendations(type, id);
         
         // Auto-try servers
         tryServers(type, id);
@@ -228,7 +364,23 @@
         console.error('Error loading content:', err);
         showError('Failed to load content');
       }
+
+      // Setup close button
+      document.getElementById('close-btn').addEventListener('click', () => {
+        window.history.back();
+      });
     });
+
+    function setupServerControls() {
+      const header = document.getElementById('server-header');
+      const content = document.getElementById('server-content');
+      const toggle = document.getElementById('server-toggle');
+
+      header.addEventListener('click', () => {
+        content.classList.toggle('active');
+        toggle.textContent = content.classList.contains('active') ? 'Hide' : 'Show';
+      });
+    }
 
     function updateMovieInfo(data, type) {
       document.getElementById('movie-title').textContent = data.title || data.name;
@@ -268,6 +420,45 @@
           }
         });
       });
+    }
+
+    async function loadRecommendations(type, id) {
+      try {
+        const res = await fetch(`${BASE_URL}/${type}/${id}/recommendations?api_key=${API_KEY}`);
+        const data = await res.json();
+        
+        const grid = document.getElementById('recommendations-grid');
+        grid.innerHTML = '';
+        
+        if (data.results && data.results.length > 0) {
+          // Show only the first 10 recommendations
+          const recommendations = data.results.slice(0, 10);
+          
+          recommendations.forEach(item => {
+            const posterPath = item.poster_path ? 
+              `${IMAGE_BASE_URL}${item.poster_path}` : 
+              'https://via.placeholder.com/150x225?text=No+Poster';
+            
+            const recommendationItem = document.createElement('div');
+            recommendationItem.className = 'recommendation-item';
+            recommendationItem.innerHTML = `
+              <img src="${posterPath}" alt="${item.title || item.name}" class="recommendation-poster" loading="lazy">
+              <div class="recommendation-title">${item.title || item.name}</div>
+            `;
+            
+            recommendationItem.addEventListener('click', () => {
+              window.location.href = `watch.html?type=${type}&id=${item.id}`;
+            });
+            
+            grid.appendChild(recommendationItem);
+          });
+        } else {
+          grid.innerHTML = '<p>No recommendations available.</p>';
+        }
+      } catch (err) {
+        console.error('Error loading recommendations:', err);
+        document.getElementById('recommendations-grid').innerHTML = '<p>Failed to load recommendations.</p>';
+      }
     }
 
     function tryServers(type, id) {
