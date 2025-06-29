@@ -48,7 +48,10 @@
       <span></span>
     </div>
     <h1 class="logo">GomoTV</h1>
-    <button id="theme-toggle" class="theme-toggle">🌓</button>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+      <span class="dark-icon">❍</span>
+      <span class="light-icon" hidden>☼</span>
+    </button>
   </header>
 
   <div class="menu-overlay" id="menu-overlay"></div>
@@ -108,9 +111,37 @@
     const menuSearchInput = document.getElementById('menu-search-input');
     const menuSearchButton = document.getElementById('menu-search-button');
 
+    // Initialize theme
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(savedTheme);
+      updateThemeIcons(savedTheme);
+    }
+
+    function updateThemeIcons(theme) {
+      const darkIcon = document.querySelector('.dark-icon');
+      const lightIcon = document.querySelector('.light-icon');
+      if (darkIcon && lightIcon) {
+        darkIcon.hidden = theme === 'light';
+        lightIcon.hidden = theme === 'dark';
+      }
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const isDark = body.classList.contains('dark');
+      const newTheme = isDark ? 'light' : 'dark';
+      
+      body.classList.remove('dark', 'light');
+      body.classList.add(newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcons(newTheme);
+    }
+
     // Initialize the page
     document.addEventListener('DOMContentLoaded', function() {
-      initThemeToggle();
+      initTheme();
+      themeToggle.addEventListener('click', toggleTheme);
       
       if (query) {
         searchInput.value = query;
@@ -188,19 +219,6 @@
       } else {
         alert('Please enter at least 2 characters');
       }
-    }
-
-    // Theme toggle functionality
-    function initThemeToggle() {
-      const currentTheme = localStorage.getItem('theme') || 'dark';
-      document.body.classList.add(currentTheme);
-      
-      themeToggle.addEventListener('click', function() {
-        const isDark = document.body.classList.contains('dark');
-        document.body.classList.toggle('dark', !isDark);
-        document.body.classList.toggle('light', isDark);
-        localStorage.setItem('theme', isDark ? 'light' : 'dark');
-      });
     }
 
     // Fetch search results from TMDB API
