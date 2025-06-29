@@ -28,6 +28,14 @@
       border-top: 1px solid #ddd;
       background: rgba(0,0,0,0.05);
     }
+    
+    /* Error Message */
+    .country-error {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 30px;
+      color: #e50914;
+    }
   </style>
 </head>
 <body>
@@ -57,7 +65,6 @@
     <div id="pagination-top" class="pagination"></div>
     <div class="search-results-grid" id="results-grid"></div>
     <div id="pagination" class="pagination"></div>
-    <!-- Disclaimer will be auto-added here by JavaScript -->
   </main>
 
   <div id="modal-container"></div>
@@ -70,7 +77,21 @@
     const countryName = params.get('name');
     let currentPage = parseInt(params.get('page')) || 1;
 
-    // Auto-add disclaimer function
+    // Country to language mapping
+    const COUNTRY_LANGUAGES = {
+      'PH': 'tl', // Philippines - Tagalog
+      'JP': 'ja', // Japan - Japanese
+      'KR': 'ko', // South Korea - Korean
+      'US': 'en', // United States - English
+      'FR': 'fr', // France - French
+      'DE': 'de', // Germany - German
+      'ES': 'es', // Spain - Spanish
+      'IN': 'hi', // India - Hindi
+      'TH': 'th', // Thailand - Thai
+      'CN': 'zh'  // China - Chinese
+    };
+
+    // Auto-add disclaimer
     function addDisclaimer() {
       if (!document.querySelector('.pagination-disclaimer')) {
         const disclaimer = document.createElement('div');
@@ -121,7 +142,6 @@
         document.getElementById("country-title").textContent = "🌎 " + countryName;
         fetchCountryMovies(countryCode, currentPage);
       } else {
-        // Show country selection if no country chosen
         document.getElementById('country-list-section').style.display = 'block';
       }
     });
@@ -132,19 +152,86 @@
         : 'https://via.placeholder.com/500x750?text=No+Poster';
     }
 
+    // Main function to fetch country-specific movies
     async function fetchCountryMovies(countryCode, page = 1) {
       try {
+        // Try to get movies by production country first
         const res = await fetch(
           `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}` +
-          `&region=${countryCode}&page=${page}`
+          `&with_origin_country=${countryCode}&page=${page}`
         );
         const data = await res.json();
-        renderResults(data.results);
-        renderPagination(data.total_pages);
-        addDisclaimer();
+        
+        // Filter to ensure country match
+        const countryMovies = data.results.filter(movie => 
+          movie.production_countries &&
+          movie.production_countries.some(c => c.iso_3166_1 === countryCode)
+        );
+        
+        if (countryMovies.length > 0) {
+          renderResults(countryMovies);
+          renderPagination(data.total_pages);
+        } else {
+          // Fallback to language-based search
+          fetchMoviesByLanguage(countryCode, page);
+        }
+        
       } catch (error) {
-        console.error('Error fetching movies:', error);
+        console.error('Error fetching country movies:', error);
+        fetchMoviesByLanguage(countryCode, page);
       }
+      addDisclaimer();
+    }
+
+    // Fallback method using original language
+    async function fetchMoviesByLanguage(countryCode, page = 1) {
+      try {
+        const language = COUNTRY_LANGUAGES[countryCode] || 'en';
+        const res = await fetch(
+          `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}` +
+          `&with_original_language=${language}&page=${page}`
+        );
+        const data = await res.json();
+        
+        // Additional filtering when possible
+        const filteredMovies = data.results.filter(movie => {
+          if (!movie.production_countries) return true;
+          return movie.production_countries.some(c => c.iso_3166_1 === countryCode);
+        });
+        
+        if (filteredMovies.length > 0) {
+          renderResults(filteredMovies);
+          renderPagination(data.total_pages);
+        } else {
+          showCountryError();
+          fetchPopularMovies(page);
+        }
+      } catch (error) {
+        console.error('Error fetching movies by language:', error);
+        showCountryError();
+        fetchPopularMovies(page);
+      }
+    }
+
+    // Show error message about country matching
+    function showCountryError() {
+      const container = document.getElementById("results-grid");
+      container.innerHTML = `
+        <div class="country-error">
+          <p>⚠️ Couldn't find enough movies specifically from ${countryName}.</p>
+          <p>Showing popular movies that may be available in your region.</p>
+        </div>
+      `;
+    }
+
+    // Final fallback - popular movies
+    async function fetchPopularMovies(page = 1) {
+      const res = await fetch(
+        `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&page=${page}`
+      );
+      const data = await res.json();
+      renderResults(data.results);
+      renderPagination(data.total_pages);
     }
 
     function renderResults(items) {
@@ -198,7 +285,6 @@
 
       pagTop.innerHTML = buttons;
       pagBottom.innerHTML = buttons;
-      addDisclaimer();
     }
 
     function goToPage(page) {
