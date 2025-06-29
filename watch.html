@@ -176,6 +176,7 @@
       padding: 20px;
       background: #111;
       border-radius: 8px;
+      margin-bottom: 20px;
     }
 
     .recommendations h2 {
@@ -216,6 +217,23 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    /* Disclaimer Styling */
+    .disclaimer {
+      padding: 20px;
+      background: #111;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #999;
+      line-height: 1.5;
+    }
+
+    .disclaimer h3 {
+      color: #e50914;
+      margin-top: 0;
+      font-size: 14px;
     }
 
     /* Responsive Adjustments */
@@ -297,6 +315,11 @@
     <div class="recommendations" id="recommendations">
       <h2>Recommended</h2>
       <div class="recommendations-grid" id="recommendations-grid"></div>
+    </div>
+
+    <div class="disclaimer">
+      <h3>Disclaimer</h3>
+      <p>This website does not host any videos or content on its server. All content is provided by third-party servers. We do not endorse or have control over the content hosted on external servers. If you have any legal issues, please contact the content providers directly.</p>
     </div>
   </div>
 
@@ -516,16 +539,6 @@
       loading.style.display = 'block';
       document.getElementById('player-frame').style.display = 'none';
     }
-        <div class="recommendations" id="recommendations">
-      <h2>Recommended</h2>
-      <div class="recommendations-grid" id="recommendations-grid"></div>
-    </div>
-
-    <div class="disclaimer">
-      <h3>Disclaimer</h3>
-      <p>This website does not host any videos or content on its server. All content is provided by third-party servers. We do not endorse or have control over the content hosted on external servers. If you have any legal issues, please contact the content providers directly.</p>
-    </div>
-  </div>
   </script>
 </body>
 </html>
