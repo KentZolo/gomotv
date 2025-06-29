@@ -1,90 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Watch - GomoTV</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #000;
-      color: #fff;
-    }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch - GomoTV</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
 
-    .player-container {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background: #111;
-    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
 
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
+    .player-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #111;
+      margin-bottom: 20px;
+    }
 
-    .movie-info {
-      padding: 20px;
-    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
 
-    .movie-info h1 {
-      margin: 0 0 10px;
-    }
+    .server-selector {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 4px;
+      font-size: 16px;
+    }
 
-    .meta {
-      font-size: 0.9em;
-      color: #ccc;
-      margin-bottom: 10px;
-    }
+    .movie-info {
+      padding: 20px;
+      background: #111;
+      border-radius: 8px;
+    }
 
-    .movie-info p {
-      line-height: 1.6;
-    }
-  </style>
+    .movie-info h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+    }
+
+    .meta {
+      font-size: 0.9em;
+      color: #ccc;
+      margin-bottom: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .meta span {
+      display: flex;
+      align-items: center;
+    }
+
+    .movie-info p {
+      line-height: 1.6;
+      color: #ddd;
+    }
+
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+    }
+
+    .error-message {
+      color: #ff5555;
+      text-align: center;
+      padding: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
+      .movie-info h1 {
+        font-size: 22px;
+      }
+      
+      .meta {
+        font-size: 0.8em;
+        gap: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="player-container">
-    <iframe id="player-frame" allowfullscreen></iframe>
-  </div>
+  <div class="container">
+    <div class="player-container">
+      <select class="server-selector" id="server-select">
+        <option value="">Select Server...</option>
+        <option value="vidsrccc">Vidsrc.cc</option>
+        <option value="vidsrc">Vidsrc.to</option>
+        <option value="apimocine">Apimocine</option>
+      </select>
+      <div class="loading" id="loading">Loading player...</div>
+      <iframe id="player-frame" allowfullscreen></iframe>
+    </div>
 
-  <div class="movie-info">
-    <h1 id="movie-title">Loading...</h1>
-    <div class="meta">
-      <span id="movie-year"></span> • 
-      <span id="movie-rating"></span> • 
-      <span id="movie-genres"></span>
-    </div>
-    <p id="movie-overview"></p>
-  </div>
+    <div class="movie-info">
+      <h1 id="movie-title">Loading...</h1>
+      <div class="meta">
+        <span id="movie-year"></span>
+        <span id="movie-rating"></span>
+        <span id="movie-type"></span>
+        <span id="movie-genres"></span>
+      </div>
+      <p id="movie-overview"></p>
+    </div>
+  </div>
 
-  <script>
-    const API_KEY = 'YOUR_API_KEY';
-    const BASE_URL = 'https://api.themoviedb.org/3';
+  <script>
+    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const SERVERS = [
+      { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
+      { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
+      { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
+    ];
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-      const type = params.get('type');
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const type = params.get('type');
 
-      if (!id || !type) return;
+      if (!id || !type) {
+        showError('Invalid movie/show ID');
+        return;
+      }
 
-      try {
-        const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
-        const data = await res.json();
+      try {
+        // Load movie/show info
+        const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
+        const data = await res.json();
 
-        document.title = `${data.title || data.name} - GomoTV`;
-        document.getElementById('player-frame').src = `https://vidsrc.to/embed/${type}/${id}`;
-        document.getElementById('movie-title').textContent = data.title || data.name;
-        document.getElementById('movie-year').textContent = (data.release_date || data.first_air_date || '').slice(0, 4);
-        document.getElementById('movie-rating').textContent = `⭐ ${data.vote_average?.toFixed(1) || 'N/A'}`;
-        document.getElementById('movie-genres').textContent = data.genres.map(g => g.name).join(', ');
-        document.getElementById('movie-overview').textContent = data.overview || 'No overview available.';
-      } catch (err) {
-        console.error('Error fetching movie:', err);
-      }
-    });
-  </script>
+        document.title = `${data.title || data.name} - GomoTV`;
+        updateMovieInfo(data, type);
+        
+        // Setup server selector
+        setupServerSelector(type, id);
+        
+        // Try to load first available server automatically
+        tryServers(type, id);
+      } catch (err) {
+        console.error('Error loading content:', err);
+        showError('Failed to load content');
+      }
+    });
+
+    function updateMovieInfo(data, type) {
+      document.getElementById('movie-title').textContent = data.title || data.name;
+      document.getElementById('movie-year').textContent = (data.release_date || data.first_air_date || '').slice(0, 4);
+      document.getElementById('movie-rating').textContent = `⭐ ${data.vote_average?.toFixed(1) || 'N/A'}`;
+      document.getElementById('movie-type').textContent = type === 'movie' ? 'Movie' : 'TV Show';
+      document.getElementById('movie-genres').textContent = data.genres?.map(g => g.name).join(', ') || 'Unknown';
+      document.getElementById('movie-overview').textContent = data.overview || 'No overview available.';
+    }
+
+    function setupServerSelector(type, id) {
+      const selector = document.getElementById('server-select');
+      selector.addEventListener('change', (e) => {
+        const serverId = e.target.value;
+        if (serverId) {
+          const server = SERVERS.find(s => s.id === serverId);
+          if (server) {
+            loadServer(server.url(type, id));
+          }
+        }
+      });
+    }
+
+    function tryServers(type, id) {
+      let currentIndex = 0;
+      
+      function tryNextServer() {
+        if (currentIndex >= SERVERS.length) {
+          document.getElementById('loading').textContent = 'No working server found';
+          return;
+        }
+        
+        const server = SERVERS[currentIndex];
+        document.getElementById('server-select').value = server.id;
+        loadServer(server.url(type, id), () => {
+          currentIndex++;
+          tryNextServer();
+        });
+      }
+      
+      tryNextServer();
+    }
+
+    function loadServer(url, onError) {
+      const iframe = document.getElementById('player-frame');
+      const loading = document.getElementById('loading');
+      
+      loading.style.display = 'block';
+      iframe.style.display = 'none';
+      
+      iframe.src = url;
+      iframe.onload = () => {
+        loading.style.display = 'none';
+        iframe.style.display = 'block';
+      };
+      
+      iframe.onerror = () => {
+        if (onError) onError();
+      };
+    }
+
+    function showError(message) {
+      document.getElementById('loading').textContent = message;
+      document.getElementById('player-frame').style.display = 'none';
+    }
+  </script>
 </body>
 </html>
