@@ -335,20 +335,22 @@ function setupMenuSearch() {
   });
 }
 
-// Theme Toggle
-function initThemeToggle() {
-  const toggleBtn = document.getElementById('theme-toggle');
-  if (!toggleBtn) return;
+function toggleTheme() {
+  const body = document.body;
+  const isDark = body.classList.contains('dark');
+  const darkIcon = document.querySelector('.dark-icon');
+  const lightIcon = document.querySelector('.light-icon');
 
-  const currentTheme = localStorage.getItem('theme') || 'dark';
-  document.body.classList.add(currentTheme);
+  // Toggle theme
+  body.classList.remove(isDark ? 'dark' : 'light');
+  body.classList.add(isDark ? 'light' : 'dark');
 
-  toggleBtn.addEventListener('click', () => {
-    const isDark = document.body.classList.contains('dark');
-    document.body.classList.toggle('dark', !isDark);
-    document.body.classList.toggle('light', isDark);
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-  });
+  // Toggle icons
+  darkIcon.hidden = !isDark;
+  lightIcon.hidden = isDark;
+
+  // Save preference
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
 }
 
 // Initialize Everything
@@ -356,6 +358,15 @@ window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   setupMenuToggle();
   setupMenuSearch();
+
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+// Check saved theme on load
+if (localStorage.getItem('theme') === 'light') {
+  document.body.classList.replace('dark', 'light');
+  document.querySelector('.dark-icon').hidden = true;
+  document.querySelector('.light-icon').hidden = false;
+}
   
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
