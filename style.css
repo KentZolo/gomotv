@@ -103,11 +103,6 @@ body.dark {
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
-.theme-toggle:focus-visible {
-  outline: 2px dashed var(--primary);
-  outline-offset: 3px;
-}
-
 /* ===== HAMBURGER MENU SYSTEM ===== */
 .menu-toggle {
   display: flex;
