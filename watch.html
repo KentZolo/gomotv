@@ -1,361 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Watch - GomoTV</title>
-  <style>
-    :root {
-      --primary: #e50914;
-      --dark-bg: #141414;
-      --text: #ffffff;
-      --text-secondary: #d2d2d2;
-    }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch - GomoTV</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
 
-    body {
-      margin: 0;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      background-color: var(--dark-bg);
-      color: var(--text);
-      transition: background-color 0.3s ease;
-    }
+    .player-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #111;
+    }
 
-    /* Navbar - Matches index.html */
-    .navbar {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      padding: 15px 20px;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
-      z-index: 100;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
 
-    .menu-toggle {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      background: none;
-      border: none;
-      cursor: pointer;
-    }
+    .movie-info {
+      padding: 20px;
+    }
 
-    .menu-toggle span {
-      display: block;
-      width: 25px;
-      height: 3px;
-      background-color: var(--text);
-      transition: all 0.3s ease;
-    }
+    .movie-info h1 {
+      margin: 0 0 10px;
+    }
 
-    .logo {
-      margin: 0;
-      font-size: 1.8rem;
-      color: var(--primary);
-    }
+    .meta {
+      font-size: 0.9em;
+      color: #ccc;
+      margin-bottom: 10px;
+    }
 
-    .theme-toggle {
-      background: none;
-      border: none;
-      color: var(--text);
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-
-    /* Player Section */
-    .player-container {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16/9;
-      background: #000;
-      margin-top: 60px; /* Space for navbar */
-    }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    .loading-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: rgba(0,0,0,0.8);
-      z-index: 10;
-    }
-
-    .spinner {
-      border: 4px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border-top: 4px solid var(--primary);
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Movie Info - Enhanced to match index.html style */
-    .movie-info {
-      padding: 20px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .movie-info h1 {
-      margin: 0 0 10px;
-      font-size: 2rem;
-      color: var(--primary);
-    }
-
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      margin-bottom: 20px;
-    }
-
-    .meta span {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .rating {
-      color: var(--primary);
-      font-weight: bold;
-    }
-
-    .movie-info p {
-      line-height: 1.6;
-      margin-bottom: 25px;
-      font-size: 1rem;
-    }
-
-    .actions {
-      display: flex;
-      gap: 15px;
-      margin-top: 30px;
-    }
-
-    .btn {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-    }
-
-    .btn:hover {
-      background-color: #f40612;
-      transform: translateY(-2px);
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 1px solid var(--text-secondary);
-      color: var(--text);
-    }
-
-    .btn-outline:hover {
-      background: rgba(255,255,255,0.1);
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .movie-info {
-        padding: 15px;
-      }
-      
-      .movie-info h1 {
-        font-size: 1.5rem;
-      }
-      
-      .actions {
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      .btn {
-        width: 100%;
-      }
-    }
-  </style>
+    .movie-info p {
+      line-height: 1.6;
+    }
+  </style>
 </head>
 <body>
-  <!-- Updated Navbar to match index.html -->
-  <header class="navbar">
-    <button class="menu-toggle" id="menu-toggle">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-    <h1 class="logo">GomoTV</h1>
-    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-      <span class="dark-icon">❍</span>
-      <span class="light-icon" hidden>☼</span>
-    </button>
-  </header>
+  <div class="player-container">
+    <iframe id="player-frame" allowfullscreen></iframe>
+  </div>
 
-  <!-- Player Section -->
-  <div class="player-container">
-    <div class="loading-overlay" id="loading">
-      <div class="spinner"></div>
-    </div>
-    <iframe id="player-frame" allowfullscreen allow="autoplay"></iframe>
-  </div>
+  <div class="movie-info">
+    <h1 id="movie-title">Loading...</h1>
+    <div class="meta">
+      <span id="movie-year"></span> • 
+      <span id="movie-rating"></span> • 
+      <span id="movie-genres"></span>
+    </div>
+    <p id="movie-overview"></p>
+  </div>
 
-  <!-- Movie Info Section -->
-  <div class="movie-info">
-    <h1 id="movie-title">Loading...</h1>
-    <div class="meta">
-      <span id="movie-year"></span>
-      <span class="rating" id="movie-rating"></span>
-      <span id="movie-runtime"></span>
-      <span id="movie-genres"></span>
-    </div>
-    <p id="movie-overview"></p>
-    <div class="actions">
-      <button class="btn" onclick="window.location.href='index.html'">Back to Home</button>
-      <button class="btn btn-outline" id="trailer-btn">Watch Trailer</button>
-    </div>
-  </div>
+  <script>
+    const API_KEY = 'YOUR_API_KEY';
+    const BASE_URL = 'https://api.themoviedb.org/3';
 
-  <script>
-    // Configuration
-    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
-    const BASE_URL = 'https://api.themoviedb.org/3';
-    const VIDSRC_URL = 'https://vidsrc.to/embed';
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const type = params.get('type');
 
-    // DOM Elements
-    const playerFrame = document.getElementById('player-frame');
-    const loadingOverlay = document.getElementById('loading');
-    const trailerBtn = document.getElementById('trailer-btn');
-    const menuToggle = document.getElementById('menu-toggle');
-    const themeToggle = document.getElementById('theme-toggle');
+      if (!id || !type) return;
 
-    // Theme Management (matches index.html)
-    function initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.body.classList.add(savedTheme);
-      updateThemeIcons(savedTheme);
-    }
+      try {
+        const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
+        const data = await res.json();
 
-    function updateThemeIcons(theme) {
-      const darkIcon = document.querySelector('.dark-icon');
-      const lightIcon = document.querySelector('.light-icon');
-      if (darkIcon && lightIcon) {
-        darkIcon.hidden = theme === 'light';
-        lightIcon.hidden = theme === 'dark';
-      }
-    }
-
-    function toggleTheme() {
-      const body = document.body;
-      const isDark = body.classList.contains('dark');
-      const newTheme = isDark ? 'light' : 'dark';
-      
-      body.classList.remove('dark', 'light');
-      body.classList.add(newTheme);
-      localStorage.setItem('theme', newTheme);
-      updateThemeIcons(newTheme);
-    }
-
-    // Menu Toggle (matches index.html)
-    function toggleMenu() {
-      // This would link to your hamburger menu functionality
-      window.location.href = 'index.html#menu';
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      initTheme();
-      themeToggle.addEventListener('click', toggleTheme);
-      menuToggle.addEventListener('click', toggleMenu);
-
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-      const type = params.get('type') || 'movie';
-
-      if (!id) {
-        showError('Invalid movie/show ID');
-        return;
-      }
-
-      try {
-        // Fetch details from TMDB
-        const detailsUrl = `${BASE_URL}/${type}/${id}?api_key=${API_KEY}`;
-        const detailsRes = await fetch(detailsUrl);
-        
-        if (!detailsRes.ok) throw new Error('Failed to fetch details');
-        
-        const data = await detailsRes.json();
-
-        // Update page info
-        document.title = `${data.title || data.name} - GomoTV`;
-        document.getElementById('movie-title').textContent = data.title || data.name;
-        document.getElementById('movie-year').textContent = (data.release_date || data.first_air_date || '').slice(0, 4);
-        document.getElementById('movie-rating').textContent = `${data.vote_average?.toFixed(1) || 'N/A'}`;
-        
-        // Format runtime
-        const runtime = type === 'movie' 
-          ? `${data.runtime} min` 
-          : data.episode_run_time?.[0] 
-            ? `${data.episode_run_time[0]} min/ep` 
-            : '';
-        document.getElementById('movie-runtime').textContent = runtime;
-        
-        document.getElementById('movie-genres').textContent = data.genres?.map(g => g.name).join(', ') || 'N/A';
-        document.getElementById('movie-overview').textContent = data.overview || 'No overview available.';
-
-        // Setup trailer button
-        if (data.videos?.results?.length > 0) {
-          const trailer = data.videos.results.find(v => v.type === 'Trailer');
-          if (trailer) {
-            trailerBtn.onclick = () => {
-              playerFrame.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`;
-              trailerBtn.disabled = true;
-            };
-          } else {
-            trailerBtn.style.display = 'none';
-          }
-        } else {
-          trailerBtn.style.display = 'none';
-        }
-
-        // Load main player
-        playerFrame.src = `${VIDSRC_URL}/${type}/${id}`;
-        playerFrame.onload = () => {
-          loadingOverlay.style.display = 'none';
-        };
-
-      } catch (err) {
-        console.error('Error:', err);
-        showError('Failed to load content. Please try again later.');
-      }
-    });
-
-    function showError(message) {
-      loadingOverlay.innerHTML = `<p style="color: white; text-align: center;">${message}</p>`;
-      document.getElementById('movie-title').textContent = 'Error';
-      document.getElementById('movie-overview').textContent = message;
-    }
-  </script>
+        document.title = `${data.title || data.name} - GomoTV`;
+        document.getElementById('player-frame').src = `https://vidsrc.to/embed/${type}/${id}`;
+        document.getElementById('movie-title').textContent = data.title || data.name;
+        document.getElementById('movie-year').textContent = (data.release_date || data.first_air_date || '').slice(0, 4);
+        document.getElementById('movie-rating').textContent = `⭐ ${data.vote_average?.toFixed(1) || 'N/A'}`;
+        document.getElementById('movie-genres').textContent = data.genres.map(g => g.name).join(', ');
+        document.getElementById('movie-overview').textContent = data.overview || 'No overview available.';
+      } catch (err) {
+        console.error('Error fetching movie:', err);
+      }
+    });
+  </script>
 </body>
 </html>
