@@ -24,6 +24,8 @@
       aspect-ratio: 16 / 9;
       background: #111;
       margin-bottom: 20px;
+      border-radius: 8px;
+      overflow: hidden;
     }
 
     iframe {
@@ -34,24 +36,27 @@
 
     .server-selector {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin-bottom: 20px;
       background: #222;
       color: #fff;
       border: 1px solid #444;
       border-radius: 4px;
       font-size: 16px;
+      cursor: pointer;
     }
 
     .movie-info {
       padding: 20px;
       background: #111;
       border-radius: 8px;
+      margin-bottom: 20px;
     }
 
     .movie-info h1 {
       margin: 0 0 10px;
       font-size: 28px;
+      color: #fff;
     }
 
     .meta {
@@ -79,12 +84,37 @@
       left: 50%;
       transform: translate(-50%, -50%);
       color: #fff;
+      font-size: 18px;
     }
 
     .error-message {
       color: #ff5555;
       text-align: center;
       padding: 20px;
+      font-size: 16px;
+    }
+
+    .server-status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .server-tag {
+      padding: 5px 10px;
+      background: #333;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .server-tag:hover {
+      background: #444;
+    }
+
+    .server-tag.active {
+      background: #0066cc;
     }
 
     @media (max-width: 768px) {
@@ -100,6 +130,11 @@
         font-size: 0.8em;
         gap: 10px;
       }
+      
+      .server-selector {
+        padding: 10px;
+        font-size: 14px;
+      }
     }
   </style>
 </head>
@@ -111,7 +146,12 @@
         <option value="apimocine">Apimocine</option>
         <option value="vidsrccc">Vidsrc.cc</option>
         <option value="vidsrc">Vidsrc.to</option>
+        <option value="2embed">2Embed</option>
+        <option value="superembed">SuperEmbed</option>
       </select>
+      
+      <div class="server-status" id="server-status"></div>
+      
       <div class="loading" id="loading">Loading player...</div>
       <iframe id="player-frame" allowfullscreen></iframe>
     </div>
@@ -132,9 +172,31 @@
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
     const BASE_URL = 'https://api.themoviedb.org/3';
     const SERVERS = [
-      { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
-      { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
-      { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
+      { 
+        id: 'apimocine', 
+        name: 'Apimocine', 
+        url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` 
+      },
+      { 
+        id: 'vidsrccc', 
+        name: 'Vidsrc.cc', 
+        url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` 
+      },
+      { 
+        id: 'vidsrc', 
+        name: 'Vidsrc.to', 
+        url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` 
+      },
+      {
+        id: '2embed',
+        name: '2Embed',
+        url: (t, id) => `https://www.2embed.cc/embed/${t === 'movie' ? 'movie' : 'tv'}/${id}`
+      },
+      {
+        id: 'superembed',
+        name: 'SuperEmbed',
+        url: (t, id) => `https://multiembed.mov/?video_id=${id}&tmdb=1&${t === 'movie' ? 'media=movie' : 'media=tv'}`
+      }
     ];
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -155,8 +217,9 @@
         document.title = `${data.title || data.name} - GomoTV`;
         updateMovieInfo(data, type);
         
-        // Setup server selector
+        // Setup server selector and quick access tags
         setupServerSelector(type, id);
+        createServerTags(type, id);
         
         // Try to load first available server automatically
         tryServers(type, id);
@@ -182,9 +245,27 @@
         if (serverId) {
           const server = SERVERS.find(s => s.id === serverId);
           if (server) {
-            loadServer(server.url(type, id));
+            loadServer(server, type, id);
           }
         }
+      });
+    }
+
+    function createServerTags(type, id) {
+      const container = document.getElementById('server-status');
+      container.innerHTML = SERVERS.map(server => 
+        `<div class="server-tag" data-id="${server.id}">${server.name}</div>`
+      ).join('');
+      
+      container.querySelectorAll('.server-tag').forEach(tag => {
+        tag.addEventListener('click', () => {
+          const serverId = tag.dataset.id;
+          const server = SERVERS.find(s => s.id === serverId);
+          if (server) {
+            document.getElementById('server-select').value = serverId;
+            loadServer(server, type, id);
+          }
+        });
       });
     }
 
@@ -198,8 +279,9 @@
         }
         
         const server = SERVERS[currentIndex];
+        updateActiveServerTag(server.id);
         document.getElementById('server-select').value = server.id;
-        loadServer(server.url(type, id), () => {
+        loadServer(server, type, id, () => {
           currentIndex++;
           tryNextServer();
         });
@@ -208,22 +290,32 @@
       tryNextServer();
     }
 
-    function loadServer(url, onError) {
+    function loadServer(server, type, id, onError) {
       const iframe = document.getElementById('player-frame');
       const loading = document.getElementById('loading');
       
       loading.style.display = 'block';
       iframe.style.display = 'none';
+      loading.textContent = `Loading ${server.name}...`;
       
-      iframe.src = url;
+      const playerUrl = server.url(type, id);
+      iframe.src = playerUrl;
+      
       iframe.onload = () => {
         loading.style.display = 'none';
         iframe.style.display = 'block';
+        updateActiveServerTag(server.id);
       };
       
       iframe.onerror = () => {
         if (onError) onError();
       };
+    }
+
+    function updateActiveServerTag(serverId) {
+      document.querySelectorAll('.server-tag').forEach(tag => {
+        tag.classList.toggle('active', tag.dataset.id === serverId);
+      });
     }
 
     function showError(message) {
