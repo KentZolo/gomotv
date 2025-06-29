@@ -61,7 +61,7 @@
       justify-content: center;
     }
 
-    /* Server Controls Styling */
+    /* Server Controls Styling - UPDATED */
     .server-controls {
       margin-bottom: 20px;
       background: #111;
@@ -74,7 +74,6 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
-      cursor: pointer;
     }
 
     .server-header h3 {
@@ -91,45 +90,29 @@
       cursor: pointer;
     }
 
-    .server-content {
-      display: none;
-    }
-
-    .server-content.active {
-      display: block;
-    }
-
-    .server-selector {
-      width: 100%;
-      padding: 10px;
-      background: #222;
-      color: #fff;
-      border: 1px solid #444;
-      border-radius: 4px;
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-
-    .server-tags {
-      display: flex;
+    .server-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       gap: 10px;
-      flex-wrap: wrap;
     }
 
-    .server-tag {
-      padding: 6px 12px;
+    .server-btn {
+      padding: 8px 12px;
       background: #333;
+      color: white;
+      border: none;
       border-radius: 4px;
-      font-size: 14px;
       cursor: pointer;
+      text-align: center;
       transition: all 0.2s;
+      font-size: 14px;
     }
 
-    .server-tag:hover {
+    .server-btn:hover {
       background: #444;
     }
 
-    .server-tag.active {
+    .server-btn.active {
       background: #e50914;
     }
 
@@ -251,8 +234,8 @@
         gap: 10px;
       }
       
-      .server-selector {
-        font-size: 14px;
+      .server-list {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       }
 
       .recommendations-grid {
@@ -272,6 +255,10 @@
       .recommendation-poster {
         height: 150px;
       }
+      
+      .server-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
   </style>
 </head>
@@ -288,17 +275,7 @@
         <h3>Server Options</h3>
         <button class="server-toggle" id="server-toggle">Show</button>
       </div>
-      <div class="server-content" id="server-content">
-        <select class="server-selector" id="server-select">
-          <option value="">Select Server...</option>
-          <option value="apimocine">Apimocine</option>
-          <option value="vidsrccc">Vidsrc.cc</option>
-          <option value="vidsrc">Vidsrc.to</option>
-          <option value="2embed">2Embed</option>
-          <option value="superembed">SuperEmbed</option>
-        </select>
-        <div class="server-tags" id="server-tags"></div>
-      </div>
+      <div class="server-list" id="server-list" style="display: none;"></div>
     </div>
 
     <div class="movie-info">
@@ -330,27 +307,27 @@
     const SERVERS = [
       { 
         id: 'apimocine', 
-        name: 'Apimocine', 
+        name: 'Server 1: Apimocine', 
         url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` 
       },
       { 
         id: 'vidsrccc', 
-        name: 'Vidsrc.cc', 
+        name: 'Server 2: Vidsrc.cc', 
         url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` 
       },
       { 
         id: 'vidsrc', 
-        name: 'Vidsrc.to', 
+        name: 'Server 3: Vidsrc.to', 
         url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` 
       },
       {
         id: '2embed',
-        name: '2Embed',
+        name: 'Server 4: 2Embed',
         url: (t, id) => `https://www.2embed.cc/embed/${t === 'movie' ? 'movie' : 'tv'}/${id}`
       },
       {
         id: 'superembed',
-        name: 'SuperEmbed',
+        name: 'Server 5: SuperEmbed',
         url: (t, id) => `https://multiembed.mov/?video_id=${id}&tmdb=1&${t === 'movie' ? 'media=movie' : 'media=tv'}`
       }
     ];
@@ -375,8 +352,7 @@
         
         // Setup server controls
         setupServerControls();
-        setupServerSelector(type, id);
-        createServerTags(type, id);
+        createServerButtons(type, id);
         
         // Load recommendations
         loadRecommendations(type, id);
@@ -396,12 +372,13 @@
 
     function setupServerControls() {
       const header = document.getElementById('server-header');
-      const content = document.getElementById('server-content');
       const toggle = document.getElementById('server-toggle');
+      const serverList = document.getElementById('server-list');
 
       header.addEventListener('click', () => {
-        content.classList.toggle('active');
-        toggle.textContent = content.classList.contains('active') ? 'Hide' : 'Show';
+        const isVisible = serverList.style.display === 'grid';
+        serverList.style.display = isVisible ? 'none' : 'grid';
+        toggle.textContent = isVisible ? 'Show' : 'Hide';
       });
     }
 
@@ -414,34 +391,21 @@
       document.getElementById('movie-overview').textContent = data.overview || 'No overview available.';
     }
 
-    function setupServerSelector(type, id) {
-      const selector = document.getElementById('server-select');
-      selector.addEventListener('change', (e) => {
-        const serverId = e.target.value;
-        if (serverId) {
-          const server = SERVERS.find(s => s.id === serverId);
-          if (server) {
-            loadServer(server, type, id);
-          }
-        }
-      });
-    }
-
-    function createServerTags(type, id) {
-      const container = document.getElementById('server-tags');
-      container.innerHTML = SERVERS.map(server => 
-        `<div class="server-tag" data-id="${server.id}">${server.name}</div>`
-      ).join('');
+    function createServerButtons(type, id) {
+      const container = document.getElementById('server-list');
+      container.innerHTML = '';
       
-      container.querySelectorAll('.server-tag').forEach(tag => {
-        tag.addEventListener('click', () => {
-          const serverId = tag.dataset.id;
-          const server = SERVERS.find(s => s.id === serverId);
-          if (server) {
-            document.getElementById('server-select').value = serverId;
-            loadServer(server, type, id);
-          }
+      SERVERS.forEach(server => {
+        const btn = document.createElement('button');
+        btn.className = 'server-btn';
+        btn.textContent = server.name;
+        btn.dataset.id = server.id;
+        
+        btn.addEventListener('click', () => {
+          loadServer(server, type, id);
         });
+        
+        container.appendChild(btn);
       });
     }
 
@@ -494,8 +458,7 @@
         }
         
         const server = SERVERS[currentIndex];
-        updateActiveServerTag(server.id);
-        document.getElementById('server-select').value = server.id;
+        updateActiveServerButton(server.id);
         loadServer(server, type, id, () => {
           currentIndex++;
           setTimeout(tryNextServer, 1000); // Retry after 1 second
@@ -519,7 +482,7 @@
       iframe.onload = () => {
         loading.style.display = 'none';
         iframe.style.display = 'block';
-        updateActiveServerTag(server.id);
+        updateActiveServerButton(server.id);
       };
       
       iframe.onerror = () => {
@@ -527,9 +490,9 @@
       };
     }
 
-    function updateActiveServerTag(serverId) {
-      document.querySelectorAll('.server-tag').forEach(tag => {
-        tag.classList.toggle('active', tag.dataset.id === serverId);
+    function updateActiveServerButton(serverId) {
+      document.querySelectorAll('.server-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.id === serverId);
       });
     }
 
