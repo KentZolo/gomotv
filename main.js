@@ -44,6 +44,11 @@ function showBannerSlide(index) {
   document.getElementById('poster-meta').textContent =
     `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
   document.getElementById('poster-summary').textContent = item.title;
+
+  // Add click event to redirect to watch.html
+  img.addEventListener('click', () => {
+    window.location.href = `watch.html?id=${item.id}&type=movie`;
+  });
 }
 
 function setupBannerNavigation() {
@@ -130,151 +135,14 @@ function setupPosterClickEvents(containerSelector) {
     poster.addEventListener('click', () => {
       const img = poster.querySelector('img');
       if (img) {
-        openModal(img.dataset.id, img.dataset.type);
+        // Redirect to watch.html instead of opening modal
+        window.location.href = `watch.html?id=${img.dataset.id}&type=${img.dataset.type}`;
       }
     });
   });
 }
 
-// Modal Player
-const SERVERS = [
-  { id: 'vidsrccc', name: 'Vidsrc.cc', url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` },
-  { id: 'vidsrc', name: 'Vidsrc.to', url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` },
-  { id: 'apimocine', name: 'Apimocine', url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` }
-];
-
-async function openModal(id, type) {
-  try {
-    // Close any existing all-movies modal first
-    const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
-    if (existingAllMoviesModal) {
-      existingAllMoviesModal.style.display = 'none';
-    }
-
-    history.pushState({ modal: true }, "", `?id=${id}&type=${type}`);
-
-    const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
-    const data = await res.json();
-
-    const modal = createModal(data, type, id);
-    document.getElementById('modal-container').appendChild(modal);
-    document.body.style.overflow = 'hidden';
-
-    setupModalEvents(modal, id, type);
-    loadDefaultServer(modal, type, id);
-  } catch (err) {
-    console.error('Modal error:', err);
-    alert('Failed to load details');
-    
-    // Re-show all-movies modal if it exists
-    const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
-    if (existingAllMoviesModal) {
-      existingAllMoviesModal.style.display = 'flex';
-    }
-  }
-}
-
-function createModal(data, type, id) {
-  const title = data.title || data.name;
-  const year = (data.release_date || data.first_air_date || '').slice(0, 4);
-  const rating = data.vote_average?.toFixed(1) || 'N/A';
-  const overview = data.overview || 'No description available.';
-  const genres = data.genres?.map(g => g.name).join(', ');
-
-  const modal = document.createElement('div');
-  modal.className = 'modal';
-  modal.innerHTML = `
-    <div class="modal-content">
-      <span class="close-btn">×</span>
-      <div class="modal-header">
-        <h2>${title} (${year})</h2>
-        <div class="meta-info">
-          <span>⭐ ${rating}</span>
-          <span>${type.toUpperCase()}</span>
-          ${genres ? `<span>${genres}</span>` : ''}
-        </div>
-      </div>
-      <div class="modal-body">
-        <h3>Overview</h3>
-        <p>${overview}</p>
-        <select class="server-selector" id="server-select">
-          ${SERVERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
-        </select>
-        <div class="player-container">
-          <div class="loading-server">Loading player...</div>
-          <iframe id="player-frame" allowfullscreen></iframe>
-        </div>
-      </div>
-    </div>
-  `;
-
-  return modal;
-}
-
-function setupModalEvents(modal, id, type) {
-  const closeBtn = modal.querySelector('.close-btn');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => closeModal(modal));
-  }
-
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal(modal);
-  });
-
-  const serverSelect = modal.querySelector('#server-select');
-  if (serverSelect) {
-    serverSelect.addEventListener('change', (e) => {
-      const server = SERVERS.find(s => s.id === e.target.value);
-      if (server) {
-        const iframe = modal.querySelector('#player-frame');
-        if (iframe) {
-          iframe.src = server.url(type, id);
-        }
-      }
-    });
-  }
-}
-
-function loadDefaultServer(modal, type, id) {
-  const iframe = modal.querySelector('#player-frame');
-  const loading = modal.querySelector('.loading-server');
-  if (!iframe || !loading) return;
-
-  function tryServer(index) {
-    if (index >= SERVERS.length) {
-      loading.textContent = 'No working server found';
-      return;
-    }
-
-    const server = SERVERS[index];
-    iframe.src = server.url(type, id);
-    loading.style.display = 'flex';
-
-    iframe.onload = () => {
-      loading.style.display = 'none';
-    };
-
-    iframe.onerror = () => {
-      tryServer(index + 1);
-    };
-  }
-
-  tryServer(0);
-}
-
-function closeModal(modal) {
-  if (!modal) return;
-  modal.remove();
-  document.body.style.overflow = '';
-  history.back();
-  
-  const existingAllMoviesModal = document.querySelector('.all-movies-modal-container');
-  if (existingAllMoviesModal) {
-    existingAllMoviesModal.style.display = 'flex';
-  }
-}
-
-// Hamburger Menu Toggle - UPDATED VERSION
+// Hamburger Menu Toggle
 function setupMenuToggle() {
   const menuBtn = document.getElementById('menu-toggle');
   const menu = document.getElementById('hamburger-menu');
@@ -335,12 +203,12 @@ function setupMenuSearch() {
   });
 }
 
+// Theme Functions
 function toggleTheme() {
   const body = document.body;
   const isDark = body.classList.contains('dark');
   const newTheme = isDark ? 'light' : 'dark';
   
-  // Add transition overlay for smooth change
   const overlay = document.querySelector('.theme-transition-overlay');
   overlay.style.opacity = '1';
   overlay.style.pointerEvents = 'auto';
@@ -369,13 +237,13 @@ function updateThemeIcons(theme) {
 
 // Initialize
 window.addEventListener('DOMContentLoaded', () => {
-  initTheme(); // Idagdag ito sa simula
+  initTheme();
   
-  // Ang iba pang initialization code...
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
   
   setupMenuToggle();
   setupMenuSearch();
+  
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
   }
@@ -385,17 +253,4 @@ window.addEventListener('DOMContentLoaded', () => {
     fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
     fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
   }
-
-  const params = new URLSearchParams(location.search);
-  if (params.get('id') && params.get('type')) {
-    openModal(params.get('id'), params.get('type'));
-  }
-
-  window.addEventListener('popstate', (e) => {
-    if (e.state?.modal) {
-      const modal = document.querySelector('.modal');
-      if (modal) modal.remove();
-      document.body.style.overflow = '';
-    }
-  });
 });
