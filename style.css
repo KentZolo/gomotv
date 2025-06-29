@@ -29,16 +29,18 @@ body {
   font-size: 1.5rem;
   font-weight: bold;
   color: #e50914;
-  margin: 0 auto; 
+  margin-left: 10px;
+}
 
 .theme-toggle {
-  background: none !important;
+  background: none !important; /* Walang background */
   border: none !important;
   padding: 0;
   font-size: 1.5rem;
   cursor: pointer;
   margin-left: auto;
-  color: inherit;
+  color: inherit; /* Gamitin ang kulay ng text ng parent */
+}
 
 /* Dark/light mode icon colors */
 body.dark .theme-toggle {
