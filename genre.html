@@ -1,9 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Head content remains the same -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Genres - GomoTV</title>
   <style>
-    /* Add these new styles for pagination */
+    /* BASE STYLES */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+    
+    body.dark {
+      background-color: #000;
+      color: #fff;
+    }
+    
+    body.light {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* NAVBAR STYLES */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .logo {
+      margin: 0;
+      font-size: 24px;
+      color: #e50914;
+    }
+    
+    .menu-toggle {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    
+    .theme-toggle {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      margin-left: 15px;
+    }
+
+    /* MAIN CONTENT STYLES */
+    main {
+      margin-top: 70px; /* Space for fixed navbar */
+      padding: 20px;
+    }
+
+    /* SEARCH RESULTS GRID (FROM MOVIES.HTML) */
+    .search-results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+      padding: 20px 0;
+    }
+    
+    .poster-wrapper {
+      position: relative;
+      background: #111;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.3s;
+    }
+    
+    .poster-wrapper:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+    }
+    
+    .poster-wrapper img {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .poster-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #e50914;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      z-index: 1;
+    }
+    
+    .poster-label {
+      padding: 10px;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .poster-meta {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 10px 10px;
+      font-size: 12px;
+      color: #aaa;
+    }
+    
+    /* GENRE GRID STYLES */
+    .genre-buttons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .genre-link {
+      display: block;
+      padding: 15px;
+      background: rgba(229, 9, 20, 0.1);
+      border: 1px solid rgba(229, 9, 20, 0.3);
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    
+    .genre-link:hover {
+      background: rgba(229, 9, 20, 0.2);
+      transform: translateY(-3px);
+    }
+    
+    body.light .genre-link {
+      background: rgba(229, 9, 20, 0.05);
+      border-color: rgba(229, 9, 20, 0.2);
+    }
+    
+    body.light .genre-link:hover {
+      background: rgba(229, 9, 20, 0.1);
+    }
+
+    /* PAGINATION STYLES (FROM MOVIES.HTML) */
     .pagination {
       display: flex;
       justify-content: center;
@@ -39,19 +203,58 @@
       margin-top: 20px;
     }
     
+    /* LOADING INDICATOR */
+    .loading {
+      text-align: center;
+      padding: 50px;
+      color: #e50914;
+      font-size: 18px;
+    }
+    
+    .error-message {
+      text-align: center;
+      padding: 50px;
+      color: #e50914;
+      font-size: 18px;
+    }
+
+    /* RESPONSIVE STYLES */
     @media (max-width: 768px) {
+      .search-results-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 15px;
+      }
+      
+      .genre-buttons-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+      
       .pagination button {
         padding: 6px 12px;
         font-size: 0.8rem;
       }
     }
+
+    @media (max-width: 480px) {
+      .search-results-grid {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 10px;
+      }
+      
+      .genre-buttons-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+      
+      .poster-label {
+        font-size: 12px;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- Same HTML structure as before -->
   <header class="navbar">
     <button onclick="history.back()" class="menu-toggle">←</button>
-    <h1 class="logo">Genres</h1>
+    <h1 class="logo" id="page-title">Genres</h1>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
       <span class="dark-icon">❍</span>
       <span class="light-icon" hidden>☼</span>
@@ -59,20 +262,25 @@
   </header>
 
   <main class="container">
-    <h2>Browse by Genre</h2>
-    <div class="loading-genre" id="loading-genre">Loading movies...</div>
+    <h2 id="genre-title">Browse by Genre</h2>
     
-    <!-- Add pagination container -->
-    <div class="pagination" id="pagination-top"></div>
-    
-    <div class="genre-grid" id="genre-container">
-      <!-- Dynamic content will be loaded here -->
+    <!-- Genre selection buttons -->
+    <div class="genre-buttons-grid" id="genre-buttons">
+      <!-- Genre buttons will be loaded here -->
     </div>
     
-    <!-- Add pagination container -->
+    <!-- Pagination top -->
+    <div class="pagination" id="pagination-top"></div>
+    
+    <!-- Movie results grid -->
+    <div class="search-results-grid" id="results-grid">
+      <!-- Movies will be loaded here -->
+    </div>
+    
+    <!-- Pagination bottom -->
     <div class="pagination" id="pagination-bottom"></div>
     
-    <!-- Add disclaimer -->
+    <!-- Disclaimer -->
     <div class="disclaimer">
       <p>⚠️ Disclaimer: GomoTV doesn't host any videos. All content provided by third-party servers.</p>
     </div>
@@ -81,7 +289,7 @@
   <script>
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
     const BASE_URL = 'https://api.themoviedb.org/3';
-    const IMAGE_URL = 'https://image.tmdb.org/t/p/w200';
+    const IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
     let currentPage = 1;
     let currentGenreId = null;
     let currentGenreName = null;
@@ -135,12 +343,12 @@
       currentGenreId = genreId;
       currentGenreName = genreName;
       
-      const loadingElement = document.getElementById('loading-genre');
-      const genreContainer = document.getElementById('genre-container');
+      const resultsGrid = document.getElementById('results-grid');
+      const genreTitle = document.getElementById('genre-title');
+      const pageTitle = document.getElementById('page-title');
       
       try {
-        loadingElement.style.display = 'block';
-        genreContainer.innerHTML = '';
+        resultsGrid.innerHTML = '<div class="loading">Loading movies...</div>';
         
         const response = await fetch(
           `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc&page=${page}`
@@ -150,21 +358,27 @@
         totalPages = data.total_pages > 500 ? 500 : data.total_pages; // TMDB limit
         
         if (data.results && data.results.length > 0) {
-          // Update the title to show current genre
-          document.querySelector('h2').textContent = `${genreName} Movies`;
+          // Update titles
+          genreTitle.textContent = `${genreName} Movies`;
+          pageTitle.textContent = `${genreName} Movies`;
           
-          genreContainer.innerHTML = data.results.map(movie => `
-            <div class="genre-item" data-id="${movie.id}" data-type="movie">
-              <img src="${movie.poster_path ? IMAGE_URL + movie.poster_path : 'https://via.placeholder.com/200x300?text=No+Poster'}" 
+          // Render movies
+          resultsGrid.innerHTML = data.results.map(movie => `
+            <div class="poster-wrapper" data-id="${movie.id}" data-type="movie">
+              ${movie.vote_average > 7 ? '<div class="poster-badge">TOP</div>' : ''}
+              <img src="${movie.poster_path ? IMAGE_URL + movie.poster_path : 'https://via.placeholder.com/500x750?text=No+Poster'}" 
                    alt="${movie.title}" 
                    loading="lazy">
-              <div class="genre-title">${movie.title}</div>
-              <div class="genre-meta">⭐ ${movie.vote_average?.toFixed(1) || 'N/A'}</div>
+              <div class="poster-label">${movie.title}</div>
+              <div class="poster-meta">
+                <span>⭐ ${movie.vote_average?.toFixed(1) || 'N/A'}</span>
+                <span>${movie.release_date?.slice(0, 4) || ''}</span>
+              </div>
             </div>
           `).join('');
           
           // Add click event to each movie
-          document.querySelectorAll('.genre-item').forEach(item => {
+          document.querySelectorAll('.poster-wrapper').forEach(item => {
             item.addEventListener('click', () => {
               const id = item.getAttribute('data-id');
               window.location.href = `watch.html?type=movie&id=${id}`;
@@ -174,17 +388,15 @@
           // Render pagination
           renderPagination();
         } else {
-          genreContainer.innerHTML = '<p>No movies found in this genre</p>';
+          resultsGrid.innerHTML = '<p class="error-message">No movies found in this genre</p>';
         }
       } catch (error) {
         console.error('Error loading genre movies:', error);
-        genreContainer.innerHTML = '<p>Failed to load movies</p>';
-      } finally {
-        loadingElement.style.display = 'none';
+        resultsGrid.innerHTML = '<p class="error-message">Failed to load movies. Please try again later.</p>';
       }
     }
 
-    // Pagination functions (similar to movies.html)
+    // Pagination functions
     function renderPagination() {
       const paginationHTML = createPaginationHTML();
       document.getElementById('pagination-top').innerHTML = paginationHTML;
@@ -263,8 +475,8 @@
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
       
       // Create genre buttons
-      const genreContainer = document.getElementById('genre-container');
-      genreContainer.innerHTML = genres.map(genre => `
+      const genreButtonsContainer = document.getElementById('genre-buttons');
+      genreButtonsContainer.innerHTML = genres.map(genre => `
         <a class="genre-link" data-id="${genre.id}" data-name="${genre.name}">
           ${genre.name}
         </a>
