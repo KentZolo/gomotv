@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TV Shows - GomoTV</title>
+  <title>Top IMDB - GomoTV</title>
   <link rel="stylesheet" href="style.css">
-  <script src="shared-modal.js"></script>
   <style>
     /* PAGINATION STYLES */
     .pagination {
@@ -43,17 +42,30 @@
       margin-top: 20px;
     }
 
-    /* RATING BADGE */
-    .poster-wrapper::after {
-      content: "⭐ " attr(data-rating);
+    /* TOP BADGE STYLES */
+    .poster-badge {
       position: absolute;
       top: 10px;
       left: 10px;
-      background-color: rgba(229, 9, 20, 0.9);
+      background: #e50914;
       color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
       font-size: 0.8rem;
       font-weight: bold;
-      padding: 3px 8px;
+      z-index: 1;
+    }
+
+    /* RATING BADGE */
+    .rating-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #ffd700;
+      font-size: 0.8rem;
+      font-weight: bold;
+      padding: 3px 6px;
       border-radius: 4px;
       z-index: 1;
     }
@@ -87,7 +99,7 @@
 <body>
   <header class="navbar">
     <button onclick="history.back()" class="menu-toggle">←</button>
-    <h1 class="logo">📺 TV Shows</h1>
+    <h1 class="logo">🏆 Top IMDB</h1>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
       <span class="dark-icon">❍</span>
       <span class="light-icon" hidden>☼</span>
@@ -97,7 +109,7 @@
   <main>
     <div id="pagination-top" class="pagination"></div>
     <div class="search-results-grid" id="results-grid">
-      <div class="loading">Loading TV shows...</div>
+      <div class="loading">Loading top-rated movies...</div>
     </div>
     <div id="pagination-bottom" class="pagination"></div>
     <div class="disclaimer">
@@ -145,7 +157,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-      fetchTVShows(currentPage);
+      fetchTopIMDBMovies(currentPage);
     });
 
     function getImageUrl(path) {
@@ -154,50 +166,59 @@
         : 'https://via.placeholder.com/500x750?text=No+Poster';
     }
 
-    async function fetchTVShows(page = 1) {
+    async function fetchTopIMDBMovies(page = 1) {
       currentPage = page;
       
       try {
-        document.getElementById('results-grid').innerHTML = '<div class="loading">Loading TV shows...</div>';
+        document.getElementById('results-grid').innerHTML = '<div class="loading">Loading top-rated movies...</div>';
         
+        // Fetch top-rated movies with minimum vote count
         const response = await fetch(
-          `${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`
+          `${BASE_URL}/discover/movie?api_key=${API_KEY}` +
+          `&sort_by=vote_average.desc&vote_count.gte=1000&page=${page}`
         );
         const data = await response.json();
         
-        totalPages = data.total_pages > 500 ? 500 : data.total_pages;
-        renderTVShows(data.results);
-        renderPagination();
+        // Filter to only show movies with rating >= 7.5
+        const topMovies = data.results.filter(movie => movie.vote_average >= 7.5);
+        totalPages = Math.min(data.total_pages, 500); // TMDB limit
+        
+        if (topMovies.length > 0) {
+          renderMovies(topMovies);
+          renderPagination();
+        } else {
+          document.getElementById('results-grid').innerHTML = `
+            <p class="error-message">No top-rated movies found. Try another page.</p>
+          `;
+        }
       } catch (error) {
-        console.error('Error fetching TV shows:', error);
+        console.error('Error fetching top IMDB movies:', error);
         document.getElementById('results-grid').innerHTML = `
-          <p class="error-message">Failed to load TV shows. Please try again later.</p>
+          <p class="error-message">Failed to load top-rated movies. Please try again later.</p>
         `;
       }
     }
 
-    function renderTVShows(shows) {
+    function renderMovies(movies) {
       const container = document.getElementById('results-grid');
-      container.innerHTML = shows.map(show => `
-        <div class="poster-wrapper" data-id="${show.id}" data-type="tv" data-rating="${show.vote_average?.toFixed(1) || 'N/A'}">
-          <img src="${getImageUrl(show.poster_path)}" alt="${show.name}" loading="lazy">
-          <div class="poster-label">${show.name}</div>
+      container.innerHTML = movies.map(movie => `
+        <div class="poster-wrapper" data-id="${movie.id}" data-type="movie">
+          ${movie.vote_average > 8 ? '<div class="poster-badge">TOP</div>' : ''}
+          <div class="rating-badge">⭐ ${movie.vote_average?.toFixed(1) || 'N/A'}</div>
+          <img src="${getImageUrl(movie.poster_path)}" alt="${movie.title}" loading="lazy">
+          <div class="poster-label">${movie.title}</div>
           <div class="poster-meta">
-            <span>${show.first_air_date?.slice(0, 4) || ''}</span>
+            <span>${movie.release_date?.slice(0, 4) || ''}</span>
           </div>
         </div>
       `).join('');
 
-      // Add click event to each TV show
+      // Add click event to each movie
       document.querySelectorAll('.poster-wrapper').forEach(poster => {
         poster.addEventListener('click', () => {
           const id = poster.dataset.id;
           const type = poster.dataset.type;
-          if (id && type && typeof openModal === 'function') {
-            openModal(id, type);
-          } else {
-            window.location.href = `watch.html?id=${id}&type=${type}`;
-          }
+          window.location.href = `watch.html?id=${id}&type=${type}`;
         });
       });
     }
@@ -258,7 +279,7 @@
 
     function goToPage(page) {
       if (page < 1 || page > totalPages) return;
-      window.location.href = `tvshows.html?page=${page}`;
+      window.location.href = `topimdb.html?page=${page}`;
     }
   </script>
 </body>
