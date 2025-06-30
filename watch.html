@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Watch - GomoTV</title>
   <style>
-    /* BASE STYLES */
+    /* ===== BASE STYLES ===== */
     body {
       margin: 0;
       padding: 0;
@@ -13,25 +13,25 @@
       background-color: #000;
       color: #fff;
     }
-    
+
     body.dark {
       background-color: #000;
       color: #fff;
     }
-    
+
     body.light {
       background-color: #f5f5f5;
       color: #333;
     }
-    
+
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
       position: relative;
     }
-    
-    /* NAVBAR STYLES */
+
+    /* ===== NAVBAR STYLES ===== */
     .navbar {
       position: fixed;
       top: 0;
@@ -45,13 +45,13 @@
       z-index: 1000;
       backdrop-filter: blur(5px);
     }
-    
+
     .logo {
       margin: 0;
       font-size: 24px;
       color: #e50914;
     }
-    
+
     .menu-toggle {
       display: flex;
       flex-direction: column;
@@ -61,7 +61,7 @@
       cursor: pointer;
       z-index: 1001;
     }
-    
+
     .menu-toggle span {
       display: block;
       width: 100%;
@@ -69,19 +69,19 @@
       background-color: #fff;
       transition: all 0.3s;
     }
-    
+
     .menu-toggle.active span:nth-child(1) {
       transform: rotate(45deg) translate(5px, 5px);
     }
-    
+
     .menu-toggle.active span:nth-child(2) {
       opacity: 0;
     }
-    
+
     .menu-toggle.active span:nth-child(3) {
       transform: rotate(-45deg) translate(5px, -5px);
     }
-    
+
     .theme-toggle {
       background: none;
       border: none;
@@ -91,7 +91,7 @@
       padding: 5px;
       margin-left: 15px;
     }
-    
+
     .theme-transition-overlay {
       position: fixed;
       top: 0;
@@ -104,8 +104,8 @@
       pointer-events: none;
       transition: opacity 0.3s;
     }
-    
-    /* HAMBURGER MENU STYLES */
+
+    /* ===== HAMBURGER MENU STYLES ===== */
     .hamburger-menu {
       position: fixed;
       top: 0;
@@ -118,11 +118,11 @@
       padding-top: 70px;
       overflow-y: auto;
     }
-    
+
     .hamburger-menu.active {
       left: 0;
     }
-    
+
     .menu-overlay {
       position: fixed;
       top: 0;
@@ -133,17 +133,17 @@
       z-index: 999;
       display: none;
     }
-    
+
     .menu-overlay.active {
       display: block;
     }
-    
+
     .hamburger-menu ul {
       list-style: none;
       padding: 0;
       margin: 0;
     }
-    
+
     .hamburger-menu li a {
       display: block;
       padding: 15px 20px;
@@ -152,17 +152,17 @@
       border-bottom: 1px solid #222;
       transition: background-color 0.2s;
     }
-    
+
     .hamburger-menu li a:hover {
       background-color: #222;
     }
-    
+
     .menu-search-bar {
       padding: 15px;
       display: flex;
       border-bottom: 1px solid #222;
     }
-    
+
     .menu-search-bar input {
       flex: 1;
       padding: 8px 12px;
@@ -171,7 +171,7 @@
       background-color: #222;
       color: #fff;
     }
-    
+
     .menu-search-bar button {
       padding: 8px 12px;
       border: none;
@@ -180,8 +180,8 @@
       border-radius: 0 4px 4px 0;
       cursor: pointer;
     }
-    
-    /* PLAYER STYLES */
+
+    /* ===== PLAYER STYLES ===== */
     .player-container {
       position: relative;
       width: 100%;
@@ -193,7 +193,7 @@
       overflow: hidden;
       margin-top: 70px; /* Space for navbar */
     }
-    
+
     #player-frame {
       position: absolute;
       top: 0;
@@ -203,7 +203,7 @@
       border: none;
       z-index: 10;
     }
-    
+
     /* Simple Close Button */
     .simple-close-btn {
       position: absolute;
@@ -219,31 +219,31 @@
       margin: 0;
       line-height: 1;
     }
-    
+
     .simple-close-btn:hover {
       color: #e50914;
     }
-    
-    /* SERVER CONTROLS */
+
+    /* Server Controls Styling */
     .server-controls {
       margin-bottom: 20px;
       background: #111;
       padding: 15px;
       border-radius: 8px;
     }
-    
+
     .server-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
     }
-    
+
     .server-header h3 {
       margin: 0;
       color: #e50914;
     }
-    
+
     .server-toggle {
       background: #333;
       border: none;
@@ -252,13 +252,13 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    
+
     .server-list {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       gap: 10px;
     }
-    
+
     .server-btn {
       padding: 8px 12px;
       background: #333;
@@ -270,16 +270,16 @@
       transition: all 0.2s;
       font-size: 14px;
     }
-    
+
     .server-btn:hover {
       background: #444;
     }
-    
+
     .server-btn.active {
       background: #e50914;
     }
-    
-    /* LOADING STATE */
+
+    /* Loading State */
     .loading {
       position: absolute;
       top: 50%;
@@ -288,20 +288,20 @@
       color: #fff;
       z-index: 5;
     }
-    
-    /* MOVIE INFO */
+
+    /* Movie Info Styling */
     .movie-info {
       padding: 20px;
       background: #111;
       border-radius: 8px;
       margin-bottom: 20px;
     }
-    
+
     .movie-info h1 {
       margin: 0 0 10px;
       font-size: 28px;
     }
-    
+
     .meta {
       display: flex;
       flex-wrap: wrap;
@@ -310,34 +310,34 @@
       color: #ccc;
       margin-bottom: 15px;
     }
-    
+
     .movie-info p {
       line-height: 1.6;
       color: #ddd;
       margin-bottom: 20px;
     }
-    
-    /* RECOMMENDATIONS */
+
+    /* Recommendations Section */
     .recommendations {
       padding: 20px;
       background: #111;
       border-radius: 8px;
       margin-bottom: 20px;
     }
-    
+
     .recommendations h2 {
       margin-top: 0;
       margin-bottom: 15px;
       font-size: 22px;
       color: #e50914;
     }
-    
+
     .recommendations-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 15px;
     }
-    
+
     .recommendation-item {
       background: #222;
       border-radius: 8px;
@@ -345,17 +345,17 @@
       transition: transform 0.2s;
       cursor: pointer;
     }
-    
+
     .recommendation-item:hover {
       transform: scale(1.05);
     }
-    
+
     .recommendation-poster {
       width: 100%;
       height: 225px;
       object-fit: cover;
     }
-    
+
     .recommendation-title {
       padding: 10px;
       font-size: 14px;
@@ -364,63 +364,8 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    
-    /* GENRE VIEW STYLES */
-    .genre-header {
-      padding: 20px;
-      background: rgba(229, 9, 20, 0.1);
-      border-radius: 8px;
-      margin-bottom: 20px;
-      text-align: center;
-      display: none;
-    }
-    
-    .genre-header h1 {
-      color: #e50914;
-      margin: 0;
-      font-size: 2rem;
-    }
-    
-    .genre-header p {
-      color: #aaa;
-      margin: 5px 0 0;
-    }
-    
-    .genre-browser {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 15px;
-      margin-top: 20px;
-    }
-    
-    .genre-movie {
-      background: #111;
-      border-radius: 8px;
-      overflow: hidden;
-      transition: transform 0.3s;
-      cursor: pointer;
-    }
-    
-    .genre-movie:hover {
-      transform: scale(1.05);
-    }
-    
-    .genre-movie img {
-      width: 100%;
-      height: 225px;
-      object-fit: cover;
-    }
-    
-    .genre-movie-title {
-      padding: 10px;
-      font-size: 14px;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    /* DISCLAIMER */
+
+    /* Disclaimer Styling */
     .disclaimer {
       padding: 20px;
       background: #111;
@@ -434,14 +379,14 @@
       margin-left: auto;
       margin-right: auto;
     }
-    
+
     .disclaimer h3 {
       color: #e50914;
       margin-top: 0;
       font-size: 14px;
     }
-    
-    /* RESPONSIVE ADJUSTMENTS */
+
+    /* Responsive Adjustments */
     @media (max-width: 768px) {
       .container {
         padding: 15px;
@@ -459,12 +404,12 @@
       .server-list {
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
       }
-      
-      .recommendations-grid, .genre-browser {
+
+      .recommendations-grid {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       }
-      
-      .recommendation-poster, .genre-movie img {
+
+      .recommendation-poster {
         height: 180px;
       }
       
@@ -474,13 +419,13 @@
         font-size: 28px;
       }
     }
-    
+
     @media (max-width: 480px) {
-      .recommendations-grid, .genre-browser {
+      .recommendations-grid {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       }
-      
-      .recommendation-poster, .genre-movie img {
+
+      .recommendation-poster {
         height: 150px;
       }
       
@@ -499,7 +444,7 @@
   </style>
 </head>
 <body class="dark">
-  <!-- NAVBAR -->
+  <!-- FIXED NAVBAR -->
   <header class="navbar">
     <div class="menu-toggle" id="menu-toggle">
       <span></span>
@@ -533,12 +478,6 @@
 
   <!-- MAIN CONTENT -->
   <div class="container">
-    <!-- Genre Header (hidden by default) -->
-    <div id="genre-header" class="genre-header">
-      <h1 id="genre-title"></h1>
-      <p>Browse movies in this genre</p>
-    </div>
-
     <!-- Simple Close Button -->
     <button class="simple-close-btn" id="simple-close-btn">×</button>
     
@@ -567,14 +506,8 @@
     </div>
 
     <div class="recommendations" id="recommendations">
-      <h2 id="recommendations-title">Recommended</h2>
+      <h2>Recommended</h2>
       <div class="recommendations-grid" id="recommendations-grid"></div>
-    </div>
-
-    <!-- Genre Browser Section -->
-    <div class="recommendations" id="genre-browser" style="display: none;">
-      <h2>More in this genre</h2>
-      <div class="genre-browser" id="genre-browser-grid"></div>
     </div>
 
     <div class="disclaimer">
@@ -616,39 +549,7 @@
       }
     ];
 
-    // HELPER FUNCTIONS
-    function getImageUrl(path) {
-      return path 
-        ? `${IMAGE_BASE_URL}${path}`
-        : 'https://via.placeholder.com/500x750?text=No+Poster';
-    }
-
-    function showError(message) {
-      const loading = document.getElementById('loading');
-      if (loading) {
-        loading.textContent = message;
-        loading.style.display = 'block';
-      }
-      const iframe = document.getElementById('player-frame');
-      if (iframe) iframe.style.display = 'none';
-    }
-
     // THEME FUNCTIONS
-    function initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.body.classList.add(savedTheme);
-      updateThemeIcons(savedTheme);
-    }
-
-    function updateThemeIcons(theme) {
-      const darkIcon = document.querySelector('.dark-icon');
-      const lightIcon = document.querySelector('.light-icon');
-      if (darkIcon && lightIcon) {
-        darkIcon.hidden = theme === 'light';
-        lightIcon.hidden = theme === 'dark';
-      }
-    }
-
     function toggleTheme() {
       const body = document.body;
       const isDark = body.classList.contains('dark');
@@ -667,6 +568,21 @@
         overlay.style.opacity = '0';
         overlay.style.pointerEvents = 'none';
       }, 100);
+    }
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(savedTheme);
+      updateThemeIcons(savedTheme);
+    }
+
+    function updateThemeIcons(theme) {
+      const darkIcon = document.querySelector('.dark-icon');
+      const lightIcon = document.querySelector('.light-icon');
+      if (darkIcon && lightIcon) {
+        darkIcon.hidden = theme === 'light';
+        lightIcon.hidden = theme === 'dark';
+      }
     }
 
     // MENU FUNCTIONS
@@ -692,14 +608,17 @@
       });
 
       // Close menu when clicking on any link
-      document.querySelectorAll('#hamburger-menu a').forEach(link => {
-        link.addEventListener('click', () => {
-          menuBtn.classList.remove('active');
-          menu.classList.remove('active');
-          overlay.classList.remove('active');
-          document.body.style.overflow = '';
+      const menuLinks = document.querySelectorAll('#hamburger-menu a');
+      if (menuLinks) {
+        menuLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            menuBtn.classList.remove('active');
+            menu.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+          });
         });
-      });
+      }
     }
 
     function setupMenuSearch() {
@@ -727,75 +646,39 @@
       });
     }
 
-    // GENRE FUNCTIONS
-    async function loadGenreContent(genreId, genreName) {
-      try {
-        // Show genre header
-        document.getElementById('genre-header').style.display = 'block';
-        document.getElementById('genre-title').textContent = genreName;
-        document.title = `${genreName} - GomoTV`;
-        
-        // Hide some elements we don't need for genre view
-        document.getElementById('movie-info').style.display = 'none';
-        document.getElementById('recommendations-title').textContent = 'Featured in this genre';
-        
-        // Show genre browser section
-        document.getElementById('genre-browser').style.display = 'block';
-        
-        // Fetch movies in this genre
-        const res = await fetch(
-          `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`
-        );
-        const data = await res.json();
-        
-        if (data.results && data.results.length > 0) {
-          const movies = data.results;
-          
-          // Load first movie in player
-          const firstMovie = movies[0];
-          updateMovieInfo(firstMovie, 'movie');
-          loadServer(SERVERS[0], 'movie', firstMovie.id);
-          
-          // Show other movies in genre browser
-          const genreGrid = document.getElementById('genre-browser-grid');
-          genreGrid.innerHTML = movies.slice(1, 11).map(movie => `
-            <div class="genre-movie" data-id="${movie.id}" data-type="movie">
-              <img src="${getImageUrl(movie.poster_path)}" alt="${movie.title}" loading="lazy">
-              <div class="genre-movie-title">${movie.title}</div>
-            </div>
-          `).join('');
-          
-          // Add click events to genre movies
-          document.querySelectorAll('.genre-movie').forEach(movieEl => {
-            movieEl.addEventListener('click', () => {
-              const id = movieEl.dataset.id;
-              window.location.href = `watch.html?type=movie&id=${id}`;
-            });
-          });
-        } else {
-          showError('No movies found in this genre');
-        }
-      } catch (err) {
-        console.error('Error loading genre content:', err);
-        showError('Failed to load genre content');
+    // MOVIE/PLAYER FUNCTIONS
+    async function loadContent() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const type = params.get('type');
+
+      if (!id || !type) {
+        showError('Invalid movie/show ID');
+        return;
       }
-    }
 
-    // MOVIE/TV SHOW FUNCTIONS
-    function updateMovieInfo(data, type) {
-      const titleEl = document.getElementById('movie-title');
-      const yearEl = document.getElementById('movie-year');
-      const ratingEl = document.getElementById('movie-rating');
-      const typeEl = document.getElementById('movie-type');
-      const genresEl = document.getElementById('movie-genres');
-      const overviewEl = document.getElementById('movie-overview');
+      try {
+        // Load movie/show info
+        const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
 
-      if (titleEl) titleEl.textContent = data.title || data.name;
-      if (yearEl) yearEl.textContent = (data.release_date || data.first_air_date || '').slice(0, 4);
-      if (ratingEl) ratingEl.textContent = `⭐ ${data.vote_average?.toFixed(1) || 'N/A'}`;
-      if (typeEl) typeEl.textContent = type === 'movie' ? 'Movie' : 'TV Show';
-      if (genresEl) genresEl.textContent = data.genres?.map(g => g.name).join(', ') || 'Unknown';
-      if (overviewEl) overviewEl.textContent = data.overview || 'No overview available.';
+        document.title = `${data.title || data.name} - GomoTV`;
+        updateMovieInfo(data, type);
+        
+        // Setup server controls
+        setupServerControls();
+        createServerButtons(type, id);
+        
+        // Load recommendations
+        loadRecommendations(type, id);
+        
+        // Auto-try servers
+        tryServers(type, id);
+      } catch (err) {
+        console.error('Error loading content:', err);
+        showError('Failed to load content');
+      }
     }
 
     function setupServerControls() {
@@ -810,6 +693,22 @@
         serverList.style.display = isVisible ? 'none' : 'grid';
         toggle.textContent = isVisible ? 'Show' : 'Hide';
       });
+    }
+
+    function updateMovieInfo(data, type) {
+      const titleEl = document.getElementById('movie-title');
+      const yearEl = document.getElementById('movie-year');
+      const ratingEl = document.getElementById('movie-rating');
+      const typeEl = document.getElementById('movie-type');
+      const genresEl = document.getElementById('movie-genres');
+      const overviewEl = document.getElementById('movie-overview');
+
+      if (titleEl) titleEl.textContent = data.title || data.name;
+      if (yearEl) yearEl.textContent = (data.release_date || data.first_air_date || '').slice(0, 4);
+      if (ratingEl) ratingEl.textContent = `⭐ ${data.vote_average?.toFixed(1) || 'N/A'}`;
+      if (typeEl) typeEl.textContent = type === 'movie' ? 'Movie' : 'TV Show';
+      if (genresEl) genresEl.textContent = data.genres?.map(g => g.name).join(', ') || 'Unknown';
+      if (overviewEl) overviewEl.textContent = data.overview || 'No overview available.';
     }
 
     function createServerButtons(type, id) {
@@ -870,7 +769,8 @@
         }
       } catch (err) {
         console.error('Error loading recommendations:', err);
-        grid.innerHTML = '<p>Failed to load recommendations.</p>';
+        const grid = document.getElementById('recommendations-grid');
+        if (grid) grid.innerHTML = '<p>Failed to load recommendations.</p>';
       }
     }
 
@@ -927,8 +827,18 @@
       }
     }
 
-    // MAIN INITIALIZATION
-    document.addEventListener('DOMContentLoaded', async () => {
+    function showError(message) {
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.textContent = message;
+        loading.style.display = 'block';
+      }
+      const iframe = document.getElementById('player-frame');
+      if (iframe) iframe.style.display = 'none';
+    }
+
+    // INITIALIZE EVERYTHING
+    document.addEventListener('DOMContentLoaded', () => {
       // Initialize theme and menu
       initTheme();
       
@@ -948,47 +858,8 @@
         });
       }
       
-      // Get URL parameters
-      const params = new URLSearchParams(window.location.search);
-      const type = params.get('type');
-      const id = params.get('id');
-      const genreId = params.get('genre_id');
-      const genreName = params.get('genre_name');
-      
-      // Check if this is a genre view
-      if (type === 'genre' && genreId) {
-        loadGenreContent(genreId, genreName || 'Genre');
-      } 
-      // Regular movie/TV show view
-      else if (id && type) {
-        try {
-          // Show movie info section
-          document.getElementById('movie-info').style.display = 'block';
-          
-          // Load movie/show info
-          const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
-          if (!res.ok) throw new Error('Failed to fetch');
-          const data = await res.json();
-          
-          document.title = `${data.title || data.name} - GomoTV`;
-          updateMovieInfo(data, type);
-          
-          // Setup server controls
-          setupServerControls();
-          createServerButtons(type, id);
-          
-          // Load recommendations
-          loadRecommendations(type, id);
-          
-          // Auto-try servers
-          tryServers(type, id);
-        } catch (err) {
-          console.error('Error loading content:', err);
-          showError('Failed to load content');
-        }
-      } else {
-        showError('Invalid parameters');
-      }
+      // Load content
+      loadContent();
     });
   </script>
 </body>
