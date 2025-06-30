@@ -4,8 +4,77 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Genres - GomoTV</title>
-  <link rel="stylesheet" href="style.css">
   <style>
+    /* BASE STYLES */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+    
+    body.dark {
+      background-color: #000;
+      color: #fff;
+    }
+    
+    body.light {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* NAVBAR STYLES */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .logo {
+      margin: 0;
+      font-size: 24px;
+      color: #e50914;
+    }
+    
+    .menu-toggle {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    
+    .theme-toggle {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      margin-left: 15px;
+    }
+
+    /* MAIN CONTENT STYLES */
+    main {
+      margin-top: 70px; /* Space for fixed navbar */
+      padding: 20px;
+    }
+
+    /* GENRE GRID STYLES */
     .genre-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -13,7 +82,7 @@
       margin: 20px 0;
     }
     
-    .genre-grid a {
+    .genre-link {
       display: block;
       padding: 15px;
       background: rgba(229, 9, 20, 0.1);
@@ -23,24 +92,97 @@
       text-decoration: none;
       color: inherit;
       transition: all 0.3s;
+      cursor: pointer;
     }
     
-    .genre-grid a:hover {
+    .genre-link:hover {
       background: rgba(229, 9, 20, 0.2);
       transform: translateY(-3px);
     }
     
-    body.light .genre-grid a {
+    body.light .genre-link {
       background: rgba(229, 9, 20, 0.05);
       border-color: rgba(229, 9, 20, 0.2);
     }
     
-    body.light .genre-grid a:hover {
+    body.light .genre-link:hover {
       background: rgba(229, 9, 20, 0.1);
+    }
+
+    /* MOVIE ITEM STYLES */
+    .genre-item {
+      background: #111;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+    
+    .genre-item:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+    }
+    
+    .genre-item img {
+      width: 100%;
+      height: 225px;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .genre-title {
+      padding: 10px;
+      font-size: 14px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .genre-meta {
+      padding: 5px;
+      text-align: center;
+      font-size: 12px;
+      color: #e50914;
+    }
+
+    /* LOADING INDICATOR */
+    .loading-genre {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #e50914;
+      font-size: 18px;
+    }
+
+    /* RESPONSIVE STYLES */
+    @media (max-width: 768px) {
+      .genre-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+      
+      .genre-item img {
+        height: 180px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .genre-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+      
+      .genre-item img {
+        height: 150px;
+      }
+      
+      .genre-title {
+        font-size: 12px;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Same HTML structure as before -->
   <header class="navbar">
     <button onclick="history.back()" class="menu-toggle">←</button>
     <h1 class="logo">Genres</h1>
@@ -50,26 +192,36 @@
     </button>
   </header>
 
-  <main class="container" style="padding: 20px;">
+  <main class="container">
     <h2>Browse by Genre</h2>
-    <div class="genre-grid">
-      <a href="watch.html?type=genre&genre_id=28&genre_name=Action">Action</a>
-      <a href="watch.html?type=genre&genre_id=12&genre_name=Adventure">Adventure</a>
-      <a href="watch.html?type=genre&genre_id=16&genre_name=Animation">Animation</a>
-      <a href="watch.html?type=genre&genre_id=35&genre_name=Comedy">Comedy</a>
-      <a href="watch.html?type=genre&genre_id=80&genre_name=Crime">Crime</a>
-      <a href="watch.html?type=genre&genre_id=18&genre_name=Drama">Drama</a>
-      <a href="watch.html?type=genre&genre_id=14&genre_name=Fantasy">Fantasy</a>
-      <a href="watch.html?type=genre&genre_id=27&genre_name=Horror">Horror</a>
-      <a href="watch.html?type=genre&genre_id=10749&genre_name=Romance">Romance</a>
-      <a href="watch.html?type=genre&genre_id=878&genre_name=Science Fiction">Sci-Fi</a>
-      <a href="watch.html?type=genre&genre_id=53&genre_name=Thriller">Thriller</a>
-      <a href="watch.html?type=genre&genre_id=10752&genre_name=War">War</a>
+    <div class="loading-genre" id="loading-genre">Loading movies...</div>
+    <div class="genre-grid" id="genre-container">
+      <!-- Dynamic content will be loaded here -->
     </div>
   </main>
 
+  <!-- Same JavaScript as previous implementation -->
   <script>
-    // Simple theme toggle for genre.html
+    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const IMAGE_URL = 'https://image.tmdb.org/t/p/w200';
+
+    const genres = [
+      { id: 28, name: 'Action' },
+      { id: 12, name: 'Adventure' },
+      { id: 16, name: 'Animation' },
+      { id: 35, name: 'Comedy' },
+      { id: 80, name: 'Crime' },
+      { id: 18, name: 'Drama' },
+      { id: 14, name: 'Fantasy' },
+      { id: 27, name: 'Horror' },
+      { id: 10749, name: 'Romance' },
+      { id: 878, name: 'Science Fiction' },
+      { id: 53, name: 'Thriller' },
+      { id: 10752, name: 'War' }
+    ];
+
+    // Initialize theme
     function initTheme() {
       const savedTheme = localStorage.getItem('theme') || 'dark';
       document.body.classList.add(savedTheme);
@@ -96,9 +248,74 @@
       updateThemeIcons(newTheme);
     }
 
+    // Load movies for a genre
+    async function loadGenreMovies(genreId, genreName) {
+      const loadingElement = document.getElementById('loading-genre');
+      const genreContainer = document.getElementById('genre-container');
+      
+      try {
+        loadingElement.style.display = 'block';
+        genreContainer.innerHTML = '';
+        
+        const response = await fetch(
+          `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`
+        );
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+          // Display first 6 movies
+          const movies = data.results.slice(0, 6);
+          
+          genreContainer.innerHTML = movies.map(movie => `
+            <div class="genre-item" data-id="${movie.id}" data-type="movie">
+              <img src="${movie.poster_path ? IMAGE_URL + movie.poster_path : 'https://via.placeholder.com/200x300?text=No+Poster'}" 
+                   alt="${movie.title}" 
+                   loading="lazy">
+              <div class="genre-title">${movie.title}</div>
+              <div class="genre-meta">⭐ ${movie.vote_average?.toFixed(1) || 'N/A'}</div>
+            </div>
+          `).join('');
+          
+          // Add click event to each movie
+          document.querySelectorAll('.genre-item').forEach(item => {
+            item.addEventListener('click', () => {
+              const id = item.getAttribute('data-id');
+              window.location.href = `watch.html?type=movie&id=${id}`;
+            });
+          });
+        } else {
+          genreContainer.innerHTML = '<p>No movies found in this genre</p>';
+        }
+      } catch (error) {
+        console.error('Error loading genre movies:', error);
+        genreContainer.innerHTML = '<p>Failed to load movies</p>';
+      } finally {
+        loadingElement.style.display = 'none';
+      }
+    }
+
+    // Initialize the page
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+      
+      // Create genre buttons
+      const genreContainer = document.getElementById('genre-container');
+      genreContainer.innerHTML = genres.map(genre => `
+        <a class="genre-link" data-id="${genre.id}" data-name="${genre.name}">
+          ${genre.name}
+        </a>
+      `).join('');
+      
+      // Add click event to genre links
+      document.querySelectorAll('.genre-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const genreId = link.getAttribute('data-id');
+          const genreName = link.getAttribute('data-name');
+          loadGenreMovies(genreId, genreName);
+        });
+      });
     });
   </script>
 </body>
