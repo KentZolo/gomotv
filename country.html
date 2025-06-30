@@ -1,34 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Country Results - GomoTV</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
   <style>
-    /* Disclaimer Styles */
-    .pagination-disclaimer {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 25px 20px;
-      margin-top: -10px;
-      font-size: 0.75rem;
-      color: #aaa;
-      line-height: 1.6;
-      border-top: 1px solid #333;
-      background: rgba(0,0,0,0.1);
-      border-radius: 0 0 8px 8px;
-    }
-    .pagination-disclaimer a {
-      color: #e50914;
-      text-decoration: none;
-    }
-    body.light .pagination-disclaimer {
-      color: #666;
-      border-top: 1px solid #ddd;
-      background: rgba(0,0,0,0.05);
+    /* Country List Styles */
+    .country-list-section {
+      padding: 20px;
+      margin-top: 20px;
     }
     
+    .country-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    .country-link {
+      display: block;
+      padding: 15px;
+      background: rgba(229, 9, 20, 0.1);
+      border: 1px solid rgba(229, 9, 20, 0.3);
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    
+    .country-link:hover {
+      background: rgba(229, 9, 20, 0.2);
+      transform: translateY(-3px);
+    }
+    
+    body.light .country-link {
+      background: rgba(229, 9, 20, 0.05);
+      border-color: rgba(229, 9, 20, 0.2);
+    }
+    
+    body.light .country-link:hover {
+      background: rgba(229, 9, 20, 0.1);
+    }
+
     /* Error Message */
     .country-error {
       grid-column: 1 / -1;
@@ -36,76 +53,127 @@
       padding: 30px;
       color: #e50914;
     }
+
+    /* PAGINATION STYLES */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .pagination button {
+      padding: 8px 15px;
+      background: #222;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .pagination button:hover {
+      background: #333;
+    }
+    
+    .pagination button.active {
+      background: #e50914;
+    }
+    
+    .disclaimer {
+      text-align: center;
+      padding: 15px;
+      color: #aaa;
+      font-size: 0.8rem;
+      border-top: 1px solid #333;
+      margin-top: 20px;
+    }
+
+    /* RESPONSIVE STYLES */
+    @media (max-width: 768px) {
+      .country-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+      
+      .pagination button {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .country-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+    }
   </style>
 </head>
 <body>
   <header class="navbar">
     <button onclick="history.back()" class="menu-toggle">←</button>
-    <h1 class="logo" id="country-title">Countries</h1>
+    <h1 class="logo" id="page-title">Countries</h1>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
       <span class="dark-icon">❍</span>
       <span class="light-icon" hidden>☼</span>
     </button>
   </header>
 
-  <section style="padding: 20px; display: none;" id="country-list-section">
-    <div class="country-list">
+  <main class="container">
+    <!-- Country Selection Section -->
+    <div class="country-list-section" id="country-list-section">
       <h2>Select a Country:</h2>
-      <div class="country-grid">
-        <a href="country.html?name=Philippines&country=PH">Philippines</a>
-        <a href="country.html?name=Japan&country=JP">Japan</a>
-        <a href="country.html?name=United States&country=US">United States</a>
-        <a href="country.html?name=South Korea&country=KR">South Korea</a>
-        <a href="country.html?name=France&country=FR">France</a>
+      <div class="country-grid" id="country-grid">
+        <!-- Countries will be loaded here -->
       </div>
     </div>
-  </section>
-
-  <main>
+    
+    <!-- Results Section -->
     <div id="pagination-top" class="pagination"></div>
     <div class="search-results-grid" id="results-grid"></div>
-    <div id="pagination" class="pagination"></div>
+    <div id="pagination-bottom" class="pagination"></div>
+    <div class="disclaimer">
+      <p>⚠️ Disclaimer: GomoTV doesn't host any videos. All content provided by third-party servers.</p>
+    </div>
   </main>
 
-  <div id="modal-container"></div>
-  
-  <script src="shared-modal.js"></script>
   <script>
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
+    
     const params = new URLSearchParams(location.search);
     const countryCode = params.get('country');
     const countryName = params.get('name');
     let currentPage = parseInt(params.get('page')) || 1;
+    let totalPages = 1;
 
-    // Country to language mapping
-    const COUNTRY_LANGUAGES = {
-      'PH': 'tl', // Philippines - Tagalog
-      'JP': 'ja', // Japan - Japanese
-      'KR': 'ko', // South Korea - Korean
-      'US': 'en', // United States - English
-      'FR': 'fr', // France - French
-      'DE': 'de', // Germany - German
-      'ES': 'es', // Spain - Spanish
-      'IN': 'hi', // India - Hindi
-      'TH': 'th', // Thailand - Thai
-      'CN': 'zh'  // China - Chinese
-    };
-
-    // Auto-add disclaimer
-    function addDisclaimer() {
-      if (!document.querySelector('.pagination-disclaimer')) {
-        const disclaimer = document.createElement('div');
-        disclaimer.className = 'pagination-disclaimer';
-        disclaimer.innerHTML = `
-          <p>⚠️ Disclaimer: GomoTV does not host any videos. Content provided by third-party servers.</p>
-          <p>Support creators via <a href="https://www.justwatch.com" target="_blank">official platforms</a>.</p>
-        `;
-        const pagination = document.getElementById('pagination');
-        if (pagination) {
-          pagination.parentNode.insertBefore(disclaimer, pagination.nextSibling);
-        }
-      }
-    }
+    // Complete country list with codes and languages
+    const COUNTRIES = [
+      { name: 'Argentina', code: 'AR', language: 'es' },
+      { name: 'Australia', code: 'AU', language: 'en' },
+      { name: 'Brazil', code: 'BR', language: 'pt' },
+      { name: 'Canada', code: 'CA', language: 'en' },
+      { name: 'China', code: 'CN', language: 'zh' },
+      { name: 'France', code: 'FR', language: 'fr' },
+      { name: 'Germany', code: 'DE', language: 'de' },
+      { name: 'India', code: 'IN', language: 'hi' },
+      { name: 'Indonesia', code: 'ID', language: 'id' },
+      { name: 'Italy', code: 'IT', language: 'it' },
+      { name: 'Japan', code: 'JP', language: 'ja' },
+      { name: 'Malaysia', code: 'MY', language: 'ms' },
+      { name: 'Mexico', code: 'MX', language: 'es' },
+      { name: 'Philippines', code: 'PH', language: 'tl' },
+      { name: 'Russia', code: 'RU', language: 'ru' },
+      { name: 'Singapore', code: 'SG', language: 'en' },
+      { name: 'South Korea', code: 'KR', language: 'ko' },
+      { name: 'Spain', code: 'ES', language: 'es' },
+      { name: 'Thailand', code: 'TH', language: 'th' },
+      { name: 'Turkey', code: 'TR', language: 'tr' },
+      { name: 'United Kingdom', code: 'GB', language: 'en' },
+      { name: 'United States', code: 'US', language: 'en' },
+      { name: 'Vietnam', code: 'VN', language: 'vi' }
+    ];
 
     // Initialize theme
     function initTheme() {
@@ -134,33 +202,51 @@
       updateThemeIcons(newTheme);
     }
 
+    // Initialize the page
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
       
+      // Load country list or movies based on URL params
       if (countryCode && countryName) {
-        document.getElementById("country-title").textContent = "🌎 " + countryName;
-        fetchCountryMovies(countryCode, currentPage);
+        document.getElementById('country-list-section').style.display = 'none';
+        document.getElementById('page-title').textContent = `🌎 ${countryName} Movies`;
+        fetchCountryMovies(countryCode, countryName, currentPage);
       } else {
-        document.getElementById('country-list-section').style.display = 'block';
+        loadCountryList();
       }
     });
 
+    // Load the complete country list
+    function loadCountryList() {
+      const countryGrid = document.getElementById('country-grid');
+      countryGrid.innerHTML = COUNTRIES.map(country => `
+        <a href="country.html?name=${encodeURIComponent(country.name)}&country=${country.code}" class="country-link">
+          ${country.name}
+        </a>
+      `).join('');
+    }
+
+    // Get image URL with fallback
     function getImageUrl(path) {
-      return path
-        ? `https://image.tmdb.org/t/p/w500${path}`
+      return path 
+        ? `${IMAGE_URL}${path}`
         : 'https://via.placeholder.com/500x750?text=No+Poster';
     }
 
     // Main function to fetch country-specific movies
-    async function fetchCountryMovies(countryCode, page = 1) {
+    async function fetchCountryMovies(countryCode, countryName, page = 1) {
+      currentPage = page;
+      
       try {
-        // Try to get movies by production country first
-        const res = await fetch(
-          `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}` +
-          `&with_origin_country=${countryCode}&page=${page}`
+        document.getElementById('results-grid').innerHTML = '<div class="loading">Loading movies...</div>';
+        
+        // First try to get movies by production country
+        const response = await fetch(
+          `${BASE_URL}/discover/movie?api_key=${API_KEY}` +
+          `&with_origin_country=${countryCode}&sort_by=popularity.desc&page=${page}`
         );
-        const data = await res.json();
+        const data = await response.json();
         
         // Filter to ensure country match
         const countryMovies = data.results.filter(movie => 
@@ -169,29 +255,30 @@
         );
         
         if (countryMovies.length > 0) {
-          renderResults(countryMovies);
-          renderPagination(data.total_pages);
+          renderMovies(countryMovies);
+          totalPages = data.total_pages > 500 ? 500 : data.total_pages;
+          renderPagination();
         } else {
           // Fallback to language-based search
-          fetchMoviesByLanguage(countryCode, page);
+          await fetchMoviesByLanguage(countryCode, countryName, page);
         }
-        
       } catch (error) {
         console.error('Error fetching country movies:', error);
-        fetchMoviesByLanguage(countryCode, page);
+        await fetchMoviesByLanguage(countryCode, countryName, page);
       }
-      addDisclaimer();
     }
 
     // Fallback method using original language
-    async function fetchMoviesByLanguage(countryCode, page = 1) {
+    async function fetchMoviesByLanguage(countryCode, countryName, page = 1) {
       try {
-        const language = COUNTRY_LANGUAGES[countryCode] || 'en';
-        const res = await fetch(
-          `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}` +
-          `&with_original_language=${language}&page=${page}`
+        const country = COUNTRIES.find(c => c.code === countryCode);
+        const language = country ? country.language : 'en';
+        
+        const response = await fetch(
+          `${BASE_URL}/discover/movie?api_key=${API_KEY}` +
+          `&with_original_language=${language}&sort_by=popularity.desc&page=${page}`
         );
-        const data = await res.json();
+        const data = await response.json();
         
         // Additional filtering when possible
         const filteredMovies = data.results.filter(movie => {
@@ -200,22 +287,23 @@
         });
         
         if (filteredMovies.length > 0) {
-          renderResults(filteredMovies);
-          renderPagination(data.total_pages);
+          renderMovies(filteredMovies);
+          totalPages = data.total_pages > 500 ? 500 : data.total_pages;
+          renderPagination();
         } else {
-          showCountryError();
-          fetchPopularMovies(page);
+          showCountryError(countryName);
+          await fetchPopularMovies(page);
         }
       } catch (error) {
         console.error('Error fetching movies by language:', error);
-        showCountryError();
-        fetchPopularMovies(page);
+        showCountryError(countryName);
+        await fetchPopularMovies(page);
       }
     }
 
     // Show error message about country matching
-    function showCountryError() {
-      const container = document.getElementById("results-grid");
+    function showCountryError(countryName) {
+      const container = document.getElementById('results-grid');
       container.innerHTML = `
         <div class="country-error">
           <p>⚠️ Couldn't find enough movies specifically from ${countryName}.</p>
@@ -226,69 +314,114 @@
 
     // Final fallback - popular movies
     async function fetchPopularMovies(page = 1) {
-      const res = await fetch(
-        `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&page=${page}`
+      const response = await fetch(
+        `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${page}`
       );
-      const data = await res.json();
-      renderResults(data.results);
-      renderPagination(data.total_pages);
+      const data = await response.json();
+      renderMovies(data.results);
+      totalPages = data.total_pages > 500 ? 500 : data.total_pages;
+      renderPagination();
     }
 
-    function renderResults(items) {
-      const container = document.getElementById("results-grid");
-      if (!container) return;
-      
-      container.innerHTML = items.map(item => {
-        const title = item.title || item.name;
-        const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-        const img = getImageUrl(item.poster_path);
-
-        return `
-          <div class="poster-wrapper" data-id="${item.id}" data-type="movie">
-            <img src="${img}" alt="${title}" loading="lazy">
-            <div class="poster-label">${title}</div>
-            <div class="poster-meta">${year}</div>
+    // Render movies in the grid
+    function renderMovies(movies) {
+      const container = document.getElementById('results-grid');
+      container.innerHTML = movies.map(movie => `
+        <div class="poster-wrapper" data-id="${movie.id}" data-type="movie">
+          ${movie.vote_average > 7 ? '<div class="poster-badge">TOP</div>' : ''}
+          <img src="${getImageUrl(movie.poster_path)}" alt="${movie.title}" loading="lazy">
+          <div class="poster-label">${movie.title}</div>
+          <div class="poster-meta">
+            <span>⭐ ${movie.vote_average?.toFixed(1) || 'N/A'}</span>
+            <span>${movie.release_date?.slice(0, 4) || ''}</span>
           </div>
-        `;
-      }).join('');
+        </div>
+      `).join('');
 
-      // Add click handlers
+      // Add click event to each movie
       document.querySelectorAll('.poster-wrapper').forEach(poster => {
-        poster.addEventListener('click', function() {
-          const id = this.getAttribute('data-id');
-          const type = this.getAttribute('data-type');
-          if (id && type && typeof openModal === 'function') {
-            openModal(id, type);
-          }
+        poster.addEventListener('click', () => {
+          const id = poster.dataset.id;
+          const type = poster.dataset.type;
+          window.location.href = `watch.html?id=${id}&type=${type}`;
         });
       });
     }
 
-    function renderPagination(totalPages) {
-      const pagTop = document.getElementById('pagination-top');
-      const pagBottom = document.getElementById('pagination');
-      if (!pagTop || !pagBottom || totalPages <= 1) {
-        if (pagTop) pagTop.innerHTML = '';
-        if (pagBottom) pagBottom.innerHTML = '';
+    // Pagination functions (similar to movies.html and genre.html)
+    function renderPagination() {
+      if (totalPages <= 1) {
+        document.getElementById('pagination-top').innerHTML = '';
+        document.getElementById('pagination-bottom').innerHTML = '';
         return;
       }
+      
+      const paginationHTML = createPaginationHTML();
+      document.getElementById('pagination-top').innerHTML = paginationHTML;
+      document.getElementById('pagination-bottom').innerHTML = paginationHTML;
+      
+      // Add event listeners to new buttons
+      document.querySelectorAll('.pagination button').forEach(button => {
+        if (button.onclick) return;
+        const page = button.textContent;
+        if (page === '« Prev') {
+          button.onclick = () => goToPage(currentPage - 1);
+        } else if (page === 'Next »') {
+          button.onclick = () => goToPage(currentPage + 1);
+        } else if (!isNaN(page)) {
+          button.onclick = () => goToPage(parseInt(page));
+        }
+      });
+    }
 
+    function createPaginationHTML() {
       let buttons = '';
-      const minPage = Math.max(1, currentPage - 2);
-      const maxPage = Math.min(totalPages, currentPage + 2);
-
-      if (currentPage > 1) buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
-      for (let i = minPage; i <= maxPage; i++) {
-        buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+      const maxVisiblePages = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      // Adjust if we're at the end
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
       }
-      if (currentPage < totalPages) buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
-
-      pagTop.innerHTML = buttons;
-      pagBottom.innerHTML = buttons;
+      
+      // Previous button
+      if (currentPage > 1) {
+        buttons += `<button class="pagination-prev">« Prev</button>`;
+      }
+      
+      // First page and ellipsis
+      if (startPage > 1) {
+        buttons += `<button ${1 === currentPage ? 'class="active"' : ''}>1</button>`;
+        if (startPage > 2) {
+          buttons += `<span class="ellipsis">...</span>`;
+        }
+      }
+      
+      // Page numbers
+      for (let i = startPage; i <= endPage; i++) {
+        buttons += `<button ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+      }
+      
+      // Last page and ellipsis
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          buttons += `<span class="ellipsis">...</span>`;
+        }
+        buttons += `<button ${totalPages === currentPage ? 'class="active"' : ''}>${totalPages}</button>`;
+      }
+      
+      // Next button
+      if (currentPage < totalPages) {
+        buttons += `<button class="pagination-next">Next »</button>`;
+      }
+      
+      return buttons;
     }
 
     function goToPage(page) {
-      location.href = `country.html?name=${encodeURIComponent(countryName)}&country=${countryCode}&page=${page}`;
+      if (page < 1 || page > totalPages) return;
+      window.location.href = `country.html?name=${encodeURIComponent(countryName)}&country=${countryCode}&page=${page}`;
     }
   </script>
 </body>
