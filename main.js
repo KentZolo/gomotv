@@ -1,34 +1,7 @@
-// API Configuration
 const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
-
-// Global Variables
-let bannerIndex = 0;
-let bannerItems = [];
-let currentMovies = [];
-let currentTVShows = [];
-let currentTrending = [];
-
-// DOM Elements
-const elements = {
-  bannerImage: document.getElementById('poster-img'),
-  bannerMeta: document.getElementById('poster-meta'),
-  bannerTitle: document.getElementById('poster-summary'),
-  movieList: document.querySelector('.movie-list'),
-  popularList: document.querySelector('.popular-list'),
-  tvList: document.querySelector('.tv-list'),
-  prevBtn: document.querySelector('.prev'),
-  nextBtn: document.querySelector('.next')
-};
-
-// Initialize Application
-document.addEventListener('DOMContentLoaded', () => {
-  initTheme();
-  setupEventListeners();
-  loadAllContent();
-});
 
 // Core Functions
 function getImageUrl(path, isBackdrop = false) {
@@ -40,89 +13,121 @@ function getImageUrl(path, isBackdrop = false) {
   return isBackdrop ? `${BACKDROP_BASE}${path}` : `${IMG_BASE}${path}`;
 }
 
-// Content Loading
-async function loadAllContent() {
-  try {
-    await Promise.all([
-      loadBannerSlider(),
-      loadTrendingContent(),
-      loadPopularMovies(),
-      loadPopularTVShows()
-    ]);
-  } catch (error) {
-    console.error('Error loading content:', error);
-    showErrorMessages();
-  }
-}
+// Banner Slider - UPDATED TO FIX MISSING BANNER
+let bannerIndex = 0;
+let bannerItems = [];
 
 async function loadBannerSlider() {
   try {
     const res = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}`);
     const data = await res.json();
     bannerItems = data.results.slice(0, 10);
-    
+
     if (bannerItems.length > 0) {
-      updateBanner();
+      showBannerSlide(bannerIndex);
       setupBannerNavigation();
-      startBannerAutoRotation();
+      startAutoSlide();
+    } else {
+      showDefaultBanner();
     }
   } catch (err) {
     console.error('Banner error:', err);
-    elements.bannerTitle.textContent = 'Failed to load featured content';
+    showDefaultBanner();
   }
 }
 
-async function loadTrendingContent() {
+function showDefaultBanner() {
+  const img = document.getElementById('poster-img');
+  img.src = getImageUrl(null, true);
+  img.alt = 'Default Banner';
+  document.getElementById('poster-summary').textContent = 'GomoTV';
+  document.getElementById('poster-meta').textContent = 'Featured Content';
+}
+
+function showBannerSlide(index) {
+  const item = bannerItems[index];
+  const img = document.getElementById('poster-img');
+
+  if (!item || !img) {
+    showDefaultBanner();
+    return;
+  }
+
+  img.src = getImageUrl(item.backdrop_path, true);
+  img.alt = item.title;
+  img.dataset.id = item.id;
+  img.dataset.type = 'movie';
+
+  document.getElementById('poster-meta').textContent =
+    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
+  document.getElementById('poster-summary').textContent = item.title;
+
+  // Add click event to redirect to watch.html
+  img.addEventListener('click', () => {
+    window.location.href = `watch.html?id=${item.id}&type=movie`;
+  });
+}
+
+function setupBannerNavigation() {
+  const prevBtn = document.querySelector('.prev');
+  const nextBtn = document.querySelector('.next');
+  
+  if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+  if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+}
+
+function startAutoSlide() {
+  setInterval(nextSlide, 5000);
+}
+
+function prevSlide() {
+  bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
+  showBannerSlide(bannerIndex);
+}
+
+function nextSlide() {
+  bannerIndex = (bannerIndex + 1) % bannerItems.length;
+  showBannerSlide(bannerIndex);
+}
+
+// Content Loading - UPDATED TO FIX MISSING POSTERS
+async function fetchAndDisplay(endpoint, containerSelector, type) {
   try {
-    const res = await fetch(`${BASE_URL}/trending/all/day?api_key=${API_KEY}`);
+    const container = document.querySelector(containerSelector);
+    if (!container) return;
+    
+    container.innerHTML = '<div class="loading"></div>';
+
+    const res = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}`);
     const data = await res.json();
-    currentTrending = data.results;
-    displayContent(currentTrending, elements.movieList);
+
+    if (data.results && data.results.length > 0) {
+      displayMedia(data.results, containerSelector, type);
+    } else {
+      container.innerHTML = '<p class="error-message">No content available</p>';
+    }
   } catch (err) {
-    console.error('Trending error:', err);
-    elements.movieList.innerHTML = '<p class="error-message">Failed to load trending content</p>';
+    console.error(`Failed to load content:`, err);
+    document.querySelector(containerSelector).innerHTML =
+      '<p class="error-message">Failed to load content</p>';
   }
 }
 
-async function loadPopularMovies() {
-  try {
-    const res = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}`);
-    const data = await res.json();
-    currentMovies = data.results;
-    displayContent(currentMovies, elements.popularList, 'movie');
-  } catch (err) {
-    console.error('Movies error:', err);
-    elements.popularList.innerHTML = '<p class="error-message">Failed to load popular movies</p>';
-  }
-}
-
-async function loadPopularTVShows() {
-  try {
-    const res = await fetch(`${BASE_URL}/tv/popular?api_key=${API_KEY}`);
-    const data = await res.json();
-    currentTVShows = data.results;
-    displayContent(currentTVShows, elements.tvList, 'tv');
-  } catch (err) {
-    console.error('TV Shows error:', err);
-    elements.tvList.innerHTML = '<p class="error-message">Failed to load TV shows</p>';
-  }
-}
-
-// Display Functions
-function displayContent(items, container, defaultType = 'movie') {
+function displayMedia(items, containerSelector, defaultType) {
+  const container = document.querySelector(containerSelector);
   if (!container) return;
   
   container.innerHTML = items.map(item => {
-    const type = item.media_type || defaultType;
     const title = item.title || item.name;
-    const date = item.release_date || item.first_air_date;
-    const year = date ? date.slice(0, 4) : '';
+    const imageUrl = getImageUrl(item.poster_path);
+    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+    const type = item.media_type || defaultType;
     const rating = item.vote_average?.toFixed(1) || 'N/A';
-    
+
     return `
       <div class="poster-wrapper" data-id="${item.id}" data-type="${type}">
         ${item.vote_average > 7 ? '<div class="poster-badge">TOP</div>' : ''}
-        <img src="${getImageUrl(item.poster_path)}" alt="${title}" loading="lazy">
+        <img src="${imageUrl}" alt="${title}" loading="lazy">
         <div class="poster-label">${title}</div>
         <div class="poster-meta">
           <span>⭐ ${rating}</span>
@@ -132,43 +137,13 @@ function displayContent(items, container, defaultType = 'movie') {
     `;
   }).join('');
 
-  setupPosterClickEvents(container);
+  setupPosterClickEvents(containerSelector);
 }
 
-function updateBanner() {
-  const item = bannerItems[bannerIndex];
-  elements.bannerImage.src = getImageUrl(item.backdrop_path, true);
-  elements.bannerImage.alt = item.title;
-  elements.bannerImage.dataset.id = item.id;
-  elements.bannerImage.dataset.type = 'movie';
+function setupPosterClickEvents(containerSelector) {
+  const posters = document.querySelectorAll(`${containerSelector} .poster-wrapper`);
+  if (!posters) return;
   
-  elements.bannerMeta.textContent = `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
-  elements.bannerTitle.textContent = item.title;
-}
-
-// Banner Controls
-function setupBannerNavigation() {
-  elements.prevBtn.addEventListener('click', prevSlide);
-  elements.nextBtn.addEventListener('click', nextSlide);
-}
-
-function startBannerAutoRotation() {
-  setInterval(nextSlide, 5000);
-}
-
-function prevSlide() {
-  bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
-  updateBanner();
-}
-
-function nextSlide() {
-  bannerIndex = (bannerIndex + 1) % bannerItems.length;
-  updateBanner();
-}
-
-// Event Handlers
-function setupPosterClickEvents(container) {
-  const posters = container.querySelectorAll('.poster-wrapper');
   posters.forEach(poster => {
     poster.addEventListener('click', () => {
       const id = poster.dataset.id;
@@ -178,28 +153,13 @@ function setupPosterClickEvents(container) {
   });
 }
 
-function setupEventListeners() {
-  // Theme toggle
-  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
-  
-  // Menu system
-  setupMenuToggle();
-  setupMenuSearch();
-  
-  // Banner image click
-  elements.bannerImage?.addEventListener('click', () => {
-    const id = elements.bannerImage.dataset.id;
-    if (id) {
-      window.location.href = `watch.html?id=${id}&type=movie`;
-    }
-  });
-}
-
-// Menu System
+// Hamburger Menu Toggle - KEEPING YOUR ORIGINAL STRUCTURE
 function setupMenuToggle() {
   const menuBtn = document.getElementById('menu-toggle');
   const menu = document.getElementById('hamburger-menu');
-  const overlay = document.querySelector('.menu-overlay');
+  const overlay = document.createElement('div');
+  overlay.className = 'menu-overlay';
+  document.body.appendChild(overlay);
 
   if (!menuBtn || !menu) return;
 
@@ -217,6 +177,7 @@ function setupMenuToggle() {
     document.body.style.overflow = '';
   });
 
+  // Close menu when clicking on any link
   document.querySelectorAll('#hamburger-menu a').forEach(link => {
     link.addEventListener('click', () => {
       menuBtn.classList.remove('active');
@@ -227,26 +188,33 @@ function setupMenuToggle() {
   });
 }
 
+// Hamburger Menu Search - KEEPING YOUR ORIGINAL STRUCTURE
 function setupMenuSearch() {
-  const input = document.getElementById('menu-search-input');
-  const button = document.getElementById('menu-search-button');
+  const menuSearchInput = document.getElementById('menu-search-input');
+  const menuSearchButton = document.getElementById('menu-search-button');
 
-  if (!input || !button) return;
+  if (!menuSearchButton || !menuSearchInput) return;
 
-  function search() {
-    const query = input.value.trim();
-    if (query.length >= 2) {
-      window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+  function performMenuSearch() {
+    const searchTerm = menuSearchInput.value.trim();
+    if (searchTerm.length >= 2) {
+      document.getElementById('hamburger-menu').classList.remove('active');
+      document.querySelector('.menu-overlay').classList.remove('active');
+      document.getElementById('menu-toggle').classList.remove('active');
+      document.body.style.overflow = '';
+      window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
     } else {
       alert('Please enter at least 2 characters');
     }
   }
 
-  button.addEventListener('click', search);
-  input.addEventListener('keypress', (e) => e.key === 'Enter' && search());
+  menuSearchButton.addEventListener('click', performMenuSearch);
+  menuSearchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') performMenuSearch();
+  });
 }
 
-// Theme Management
+// Theme Functions - KEEPING YOUR ORIGINAL STRUCTURE
 function toggleTheme() {
   const body = document.body;
   const isDark = body.classList.contains('dark');
@@ -261,7 +229,6 @@ function toggleTheme() {
     body.classList.add(newTheme);
     localStorage.setItem('theme', newTheme);
     updateThemeIcons(newTheme);
-    updateThemeDependentElements(newTheme);
     
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
@@ -272,7 +239,6 @@ function initTheme() {
   const savedTheme = localStorage.getItem('theme') || 'dark';
   document.body.classList.add(savedTheme);
   updateThemeIcons(savedTheme);
-  updateThemeDependentElements(savedTheme);
 }
 
 function updateThemeIcons(theme) {
@@ -284,39 +250,26 @@ function updateThemeIcons(theme) {
   }
 }
 
-function updateThemeDependentElements(theme) {
-  const isLight = theme === 'light';
+// Initialize - WITH ADDED ERROR HANDLING
+window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   
-  // Update text colors
-  const textElements = document.querySelectorAll('.title-text, .poster-label');
-  textElements.forEach(el => {
-    el.style.color = isLight ? '#333' : '#fff';
-  });
+  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
   
-  // Update meta text colors
-  const metaElements = document.querySelectorAll('.meta-text, .poster-meta');
-  metaElements.forEach(el => {
-    el.style.color = isLight ? '#666' : '#ccc';
-  });
+  setupMenuToggle();
+  setupMenuSearch();
   
-  // Update backgrounds
-  const bgElements = document.querySelectorAll('.poster-wrapper, .poster-box');
-  bgElements.forEach(el => {
-    el.style.backgroundColor = isLight ? '#eee' : '#1a1a1a';
-  });
-}
-
-// Error Handling
-function showErrorMessages() {
-  const errorContainers = [
-    elements.movieList,
-    elements.popularList,
-    elements.tvList
-  ];
-  
-  errorContainers.forEach(container => {
-    if (container && container.innerHTML.includes('error-message')) {
-      container.innerHTML = '<p class="error-message">Content unavailable. Please try again later.</p>';
+  try {
+    if (document.querySelector('.banner-slider')) {
+      loadBannerSlider();
     }
-  });
-}
+
+    if (document.querySelector('.movie-list')) {
+      fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
+      fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
+      fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
+    }
+  } catch (err) {
+    console.error('Initialization error:', err);
+  }
+});
