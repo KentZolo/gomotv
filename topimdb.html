@@ -4,8 +4,154 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Top IMDB - GomoTV</title>
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
+    /* BASE STYLES */
+    body {
+      font-family: 'VT323', monospace;
+      background-color: #141414;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+      font-size: 20px;
+      line-height: 1.4;
+      letter-spacing: 0.5px;
+    }
+    
+    body.light {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    /* UPDATED HEADER - MATCHING OTHER PAGES */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: #000;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: none;
+      height: 50px;
+      box-sizing: border-box;
+    }
+
+    .menu-toggle {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    body.light .menu-toggle {
+      color: #333;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      margin: 0;
+      color: #e50914;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70%;
+    }
+
+    body.light .logo {
+      color: #333;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    body.light .theme-toggle {
+      color: #333;
+    }
+
+    /* MOVIE GRID STYLES */
+    .search-results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .poster-wrapper {
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    
+    .poster-wrapper:hover {
+      transform: scale(1.05);
+    }
+    
+    .poster-wrapper img {
+      width: 100%;
+      border-radius: 8px;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .poster-label {
+      margin-top: 8px;
+      font-size: 1.2rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .poster-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1rem;
+      color: #aaa;
+      margin-top: 5px;
+    }
+    
+    body.light .poster-meta {
+      color: #666;
+    }
+    
+    /* BADGE STYLES */
+    .poster-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: #e50914;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      z-index: 2;
+    }
+
+    .rating-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #ffd700;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      z-index: 2;
+    }
+
     /* PAGINATION STYLES */
     .pagination {
       display: flex;
@@ -23,6 +169,8 @@
       border-radius: 4px;
       cursor: pointer;
       transition: all 0.3s;
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
     }
     
     .pagination button:hover {
@@ -37,37 +185,14 @@
       text-align: center;
       padding: 15px;
       color: #aaa;
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       border-top: 1px solid #333;
       margin-top: 20px;
     }
-
-    /* TOP BADGE STYLES */
-    .poster-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: #e50914;
-      color: white;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      z-index: 1;
-    }
-
-    /* RATING BADGE */
-    .rating-badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background-color: rgba(0, 0, 0, 0.7);
-      color: #ffd700;
-      font-size: 0.8rem;
-      font-weight: bold;
-      padding: 3px 6px;
-      border-radius: 4px;
-      z-index: 1;
+    
+    body.light .disclaimer {
+      color: #666;
+      border-top-color: #ddd;
     }
 
     /* LOADING AND ERROR MESSAGES */
@@ -76,7 +201,7 @@
       text-align: center;
       padding: 50px;
       color: #e50914;
-      font-size: 18px;
+      font-size: 1.3rem;
     }
     
     .error-message {
@@ -84,14 +209,47 @@
       text-align: center;
       padding: 50px;
       color: #e50914;
-      font-size: 18px;
+      font-size: 1.3rem;
     }
 
     /* RESPONSIVE STYLES */
     @media (max-width: 768px) {
+      .search-results-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 15px;
+      }
+      
       .pagination button {
         padding: 6px 12px;
-        font-size: 0.8rem;
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .search-results-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+      }
+      
+      .poster-label {
+        font-size: 1rem;
+      }
+      
+      .poster-meta {
+        font-size: 0.9rem;
+      }
+      
+      .navbar {
+        padding: 8px 15px;
+        height: 45px;
+      }
+      
+      .logo {
+        font-size: 1.3rem;
+      }
+      
+      .theme-toggle {
+        font-size: 1.2rem;
       }
     }
   </style>
@@ -112,10 +270,10 @@
       <div class="loading">Loading top-rated movies...</div>
     </div>
     <div id="pagination-bottom" class="pagination"></div>
+    <div class="disclaimer">
+      <p>⚠️ Disclaimer: GomoTV doesn't host any videos. All content provided by third-party servers.</p>
     </div>
   </main>
-
-  <div id="modal-container"></div>
 
   <script>
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
@@ -272,6 +430,20 @@
       
       pagTop.innerHTML = buttons;
       pagBottom.innerHTML = buttons;
+      
+      // Add event listeners to pagination buttons
+      document.querySelectorAll('.pagination button').forEach(button => {
+        button.addEventListener('click', function() {
+          const text = this.textContent;
+          if (text === '« Prev') {
+            goToPage(currentPage - 1);
+          } else if (text === 'Next »') {
+            goToPage(currentPage + 1);
+          } else if (!isNaN(text)) {
+            goToPage(parseInt(text));
+          }
+        });
+      });
     }
 
     function goToPage(page) {
