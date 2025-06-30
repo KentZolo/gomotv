@@ -1,3 +1,4 @@
+// API Configuration
 const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
@@ -35,17 +36,31 @@ async function loadBannerSlider() {
 function showBannerSlide(index) {
   const item = bannerItems[index];
   const img = document.getElementById('poster-img');
-
+  
+  // Apply theme-based styles to banner elements
+  const overlay = document.querySelector('.overlay');
+  const metaText = document.getElementById('poster-meta');
+  const titleText = document.getElementById('poster-summary');
+  
   img.src = getImageUrl(item.backdrop_path, true);
   img.alt = item.title;
   img.dataset.id = item.id;
   img.dataset.type = 'movie';
 
-  document.getElementById('poster-meta').textContent =
-    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
-  document.getElementById('poster-summary').textContent = item.title;
+  metaText.textContent = `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
+  titleText.textContent = item.title;
 
-  // Add click event to redirect to watch.html
+  // Update theme-specific elements
+  if (document.body.classList.contains('light')) {
+    metaText.style.color = '#666';
+    titleText.style.color = '#333';
+    overlay.style.background = 'linear-gradient(to top, rgba(255, 255, 255, 0.9), transparent)';
+  } else {
+    metaText.style.color = '#ccc';
+    titleText.style.color = '#fff';
+    overlay.style.background = 'linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent)';
+  }
+
   img.addEventListener('click', () => {
     window.location.href = `watch.html?id=${item.id}&type=movie`;
   });
@@ -113,6 +128,7 @@ function displayMedia(items, containerSelector, defaultType) {
   }).join('');
 
   setupPosterClickEvents(containerSelector);
+  updatePosterStylesForTheme();
 }
 
 function determineQuality(releaseDate) {
@@ -135,20 +151,100 @@ function setupPosterClickEvents(containerSelector) {
     poster.addEventListener('click', () => {
       const img = poster.querySelector('img');
       if (img) {
-        // Redirect to watch.html instead of opening modal
         window.location.href = `watch.html?id=${img.dataset.id}&type=${img.dataset.type}`;
       }
     });
   });
 }
 
-// Hamburger Menu Toggle
+function updatePosterStylesForTheme() {
+  const isLight = document.body.classList.contains('light');
+  const posters = document.querySelectorAll('.poster-wrapper');
+  
+  posters.forEach(poster => {
+    const label = poster.querySelector('.poster-label');
+    const meta = poster.querySelector('.poster-meta');
+    
+    if (isLight) {
+      poster.style.backgroundColor = '#eeeeee';
+      if (label) label.style.color = '#333';
+      if (meta) meta.style.color = '#666';
+    } else {
+      poster.style.backgroundColor = '#1a1a1a';
+      if (label) label.style.color = '#fff';
+      if (meta) meta.style.color = '#ccc';
+    }
+  });
+}
+
+// Theme Management System
+function toggleTheme() {
+  const body = document.body;
+  const isDark = body.classList.contains('dark');
+  const newTheme = isDark ? 'light' : 'dark';
+  
+  const overlay = document.querySelector('.theme-transition-overlay');
+  overlay.style.opacity = '1';
+  overlay.style.pointerEvents = 'auto';
+  
+  setTimeout(() => {
+    body.classList.remove('dark', 'light');
+    body.classList.add(newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcons(newTheme);
+    updateThemeDependentElements(newTheme);
+    
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+  }, 100);
+}
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.body.classList.add(savedTheme);
+  updateThemeIcons(savedTheme);
+  updateThemeDependentElements(savedTheme);
+}
+
+function updateThemeIcons(theme) {
+  const darkIcon = document.querySelector('.dark-icon');
+  const lightIcon = document.querySelector('.light-icon');
+  if (darkIcon && lightIcon) {
+    darkIcon.hidden = theme === 'light';
+    lightIcon.hidden = theme === 'dark';
+  }
+}
+
+function updateThemeDependentElements(theme) {
+  const isLight = theme === 'light';
+  
+  // Update navbar
+  const navbar = document.querySelector('.navbar');
+  if (navbar) {
+    navbar.style.backgroundColor = isLight ? '#ffffff' : '#000000';
+  }
+  
+  // Update banner elements
+  if (bannerItems.length > 0) {
+    showBannerSlide(bannerIndex);
+  }
+  
+  // Update all posters
+  updatePosterStylesForTheme();
+  
+  // Update footer
+  const footer = document.querySelector('.footer');
+  if (footer) {
+    footer.style.backgroundColor = isLight ? '#ffffff' : '#000000';
+    footer.style.color = isLight ? '#666666' : '#aaaaaa';
+  }
+}
+
+// Menu System
 function setupMenuToggle() {
   const menuBtn = document.getElementById('menu-toggle');
   const menu = document.getElementById('hamburger-menu');
-  const overlay = document.createElement('div');
-  overlay.className = 'menu-overlay';
-  document.body.appendChild(overlay);
+  const overlay = document.querySelector('.menu-overlay');
 
   if (!menuBtn || !menu) return;
 
@@ -166,7 +262,6 @@ function setupMenuToggle() {
     document.body.style.overflow = '';
   });
 
-  // Close menu when clicking on any link
   document.querySelectorAll('#hamburger-menu a').forEach(link => {
     link.addEventListener('click', () => {
       menuBtn.classList.remove('active');
@@ -177,7 +272,6 @@ function setupMenuToggle() {
   });
 }
 
-// Hamburger Menu Search
 function setupMenuSearch() {
   const menuSearchInput = document.getElementById('menu-search-input');
   const menuSearchButton = document.getElementById('menu-search-button');
@@ -187,14 +281,18 @@ function setupMenuSearch() {
   function performMenuSearch() {
     const searchTerm = menuSearchInput.value.trim();
     if (searchTerm.length >= 2) {
-      document.getElementById('hamburger-menu').classList.remove('active');
-      document.querySelector('.menu-overlay').classList.remove('active');
-      document.getElementById('menu-toggle').classList.remove('active');
-      document.body.style.overflow = '';
+      closeMenu();
       window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
     } else {
       alert('Please enter at least 2 characters');
     }
+  }
+
+  function closeMenu() {
+    document.getElementById('hamburger-menu').classList.remove('active');
+    document.querySelector('.menu-overlay').classList.remove('active');
+    document.getElementById('menu-toggle').classList.remove('active');
+    document.body.style.overflow = '';
   }
 
   menuSearchButton.addEventListener('click', performMenuSearch);
@@ -203,47 +301,19 @@ function setupMenuSearch() {
   });
 }
 
-// Theme Functions
-function toggleTheme() {
-  const body = document.body;
-  const isDark = body.classList.contains('dark');
-  const newTheme = isDark ? 'light' : 'dark';
-  
-  const overlay = document.querySelector('.theme-transition-overlay');
-  overlay.style.opacity = '1';
-  overlay.style.pointerEvents = 'auto';
-  
-  setTimeout(() => {
-    body.classList.remove('dark', 'light');
-    body.classList.add(newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeIcons(newTheme);
-    
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none';
-  }, 100);
-}
-
-function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  document.body.classList.add(savedTheme);
-  updateThemeIcons(savedTheme);
-}
-
-function updateThemeIcons(theme) {
-  document.querySelector('.dark-icon').hidden = theme === 'light';
-  document.querySelector('.light-icon').hidden = theme === 'dark';
-}
-
-// Initialize
-window.addEventListener('DOMContentLoaded', () => {
+// Initialize Application
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize theme system
   initTheme();
   
+  // Setup theme toggle
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
   
+  // Setup menu system
   setupMenuToggle();
   setupMenuSearch();
   
+  // Load content
   if (document.querySelector('.banner-slider')) {
     loadBannerSlider();
   }
