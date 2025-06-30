@@ -6,7 +6,7 @@
   <title>Country Results - GomoTV</title>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
-    /* BASE STYLES WITH VT323 FONT */
+    /* BASE STYLES */
     body {
       font-family: 'VT323', monospace;
       background-color: #141414;
@@ -22,46 +22,71 @@
       background-color: #f5f5f5;
       color: #333;
     }
-    
-    /* NAVBAR STYLES */
+
+    /* UPDATED THIN HEADER TO MATCH INDEX.HTML */
     .navbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 20px;
+      padding: 10px 20px;
       background-color: #000;
       position: sticky;
       top: 0;
       z-index: 100;
       border-bottom: 1px solid #333;
+      height: 50px;
+      box-sizing: border-box;
     }
-    
+
     .menu-toggle {
-      background: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 24px;
+      height: 18px;
+      background: transparent;
       border: none;
-      color: white;
-      font-size: 1.8rem;
       cursor: pointer;
-      padding: 5px 10px;
+      padding: 0;
     }
-    
-    body.light .menu-toggle {
+
+    .menu-toggle span {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background-color: white;
+    }
+
+    body.light .menu-toggle span {
+      background-color: #333;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      margin: 0;
+      color: white;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    body.light .logo {
       color: #333;
     }
-    
+
     .theme-toggle {
       background: none;
       border: none;
       color: white;
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       cursor: pointer;
-      padding: 5px 10px;
+      padding: 5px;
     }
-    
+
     body.light .theme-toggle {
       color: #333;
     }
-    
+
     /* COUNTRY LIST STYLES */
     .country-list-section {
       padding: 20px;
@@ -110,7 +135,7 @@
       background: rgba(229, 9, 20, 0.1);
     }
 
-    /* UPDATED PAGE TITLE STYLES (to match country links) */
+    /* PAGE TITLE STYLES */
     #page-title {
       padding: 15px;
       background: rgba(229, 9, 20, 0.1);
@@ -137,15 +162,6 @@
     
     body.light #page-title:hover {
       background: rgba(229, 9, 20, 0.1);
-    }
-
-    /* ERROR MESSAGE */
-    .country-error {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 30px;
-      color: #e50914;
-      font-size: 1.4rem;
     }
 
     /* RESULTS GRID */
@@ -249,14 +265,6 @@
       border-top-color: #ddd;
     }
 
-    /* LOADING STATE */
-    .loading {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 40px;
-      font-size: 1.5rem;
-    }
-
     /* RESPONSIVE STYLES */
     @media (max-width: 768px) {
       .country-grid, .search-results-grid {
@@ -303,12 +311,30 @@
       .poster-meta {
         font-size: 0.9rem;
       }
+      
+      .navbar {
+        padding: 8px 15px;
+        height: 45px;
+      }
+      
+      .logo {
+        font-size: 1.3rem;
+      }
+      
+      .theme-toggle {
+        font-size: 1.2rem;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- UPDATED HEADER TO MATCH INDEX.HTML -->
   <header class="navbar">
-    <button onclick="history.back()" class="menu-toggle">←</button>
+    <button class="menu-toggle" id="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
     <h1 class="logo" id="page-title">Countries</h1>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
       <span class="dark-icon">❍</span>
@@ -346,7 +372,7 @@
     let currentPage = parseInt(params.get('page')) || 1;
     let totalPages = 1;
 
-    // Complete country list with codes and languages
+    // Country list
     const COUNTRIES = [
       { name: 'Argentina', code: 'AR', language: 'es' },
       { name: 'Australia', code: 'AU', language: 'en' },
@@ -373,7 +399,7 @@
       { name: 'Vietnam', code: 'VN', language: 'vi' }
     ];
 
-    // Initialize theme
+    // Theme functions
     function initTheme() {
       const savedTheme = localStorage.getItem('theme') || 'dark';
       document.body.classList.add(savedTheme);
@@ -400,12 +426,17 @@
       updateThemeIcons(newTheme);
     }
 
-    // Initialize the page
+    // Initialize page
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
       
-      // Load country list or movies based on URL params
+      // Menu toggle functionality
+      document.getElementById('menu-toggle').addEventListener('click', () => {
+        console.log('Menu toggle clicked - implement menu functionality');
+      });
+      
+      // Load content based on URL params
       if (countryCode && countryName) {
         document.getElementById('country-list-section').style.display = 'none';
         document.getElementById('page-title').textContent = `Movies from ${decodeURIComponent(countryName)}`;
