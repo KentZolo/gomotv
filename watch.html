@@ -43,32 +43,27 @@
       z-index: 10;
     }
 
-    /* Player Controls */
-    .player-controls {
+    /* Simple Close Button at the top */
+    .simple-close-btn {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      display: flex;
-      gap: 10px;
-      z-index: 100;
-    }
-
-    .player-btn {
+      top: 20px;
+      right: 20px;
       background: rgba(0,0,0,0.7);
       color: white;
       border: none;
       border-radius: 50%;
       width: 40px;
       height: 40px;
-      font-size: 20px;
+      font-size: 24px;
       cursor: pointer;
+      z-index: 100;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.3s;
     }
 
-    .player-btn:hover {
+    .simple-close-btn:hover {
       background: #e50914;
       transform: scale(1.1);
     }
@@ -166,52 +161,6 @@
       margin-bottom: 20px;
     }
 
-    /* Cast Section */
-    .cast {
-      padding: 20px;
-      background: #111;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-
-    .cast h2 {
-      margin-top: 0;
-      margin-bottom: 15px;
-      font-size: 22px;
-      color: #e50914;
-    }
-
-    .cast-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 15px;
-    }
-
-    .cast-member {
-      background: #222;
-      border-radius: 8px;
-      overflow: hidden;
-      text-align: center;
-    }
-
-    .cast-photo {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-    }
-
-    .cast-name {
-      padding: 10px 5px;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .cast-character {
-      padding: 0 5px 10px;
-      font-size: 12px;
-      color: #aaa;
-    }
-
     /* Recommendations Section */
     .recommendations {
       padding: 20px;
@@ -300,20 +249,17 @@
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
       }
 
-      .cast-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      }
-
-      .cast-photo {
-        height: 150px;
-      }
-
       .recommendations-grid {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       }
 
       .recommendation-poster {
         height: 180px;
+      }
+      
+      .simple-close-btn {
+        top: 15px;
+        right: 15px;
       }
     }
 
@@ -326,27 +272,24 @@
         height: 150px;
       }
       
-      .cast-grid {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-      }
-
-      .cast-photo {
-        height: 120px;
-      }
-
       .server-list {
         grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .simple-close-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Simple Close Button at the very top -->
+    <button class="simple-close-btn" id="simple-close-btn">×</button>
+    
     <div class="player-container">
-      <div class="player-controls">
-        <button class="player-btn" id="cast-btn" title="Cast to device">📺</button>
-        <button class="player-btn" id="close-btn" title="Close">×</button>
-      </div>
       <div class="loading" id="loading">Loading player...</div>
       <iframe id="player-frame" allowfullscreen sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
     </div>
@@ -368,11 +311,6 @@
         <span id="movie-genres"></span>
       </div>
       <p id="movie-overview"></p>
-    </div>
-
-    <div class="cast" id="cast-section">
-      <h2>Cast</h2>
-      <div class="cast-grid" id="cast-grid"></div>
     </div>
 
     <div class="recommendations" id="recommendations">
@@ -440,9 +378,6 @@
         setupServerControls();
         createServerButtons(type, id);
         
-        // Load cast
-        loadCast(type, id);
-        
         // Load recommendations
         loadRecommendations(type, id);
         
@@ -453,14 +388,9 @@
         showError('Failed to load content');
       }
 
-      // Setup close button - redirect to homepage
-      document.getElementById('close-btn').addEventListener('click', () => {
-        window.location.href = 'index.html';
-      });
-
-      // Setup cast button
-      document.getElementById('cast-btn').addEventListener('click', () => {
-        initCast();
+      // Setup simple close button - redirects to homepage
+      document.getElementById('simple-close-btn').addEventListener('click', () => {
+        window.location.href = 'index.html'; // Redirect to homepage
       });
     });
 
@@ -483,42 +413,6 @@
       document.getElementById('movie-type').textContent = type === 'movie' ? 'Movie' : 'TV Show';
       document.getElementById('movie-genres').textContent = data.genres?.map(g => g.name).join(', ') || 'Unknown';
       document.getElementById('movie-overview').textContent = data.overview || 'No overview available.';
-    }
-
-    async function loadCast(type, id) {
-      try {
-        const res = await fetch(`${BASE_URL}/${type}/${id}/credits?api_key=${API_KEY}`);
-        const data = await res.json();
-        
-        const grid = document.getElementById('cast-grid');
-        grid.innerHTML = '';
-        
-        if (data.cast && data.cast.length > 0) {
-          // Show only the first 10 cast members
-          const castMembers = data.cast.slice(0, 10);
-          
-          castMembers.forEach(person => {
-            const photoPath = person.profile_path ? 
-              `${IMAGE_BASE_URL}${person.profile_path}` : 
-              'https://via.placeholder.com/180x270?text=No+Photo';
-            
-            const castItem = document.createElement('div');
-            castItem.className = 'cast-member';
-            castItem.innerHTML = `
-              <img src="${photoPath}" alt="${person.name}" class="cast-photo" loading="lazy">
-              <div class="cast-name">${person.name}</div>
-              <div class="cast-character">${person.character || 'Unknown'}</div>
-            `;
-            
-            grid.appendChild(castItem);
-          });
-        } else {
-          grid.innerHTML = '<p>No cast information available.</p>';
-        }
-      } catch (err) {
-        console.error('Error loading cast:', err);
-        document.getElementById('cast-grid').innerHTML = '<p>Failed to load cast information.</p>';
-      }
     }
 
     function createServerButtons(type, id) {
@@ -632,55 +526,6 @@
       loading.style.display = 'block';
       document.getElementById('player-frame').style.display = 'none';
     }
-
-    function initCast() {
-      // Check if Chromecast is available
-      if (!window.chrome || !window.chrome.cast || !window.chrome.cast.isAvailable) {
-        alert('Chromecast is not available. Make sure you have the Google Cast extension installed.');
-        return;
-      }
-
-      const castSession = window.cast.framework.CastContext.getInstance().getCurrentSession();
-      const iframe = document.getElementById('player-frame');
-      
-      if (!iframe.src) {
-        alert('No video is loaded to cast.');
-        return;
-      }
-
-      // Create a media info object
-      const mediaInfo = new chrome.cast.media.MediaInfo(iframe.src, 'video/mp4');
-      mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
-      mediaInfo.metadata.title = document.getElementById('movie-title').textContent;
-      
-      // Create a request
-      const request = new chrome.cast.media.LoadRequest(mediaInfo);
-      
-      if (castSession) {
-        // If there's an existing session, just load the media
-        castSession.loadMedia(request)
-          .then(() => console.log('Media loaded successfully'))
-          .catch(err => console.error('Error loading media:', err));
-      } else {
-        // Otherwise, start a new session
-        window.cast.framework.CastContext.getInstance().requestSession()
-          .then(() => {
-            const newSession = window.cast.framework.CastContext.getInstance().getCurrentSession();
-            if (newSession) {
-              newSession.loadMedia(request)
-                .then(() => console.log('Media loaded successfully'))
-                .catch(err => console.error('Error loading media:', err));
-            }
-          })
-          .catch(err => {
-            console.error('Error casting:', err);
-            alert('Failed to start casting session');
-          });
-      }
-    }
   </script>
-  <!-- Load the Cast SDK -->
-  <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </body>
 </html>
