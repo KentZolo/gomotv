@@ -3,7 +3,7 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
 
-// Core Functions
+// ====================== CORE FUNCTIONS ======================
 function getImageUrl(path, isBackdrop = false) {
   if (!path) {
     return isBackdrop
@@ -13,7 +13,7 @@ function getImageUrl(path, isBackdrop = false) {
   return isBackdrop ? `${BACKDROP_BASE}${path}` : `${IMG_BASE}${path}`;
 }
 
-// Banner Slider - UPDATED TO FIX MISSING BANNER
+// ====================== BANNER SLIDER (FIXED FLASH ISSUE) ======================
 let bannerIndex = 0;
 let bannerItems = [];
 
@@ -37,43 +37,62 @@ async function loadBannerSlider() {
 }
 
 function showDefaultBanner() {
+  const banner = document.querySelector('.banner-slider');
+  if (!banner) return;
+
   const img = document.getElementById('poster-img');
-  img.src = getImageUrl(null, true);
-  img.alt = 'Default Banner';
-  document.getElementById('poster-summary').textContent = 'GomoTV';
-  document.getElementById('poster-meta').textContent = 'Featured Content';
+  if (img) {
+    img.src = getImageUrl(null, true);
+    img.alt = 'Default Banner';
+  }
+
+  const summary = document.getElementById('poster-summary');
+  if (summary) summary.textContent = 'GomoTV';
+
+  const meta = document.getElementById('poster-meta');
+  if (meta) meta.textContent = 'Featured Content';
+
+  banner.classList.add('loaded');
 }
 
 function showBannerSlide(index) {
+  const banner = document.querySelector('.banner-slider');
   const item = bannerItems[index];
-  const img = document.getElementById('poster-img');
-
-  if (!item || !img) {
+  
+  if (!banner || !item) {
     showDefaultBanner();
     return;
   }
 
-  img.src = getImageUrl(item.backdrop_path, true);
-  img.alt = item.title;
-  img.dataset.id = item.id;
-  img.dataset.type = 'movie';
+  const img = document.getElementById('poster-img');
+  const meta = document.getElementById('poster-meta');
+  const summary = document.getElementById('poster-summary');
 
-  document.getElementById('poster-meta').textContent =
-    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
-  document.getElementById('poster-summary').textContent = item.title;
+  // Preload image first
+  const tempImg = new Image();
+  tempImg.src = getImageUrl(item.backdrop_path, true);
 
-  // Add click event to redirect to watch.html
-  img.addEventListener('click', () => {
-    window.location.href = `watch.html?id=${item.id}&type=movie`;
-  });
+  tempImg.onload = () => {
+    if (img) {
+      img.src = tempImg.src;
+      img.alt = item.title;
+      img.dataset.id = item.id;
+      img.dataset.type = 'movie';
+      img.onclick = () => window.location.href = `watch.html?id=${item.id}&type=movie`;
+    }
+
+    if (meta) meta.textContent = `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
+    if (summary) summary.textContent = item.title;
+
+    banner.classList.add('loaded');
+  };
+
+  tempImg.onerror = () => showDefaultBanner();
 }
 
 function setupBannerNavigation() {
-  const prevBtn = document.querySelector('.prev');
-  const nextBtn = document.querySelector('.next');
-  
-  if (prevBtn) prevBtn.addEventListener('click', prevSlide);
-  if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+  document.querySelector('.prev')?.addEventListener('click', prevSlide);
+  document.querySelector('.next')?.addEventListener('click', nextSlide);
 }
 
 function startAutoSlide() {
@@ -90,7 +109,7 @@ function nextSlide() {
   showBannerSlide(bannerIndex);
 }
 
-// Content Loading - UPDATED TO FIX MISSING POSTERS
+// ====================== CONTENT LOADING ======================
 async function fetchAndDisplay(endpoint, containerSelector, type) {
   try {
     const container = document.querySelector(containerSelector);
@@ -101,19 +120,18 @@ async function fetchAndDisplay(endpoint, containerSelector, type) {
     const res = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}`);
     const data = await res.json();
 
-    if (data.results && data.results.length > 0) {
+    if (data.results?.length > 0) {
       displayMedia(data.results, containerSelector, type);
     } else {
-      container.innerHTML = '<p class="error-message">No content available</p>';
+      container.innerHTML = '<p class="no-content">No content available</p>';
     }
   } catch (err) {
-    console.error(`Failed to load content:`, err);
-    document.querySelector(containerSelector).innerHTML =
-      '<p class="error-message">Failed to load content</p>';
+    console.error(`Failed to load ${containerSelector}:`, err);
+    document.querySelector(containerSelector).innerHTML = '<p class="error">Failed to load content</p>';
   }
 }
 
-function displayMedia(items, containerSelector, defaultType) {
+function displayMedia(items, containerSelector, type) {
   const container = document.querySelector(containerSelector);
   if (!container) return;
   
@@ -121,7 +139,6 @@ function displayMedia(items, containerSelector, defaultType) {
     const title = item.title || item.name;
     const imageUrl = getImageUrl(item.poster_path);
     const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-    const type = item.media_type || defaultType;
     const rating = item.vote_average?.toFixed(1) || 'N/A';
 
     return `
@@ -137,84 +154,59 @@ function displayMedia(items, containerSelector, defaultType) {
     `;
   }).join('');
 
-  setupPosterClickEvents(containerSelector);
-}
-
-function setupPosterClickEvents(containerSelector) {
-  const posters = document.querySelectorAll(`${containerSelector} .poster-wrapper`);
-  if (!posters) return;
-  
-  posters.forEach(poster => {
+  container.querySelectorAll('.poster-wrapper').forEach(poster => {
     poster.addEventListener('click', () => {
-      const id = poster.dataset.id;
-      const type = poster.dataset.type;
-      window.location.href = `watch.html?id=${id}&type=${type}`;
+      window.location.href = `watch.html?id=${poster.dataset.id}&type=${poster.dataset.type}`;
     });
   });
 }
 
-// Hamburger Menu Toggle - KEEPING YOUR ORIGINAL STRUCTURE
+// ====================== MENU SYSTEM ======================
 function setupMenuToggle() {
   const menuBtn = document.getElementById('menu-toggle');
   const menu = document.getElementById('hamburger-menu');
   const overlay = document.createElement('div');
+  
+  if (!menuBtn || !menu) return;
+
   overlay.className = 'menu-overlay';
   document.body.appendChild(overlay);
 
-  if (!menuBtn || !menu) return;
-
-  menuBtn.addEventListener('click', () => {
+  const toggleMenu = () => {
     menuBtn.classList.toggle('active');
     menu.classList.toggle('active');
     overlay.classList.toggle('active');
     document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
-  });
+  };
 
-  overlay.addEventListener('click', () => {
-    menuBtn.classList.remove('active');
-    menu.classList.remove('active');
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
-  });
+  menuBtn.addEventListener('click', toggleMenu);
+  overlay.addEventListener('click', toggleMenu);
 
-  // Close menu when clicking on any link
   document.querySelectorAll('#hamburger-menu a').forEach(link => {
-    link.addEventListener('click', () => {
-      menuBtn.classList.remove('active');
-      menu.classList.remove('active');
-      overlay.classList.remove('active');
-      document.body.style.overflow = '';
-    });
+    link.addEventListener('click', toggleMenu);
   });
 }
 
-// Hamburger Menu Search - KEEPING YOUR ORIGINAL STRUCTURE
 function setupMenuSearch() {
-  const menuSearchInput = document.getElementById('menu-search-input');
-  const menuSearchButton = document.getElementById('menu-search-button');
+  const searchInput = document.getElementById('menu-search-input');
+  const searchBtn = document.getElementById('menu-search-button');
 
-  if (!menuSearchButton || !menuSearchInput) return;
+  if (!searchInput || !searchBtn) return;
 
-  function performMenuSearch() {
-    const searchTerm = menuSearchInput.value.trim();
-    if (searchTerm.length >= 2) {
-      document.getElementById('hamburger-menu').classList.remove('active');
-      document.querySelector('.menu-overlay').classList.remove('active');
-      document.getElementById('menu-toggle').classList.remove('active');
-      document.body.style.overflow = '';
-      window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+  const performSearch = () => {
+    const query = searchInput.value.trim();
+    if (query.length >= 2) {
+      window.location.href = `search.html?q=${encodeURIComponent(query)}`;
     } else {
       alert('Please enter at least 2 characters');
     }
-  }
+  };
 
-  menuSearchButton.addEventListener('click', performMenuSearch);
-  menuSearchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') performMenuSearch();
-  });
+  searchBtn.addEventListener('click', performSearch);
+  searchInput.addEventListener('keypress', e => e.key === 'Enter' && performSearch());
 }
 
-// Theme Functions - KEEPING YOUR ORIGINAL STRUCTURE
+// ====================== THEME SYSTEM ======================
 function toggleTheme() {
   const body = document.body;
   const isDark = body.classList.contains('dark');
@@ -242,34 +234,28 @@ function initTheme() {
 }
 
 function updateThemeIcons(theme) {
-  const darkIcon = document.querySelector('.dark-icon');
-  const lightIcon = document.querySelector('.light-icon');
-  if (darkIcon && lightIcon) {
-    darkIcon.hidden = theme === 'light';
-    lightIcon.hidden = theme === 'dark';
-  }
+  const icons = {
+    dark: document.querySelector('.dark-icon'),
+    light: document.querySelector('.light-icon')
+  };
+  
+  if (icons.dark) icons.dark.hidden = theme === 'light';
+  if (icons.light) icons.light.hidden = theme === 'dark';
 }
 
-// Initialize - WITH ADDED ERROR HANDLING
-window.addEventListener('DOMContentLoaded', () => {
+// ====================== INITIALIZATION ======================
+document.addEventListener('DOMContentLoaded', () => {
   initTheme();
-  
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
   
   setupMenuToggle();
   setupMenuSearch();
-  
-  try {
-    if (document.querySelector('.banner-slider')) {
-      loadBannerSlider();
-    }
 
-    if (document.querySelector('.movie-list')) {
-      fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
-      fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
-      fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
-    }
-  } catch (err) {
-    console.error('Initialization error:', err);
+  // Load content sections
+  if (document.querySelector('.banner-slider')) loadBannerSlider();
+  if (document.querySelector('.movie-list')) {
+    fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
+    fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
+    fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
   }
 });
