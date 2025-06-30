@@ -110,6 +110,35 @@
       background: rgba(229, 9, 20, 0.1);
     }
 
+    /* UPDATED PAGE TITLE STYLES (to match country links) */
+    #page-title {
+      padding: 15px;
+      background: rgba(229, 9, 20, 0.1);
+      border: 1px solid rgba(229, 9, 20, 0.3);
+      border-radius: 8px;
+      text-align: center;
+      color: inherit;
+      font-size: 1.8rem;
+      margin: 20px auto;
+      display: block;
+      max-width: 80%;
+      transition: all 0.3s;
+    }
+    
+    #page-title:hover {
+      background: rgba(229, 9, 20, 0.2);
+      transform: translateY(-3px);
+    }
+    
+    body.light #page-title {
+      background: rgba(229, 9, 20, 0.05);
+      border-color: rgba(229, 9, 20, 0.2);
+    }
+    
+    body.light #page-title:hover {
+      background: rgba(229, 9, 20, 0.1);
+    }
+
     /* ERROR MESSAGE */
     .country-error {
       grid-column: 1 / -1;
@@ -117,25 +146,6 @@
       padding: 30px;
       color: #e50914;
       font-size: 1.4rem;
-    }
-
-    /* PAGE TITLE */
-    #page-title {
-      border: 1px solid #b30000;
-      padding: 6px 14px;
-      background-color: #2b2b2b;
-      color: #ffffff;
-      border-radius: 4px;
-      display: inline-block;
-      font-size: 1.8rem;
-      margin: 15px auto 10px;
-      text-align: center;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-    }
-    
-    body.light #page-title {
-      background-color: #e0e0e0;
-      color: #333;
     }
 
     /* RESULTS GRID */
@@ -259,13 +269,14 @@
         padding: 12px;
       }
       
+      #page-title {
+        font-size: 1.6rem;
+        padding: 12px;
+      }
+      
       .pagination button {
         padding: 6px 12px;
         font-size: 1rem;
-      }
-      
-      #page-title {
-        font-size: 1.6rem;
       }
     }
 
@@ -280,17 +291,17 @@
         padding: 10px;
       }
       
+      #page-title {
+        font-size: 1.4rem;
+        padding: 10px;
+      }
+      
       .poster-label {
         font-size: 1rem;
       }
       
       .poster-meta {
         font-size: 0.9rem;
-      }
-      
-      #page-title {
-        font-size: 1.4rem;
-        padding: 4px 10px;
       }
     }
   </style>
@@ -397,7 +408,7 @@
       // Load country list or movies based on URL params
       if (countryCode && countryName) {
         document.getElementById('country-list-section').style.display = 'none';
-        document.getElementById('page-title').textContent = `${countryName}`;
+        document.getElementById('page-title').textContent = `Movies from ${decodeURIComponent(countryName)}`;
         fetchCountryMovies(countryCode, countryName, currentPage);
       } else {
         loadCountryList();
