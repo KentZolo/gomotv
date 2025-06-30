@@ -1,35 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Top IMDB - GomoTV</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TV Shows - GomoTV</title>
+  <link rel="stylesheet" href="style.css">
   <script src="shared-modal.js"></script>
   <style>
-    .pagination-disclaimer {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 25px 20px;
-      margin-top: -10px;
-      font-size: 0.75rem;
-      color: #aaa;
-      line-height: 1.6;
-      border-top: 1px solid #333;
-      background: rgba(0,0,0,0.1);
-      border-radius: 0 0 8px 8px;
-    }
-    .pagination-disclaimer a {
-      color: #e50914;
-      text-decoration: none;
-    }
-    body.light .pagination-disclaimer {
-      color: #666;
-      border-top: 1px solid #ddd;
-      background: rgba(0,0,0,0.05);
+    /* PAGINATION STYLES */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      flex-wrap: wrap;
     }
     
-    /* Rating badge */
+    .pagination button {
+      padding: 8px 15px;
+      background: #222;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .pagination button:hover {
+      background: #333;
+    }
+    
+    .pagination button.active {
+      background: #e50914;
+    }
+    
+    .disclaimer {
+      text-align: center;
+      padding: 15px;
+      color: #aaa;
+      font-size: 0.8rem;
+      border-top: 1px solid #333;
+      margin-top: 20px;
+    }
+
+    /* RATING BADGE */
     .poster-wrapper::after {
       content: "⭐ " attr(data-rating);
       position: absolute;
@@ -43,12 +57,37 @@
       border-radius: 4px;
       z-index: 1;
     }
+
+    /* LOADING AND ERROR MESSAGES */
+    .loading {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 50px;
+      color: #e50914;
+      font-size: 18px;
+    }
+    
+    .error-message {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 50px;
+      color: #e50914;
+      font-size: 18px;
+    }
+
+    /* RESPONSIVE STYLES */
+    @media (max-width: 768px) {
+      .pagination button {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body>
   <header class="navbar">
     <button onclick="history.back()" class="menu-toggle">←</button>
-    <h1 class="logo">🏆 Top IMDB</h1>
+    <h1 class="logo">📺 TV Shows</h1>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
       <span class="dark-icon">❍</span>
       <span class="light-icon" hidden>☼</span>
@@ -58,16 +97,23 @@
   <main>
     <div id="pagination-top" class="pagination"></div>
     <div class="search-results-grid" id="results-grid">
-      <div class="loading"></div>
+      <div class="loading">Loading TV shows...</div>
     </div>
-    <div id="pagination" class="pagination"></div>
+    <div id="pagination-bottom" class="pagination"></div>
+    <div class="disclaimer">
+      <p>⚠️ Disclaimer: GomoTV doesn't host any videos. All content provided by third-party servers.</p>
+      <p>Support creators via <a href="https://www.justwatch.com" target="_blank" style="color: #e50914; text-decoration: none;">official platforms</a>.</p>
+    </div>
   </main>
 
   <div id="modal-container"></div>
 
   <script>
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
     let currentPage = parseInt(new URLSearchParams(location.search).get('page')) || 1;
+    let totalPages = 1;
 
     // Initialize theme
     function initTheme() {
@@ -96,108 +142,123 @@
       updateThemeIcons(newTheme);
     }
 
-    function addDisclaimer() {
-      if (!document.querySelector('.pagination-disclaimer')) {
-        const disclaimer = document.createElement('div');
-        disclaimer.className = 'pagination-disclaimer';
-        disclaimer.innerHTML = `
-          <p>⚠️ Disclaimer: GomoTV does not host any videos. Content provided by third-party servers.</p>
-          <p>Support creators via <a href="https://www.justwatch.com" target="_blank">official platforms</a>.</p>
-        `;
-        const pagination = document.getElementById('pagination');
-        if (pagination) {
-          pagination.parentNode.insertBefore(disclaimer, pagination.nextSibling);
-        }
-      }
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-      fetchTopIMDBMovies(currentPage);
+      fetchTVShows(currentPage);
     });
 
     function getImageUrl(path) {
-      return path
-        ? `https://image.tmdb.org/t/p/w500${path}`
+      return path 
+        ? `${IMAGE_URL}${path}`
         : 'https://via.placeholder.com/500x750?text=No+Poster';
     }
 
-    async function fetchTopIMDBMovies(page = 1) {
+    async function fetchTVShows(page = 1) {
+      currentPage = page;
+      
       try {
-        const res = await fetch(
-          `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}` +
-          `&sort_by=vote_average.desc&vote_count.gte=1000&page=${page}`
+        document.getElementById('results-grid').innerHTML = '<div class="loading">Loading TV shows...</div>';
+        
+        const response = await fetch(
+          `${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`
         );
-        const data = await res.json();
-        renderResults(data.results.filter(movie => movie.vote_average >= 7.5));
-        renderPagination(data.total_pages);
-        addDisclaimer();
+        const data = await response.json();
+        
+        totalPages = data.total_pages > 500 ? 500 : data.total_pages;
+        renderTVShows(data.results);
+        renderPagination();
       } catch (error) {
-        console.error('Error fetching Top IMDB movies:', error);
+        console.error('Error fetching TV shows:', error);
         document.getElementById('results-grid').innerHTML = `
-          <p class="no-results">
-            Failed to load Top IMDB movies<br>
-            Please try again later
-          </p>
+          <p class="error-message">Failed to load TV shows. Please try again later.</p>
         `;
       }
     }
 
-    function renderResults(items) {
-      const container = document.getElementById("results-grid");
-      container.innerHTML = items.map(item => {
-        const title = item.title;
-        const year = item.release_date?.slice(0, 4) || '';
-        const img = getImageUrl(item.poster_path);
-        const rating = item.vote_average?.toFixed(1) || 'N/A';
-
-        return `
-          <div class="poster-wrapper" data-id="${item.id}" data-type="movie" data-rating="${rating}">
-            <img src="${img}" alt="${title}" loading="lazy">
-            <div class="poster-label">${title}</div>
-            <div class="poster-meta">${year}</div>
+    function renderTVShows(shows) {
+      const container = document.getElementById('results-grid');
+      container.innerHTML = shows.map(show => `
+        <div class="poster-wrapper" data-id="${show.id}" data-type="tv" data-rating="${show.vote_average?.toFixed(1) || 'N/A'}">
+          <img src="${getImageUrl(show.poster_path)}" alt="${show.name}" loading="lazy">
+          <div class="poster-label">${show.name}</div>
+          <div class="poster-meta">
+            <span>${show.first_air_date?.slice(0, 4) || ''}</span>
           </div>
-        `;
-      }).join('');
+        </div>
+      `).join('');
 
+      // Add click event to each TV show
       document.querySelectorAll('.poster-wrapper').forEach(poster => {
-        poster.addEventListener('click', function() {
-          const id = this.getAttribute('data-id');
-          const type = this.getAttribute('data-type');
+        poster.addEventListener('click', () => {
+          const id = poster.dataset.id;
+          const type = poster.dataset.type;
           if (id && type && typeof openModal === 'function') {
             openModal(id, type);
+          } else {
+            window.location.href = `watch.html?id=${id}&type=${type}`;
           }
         });
       });
     }
 
-    function renderPagination(totalPages) {
+    function renderPagination() {
       const pagTop = document.getElementById('pagination-top');
-      const pagBottom = document.getElementById('pagination');
+      const pagBottom = document.getElementById('pagination-bottom');
       if (totalPages <= 1) {
         pagTop.innerHTML = '';
         pagBottom.innerHTML = '';
         return;
       }
-
+      
       let buttons = '';
-      const minPage = Math.max(1, currentPage - 2);
-      const maxPage = Math.min(totalPages, currentPage + 2);
-
-      if (currentPage > 1) buttons += `<button onclick="goToPage(${currentPage - 1})">« Prev</button>`;
-      for (let i = minPage; i <= maxPage; i++) {
-        buttons += `<button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+      const maxVisiblePages = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      // Adjust if we're at the end
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
       }
-      if (currentPage < totalPages) buttons += `<button onclick="goToPage(${currentPage + 1})">Next »</button>`;
-
+      
+      // Previous button
+      if (currentPage > 1) {
+        buttons += `<button class="pagination-prev">« Prev</button>`;
+      }
+      
+      // First page and ellipsis
+      if (startPage > 1) {
+        buttons += `<button ${1 === currentPage ? 'class="active"' : ''}>1</button>`;
+        if (startPage > 2) {
+          buttons += `<span class="ellipsis">...</span>`;
+        }
+      }
+      
+      // Page numbers
+      for (let i = startPage; i <= endPage; i++) {
+        buttons += `<button ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+      }
+      
+      // Last page and ellipsis
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          buttons += `<span class="ellipsis">...</span>`;
+        }
+        buttons += `<button ${totalPages === currentPage ? 'class="active"' : ''}>${totalPages}</button>`;
+      }
+      
+      // Next button
+      if (currentPage < totalPages) {
+        buttons += `<button class="pagination-next">Next »</button>`;
+      }
+      
       pagTop.innerHTML = buttons;
       pagBottom.innerHTML = buttons;
-      addDisclaimer();
     }
 
     function goToPage(page) {
-      location.href = `topimdb.html?page=${page}`;
+      if (page < 1 || page > totalPages) return;
+      window.location.href = `tvshows.html?page=${page}`;
     }
   </script>
 </body>
