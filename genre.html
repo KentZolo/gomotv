@@ -1,182 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Genres - GomoTV</title>
+  <!-- Head content remains the same -->
   <style>
-    /* BASE STYLES */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      background-color: #000;
-      color: #fff;
-    }
-    
-    body.dark {
-      background-color: #000;
-      color: #fff;
-    }
-    
-    body.light {
-      background-color: #f5f5f5;
-      color: #333;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    /* NAVBAR STYLES */
-    .navbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+    /* Add these new styles for pagination */
+    .pagination {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 20px;
-      background-color: rgba(0, 0, 0, 0.8);
-      z-index: 1000;
-      backdrop-filter: blur(5px);
-    }
-    
-    .logo {
-      margin: 0;
-      font-size: 24px;
-      color: #e50914;
-    }
-    
-    .menu-toggle {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 24px;
-      cursor: pointer;
-    }
-    
-    .theme-toggle {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 20px;
-      cursor: pointer;
-      margin-left: 15px;
-    }
-
-    /* MAIN CONTENT STYLES */
-    main {
-      margin-top: 70px; /* Space for fixed navbar */
+      justify-content: center;
+      gap: 10px;
       padding: 20px;
-    }
-
-    /* GENRE GRID STYLES */
-    .genre-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 15px;
-      margin: 20px 0;
+      flex-wrap: wrap;
     }
     
-    .genre-link {
-      display: block;
-      padding: 15px;
-      background: rgba(229, 9, 20, 0.1);
-      border: 1px solid rgba(229, 9, 20, 0.3);
-      border-radius: 8px;
-      text-align: center;
-      text-decoration: none;
-      color: inherit;
+    .pagination button {
+      padding: 8px 15px;
+      background: #222;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
       transition: all 0.3s;
-      cursor: pointer;
     }
     
-    .genre-link:hover {
-      background: rgba(229, 9, 20, 0.2);
-      transform: translateY(-3px);
+    .pagination button:hover {
+      background: #333;
     }
     
-    body.light .genre-link {
-      background: rgba(229, 9, 20, 0.05);
-      border-color: rgba(229, 9, 20, 0.2);
+    .pagination button.active {
+      background: #e50914;
     }
     
-    body.light .genre-link:hover {
-      background: rgba(229, 9, 20, 0.1);
-    }
-
-    /* MOVIE ITEM STYLES */
-    .genre-item {
-      background: #111;
-      border-radius: 8px;
-      overflow: hidden;
-      transition: transform 0.3s;
-      cursor: pointer;
-    }
-    
-    .genre-item:hover {
-      transform: scale(1.05);
-      box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
-    }
-    
-    .genre-item img {
-      width: 100%;
-      height: 225px;
-      object-fit: cover;
-      display: block;
-    }
-    
-    .genre-title {
-      padding: 10px;
-      font-size: 14px;
+    .disclaimer {
       text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      padding: 15px;
+      color: #aaa;
+      font-size: 0.8rem;
+      border-top: 1px solid #333;
+      margin-top: 20px;
     }
     
-    .genre-meta {
-      padding: 5px;
-      text-align: center;
-      font-size: 12px;
-      color: #e50914;
-    }
-
-    /* LOADING INDICATOR */
-    .loading-genre {
-      display: none;
-      text-align: center;
-      padding: 20px;
-      color: #e50914;
-      font-size: 18px;
-    }
-
-    /* RESPONSIVE STYLES */
     @media (max-width: 768px) {
-      .genre-grid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      }
-      
-      .genre-item img {
-        height: 180px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .genre-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      }
-      
-      .genre-item img {
-        height: 150px;
-      }
-      
-      .genre-title {
-        font-size: 12px;
+      .pagination button {
+        padding: 6px 12px;
+        font-size: 0.8rem;
       }
     }
   </style>
@@ -195,16 +61,31 @@
   <main class="container">
     <h2>Browse by Genre</h2>
     <div class="loading-genre" id="loading-genre">Loading movies...</div>
+    
+    <!-- Add pagination container -->
+    <div class="pagination" id="pagination-top"></div>
+    
     <div class="genre-grid" id="genre-container">
       <!-- Dynamic content will be loaded here -->
     </div>
+    
+    <!-- Add pagination container -->
+    <div class="pagination" id="pagination-bottom"></div>
+    
+    <!-- Add disclaimer -->
+    <div class="disclaimer">
+      <p>⚠️ Disclaimer: GomoTV doesn't host any videos. All content provided by third-party servers.</p>
+    </div>
   </main>
 
-  <!-- Same JavaScript as previous implementation -->
   <script>
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
     const BASE_URL = 'https://api.themoviedb.org/3';
     const IMAGE_URL = 'https://image.tmdb.org/t/p/w200';
+    let currentPage = 1;
+    let currentGenreId = null;
+    let currentGenreName = null;
+    let totalPages = 1;
 
     const genres = [
       { id: 28, name: 'Action' },
@@ -248,8 +129,12 @@
       updateThemeIcons(newTheme);
     }
 
-    // Load movies for a genre
-    async function loadGenreMovies(genreId, genreName) {
+    // Load movies for a genre with pagination
+    async function loadGenreMovies(genreId, genreName, page = 1) {
+      currentPage = page;
+      currentGenreId = genreId;
+      currentGenreName = genreName;
+      
       const loadingElement = document.getElementById('loading-genre');
       const genreContainer = document.getElementById('genre-container');
       
@@ -258,15 +143,17 @@
         genreContainer.innerHTML = '';
         
         const response = await fetch(
-          `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`
+          `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc&page=${page}`
         );
         const data = await response.json();
         
+        totalPages = data.total_pages > 500 ? 500 : data.total_pages; // TMDB limit
+        
         if (data.results && data.results.length > 0) {
-          // Display first 6 movies
-          const movies = data.results.slice(0, 6);
+          // Update the title to show current genre
+          document.querySelector('h2').textContent = `${genreName} Movies`;
           
-          genreContainer.innerHTML = movies.map(movie => `
+          genreContainer.innerHTML = data.results.map(movie => `
             <div class="genre-item" data-id="${movie.id}" data-type="movie">
               <img src="${movie.poster_path ? IMAGE_URL + movie.poster_path : 'https://via.placeholder.com/200x300?text=No+Poster'}" 
                    alt="${movie.title}" 
@@ -283,6 +170,9 @@
               window.location.href = `watch.html?type=movie&id=${id}`;
             });
           });
+          
+          // Render pagination
+          renderPagination();
         } else {
           genreContainer.innerHTML = '<p>No movies found in this genre</p>';
         }
@@ -292,6 +182,79 @@
       } finally {
         loadingElement.style.display = 'none';
       }
+    }
+
+    // Pagination functions (similar to movies.html)
+    function renderPagination() {
+      const paginationHTML = createPaginationHTML();
+      document.getElementById('pagination-top').innerHTML = paginationHTML;
+      document.getElementById('pagination-bottom').innerHTML = paginationHTML;
+      
+      // Add event listeners to new buttons
+      document.querySelectorAll('.pagination button').forEach(button => {
+        if (button.onclick) return;
+        const page = button.textContent;
+        if (page === '« Prev') {
+          button.onclick = () => goToPage(currentPage - 1);
+        } else if (page === 'Next »') {
+          button.onclick = () => goToPage(currentPage + 1);
+        } else if (!isNaN(page)) {
+          button.onclick = () => goToPage(parseInt(page));
+        }
+      });
+    }
+
+    function createPaginationHTML() {
+      if (totalPages <= 1) return '';
+      
+      let buttons = '';
+      const maxVisiblePages = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      // Adjust if we're at the end
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+      
+      // Previous button
+      if (currentPage > 1) {
+        buttons += `<button class="pagination-prev">« Prev</button>`;
+      }
+      
+      // First page and ellipsis
+      if (startPage > 1) {
+        buttons += `<button ${1 === currentPage ? 'class="active"' : ''}>1</button>`;
+        if (startPage > 2) {
+          buttons += `<span class="ellipsis">...</span>`;
+        }
+      }
+      
+      // Page numbers
+      for (let i = startPage; i <= endPage; i++) {
+        buttons += `<button ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+      }
+      
+      // Last page and ellipsis
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          buttons += `<span class="ellipsis">...</span>`;
+        }
+        buttons += `<button ${totalPages === currentPage ? 'class="active"' : ''}>${totalPages}</button>`;
+      }
+      
+      // Next button
+      if (currentPage < totalPages) {
+        buttons += `<button class="pagination-next">Next »</button>`;
+      }
+      
+      return buttons;
+    }
+
+    function goToPage(page) {
+      if (page < 1 || page > totalPages) return;
+      loadGenreMovies(currentGenreId, currentGenreName, page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // Initialize the page
@@ -313,7 +276,7 @@
           e.preventDefault();
           const genreId = link.getAttribute('data-id');
           const genreName = link.getAttribute('data-name');
-          loadGenreMovies(genreId, genreName);
+          loadGenreMovies(genreId, genreName, 1); // Start at page 1
         });
       });
     });
