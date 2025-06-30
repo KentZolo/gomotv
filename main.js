@@ -1,972 +1,275 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Watch - GomoTV</title>
-  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-  <style>
-    /* ===== BASE STYLES ===== */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'VT323', monospace;
-      background-color: #000;
-      color: #fff;
-      font-size: 20px;
-      line-height: 1.4;
-      letter-spacing: 0.5px;
+const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
+const BASE_URL = 'https://api.themoviedb.org/3';
+const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
+const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
+
+// Core Functions
+function getImageUrl(path, isBackdrop = false) {
+  if (!path) {
+    return isBackdrop
+      ? 'https://via.placeholder.com/1920x1080?text=No+Banner'
+      : 'https://via.placeholder.com/500x750?text=No+Poster';
+  }
+  return isBackdrop ? `${BACKDROP_BASE}${path}` : `${IMG_BASE}${path}`;
+}
+
+// Banner Slider - UPDATED TO FIX MISSING BANNER
+let bannerIndex = 0;
+let bannerItems = [];
+
+async function loadBannerSlider() {
+  try {
+    const res = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}`);
+    const data = await res.json();
+    bannerItems = data.results.slice(0, 10);
+
+    if (bannerItems.length > 0) {
+      showBannerSlide(bannerIndex);
+      setupBannerNavigation();
+      startAutoSlide();
+    } else {
+      showDefaultBanner();
     }
+  } catch (err) {
+    console.error('Banner error:', err);
+    showDefaultBanner();
+  }
+}
 
-    body.dark {
-      background-color: #000;
-      color: #fff;
-    }
+function showDefaultBanner() {
+  const img = document.getElementById('poster-img');
+  img.src = getImageUrl(null, true);
+  img.alt = 'Default Banner';
+  document.getElementById('poster-summary').textContent = 'GomoTV';
+  document.getElementById('poster-meta').textContent = 'Featured Content';
+}
 
-    body.light {
-      background-color: #f5f5f5;
-      color: #333;
-    }
+function showBannerSlide(index) {
+  const item = bannerItems[index];
+  const img = document.getElementById('poster-img');
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-      position: relative;
-    }
+  if (!item || !img) {
+    showDefaultBanner();
+    return;
+  }
 
-    /* ===== NAVBAR STYLES ===== */
-    .navbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 20px;
-      background-color: rgba(0, 0, 0, 0.8);
-      z-index: 1000;
-      backdrop-filter: blur(5px);
-    }
+  img.src = getImageUrl(item.backdrop_path, true);
+  img.alt = item.title;
+  img.dataset.id = item.id;
+  img.dataset.type = 'movie';
 
-    .logo {
-      margin: 0;
-      font-size: 1.5rem;
-      color: #e50914;
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 70%;
-    }
+  document.getElementById('poster-meta').textContent =
+    `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
+  document.getElementById('poster-summary').textContent = item.title;
 
-    body.light .logo {
-      color: #333;
-    }
+  // Add click event to redirect to watch.html
+  img.addEventListener('click', () => {
+    window.location.href = `watch.html?id=${item.id}&type=movie`;
+  });
+}
 
-    .menu-toggle {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      width: 24px;
-      height: 18px;
-      cursor: pointer;
-      z-index: 1001;
-    }
+function setupBannerNavigation() {
+  const prevBtn = document.querySelector('.prev');
+  const nextBtn = document.querySelector('.next');
+  
+  if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+  if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+}
 
-    .menu-toggle span {
-      display: block;
-      width: 100%;
-      height: 2px;
-      background-color: #fff;
-      transition: all 0.3s;
-    }
+function startAutoSlide() {
+  setInterval(nextSlide, 5000);
+}
 
-    body.light .menu-toggle span {
-      background-color: #333;
-    }
+function prevSlide() {
+  bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
+  showBannerSlide(bannerIndex);
+}
 
-    .menu-toggle.active span:nth-child(1) {
-      transform: rotate(45deg) translate(5px, 5px);
-    }
+function nextSlide() {
+  bannerIndex = (bannerIndex + 1) % bannerItems.length;
+  showBannerSlide(bannerIndex);
+}
 
-    .menu-toggle.active span:nth-child(2) {
-      opacity: 0;
-    }
-
-    .menu-toggle.active span:nth-child(3) {
-      transform: rotate(-45deg) translate(5px, -5px);
-    }
-
-    .theme-toggle {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.3rem;
-      cursor: pointer;
-      padding: 5px;
-      margin-left: 15px;
-    }
-
-    body.light .theme-toggle {
-      color: #333;
-    }
-
-    .theme-transition-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #000;
-      z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-
-    /* ===== HAMBURGER MENU STYLES ===== */
-    .hamburger-menu {
-      position: fixed;
-      top: 0;
-      left: -300px;
-      width: 280px;
-      height: 100%;
-      background-color: #111;
-      z-index: 1000;
-      transition: left 0.3s;
-      padding-top: 70px;
-      overflow-y: auto;
-    }
-
-    .hamburger-menu.active {
-      left: 0;
-    }
-
-    .menu-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      z-index: 999;
-      display: none;
-    }
-
-    .menu-overlay.active {
-      display: block;
-    }
-
-    .hamburger-menu ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .hamburger-menu li a {
-      display: block;
-      padding: 15px 20px;
-      color: #fff;
-      text-decoration: none;
-      border-bottom: 1px solid #222;
-      transition: background-color 0.2s;
-      font-size: 1.2rem;
-    }
-
-    .hamburger-menu li a:hover {
-      background-color: #222;
-    }
-
-    .menu-search-bar {
-      padding: 15px;
-      display: flex;
-      border-bottom: 1px solid #222;
-    }
-
-    .menu-search-bar input {
-      flex: 1;
-      padding: 8px 12px;
-      border: none;
-      border-radius: 4px 0 0 4px;
-      background-color: #222;
-      color: #fff;
-      font-family: 'VT323', monospace;
-      font-size: 1rem;
-    }
-
-    .menu-search-bar button {
-      padding: 8px 12px;
-      border: none;
-      background-color: #333;
-      color: #fff;
-      border-radius: 0 4px 4px 0;
-      cursor: pointer;
-      font-family: 'VT323', monospace;
-      font-size: 1rem;
-    }
-
-    /* ===== PLAYER STYLES ===== */
-    .player-container {
-      position: relative;
-      width: 100%;
-      height: 0;
-      padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-      background: #000;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      overflow: hidden;
-      margin-top: 70px; /* Space for navbar */
-    }
-
-    #player-frame {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-      z-index: 10;
-    }
-
-    /* Simple Close Button */
-    .simple-close-btn {
-      position: absolute;
-      top: 90px; /* Below navbar */
-      right: 20px;
-      background: none;
-      color: white;
-      border: none;
-      font-size: 2rem;
-      cursor: pointer;
-      z-index: 100;
-      padding: 0;
-      margin: 0;
-      line-height: 1;
-    }
-
-    body.light .simple-close-btn {
-      color: #333;
-    }
-
-    .simple-close-btn:hover {
-      color: #e50914;
-    }
-
-    /* Server Controls Styling */
-    .server-controls {
-      margin-bottom: 20px;
-      background: #111;
-      padding: 15px;
-      border-radius: 8px;
-    }
-
-    .server-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .server-header h3 {
-      margin: 0;
-      color: #e50914;
-      font-size: 1.3rem;
-    }
-
-    .server-toggle {
-      background: #333;
-      border: none;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: 'VT323', monospace;
-      font-size: 1rem;
-    }
-
-    .server-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 10px;
-    }
-
-    .server-btn {
-      padding: 8px 12px;
-      background: #333;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s;
-      font-size: 1rem;
-      font-family: 'VT323', monospace;
-    }
-
-    .server-btn:hover {
-      background: #444;
-    }
-
-    .server-btn.active {
-      background: #e50914;
-    }
-
-    /* Server Warning Message */
-    .server-warning {
-      background-color: rgba(255, 152, 0, 0.1);
-      color: #ff9800;
-      font-size: 0.85rem;
-      padding: 8px 15px;
-      text-align: center;
-      border-radius: 4px;
-      margin-top: 10px;
-      display: none;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid rgba(255, 152, 0, 0.3);
-    }
-
-    .server-warning span {
-      font-size: 1rem;
-    }
-
-    /* Loading State */
-    .loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #fff;
-      z-index: 5;
-      font-size: 1.3rem;
-    }
-
-    /* Movie Info Styling */
-    .movie-info {
-      padding: 20px;
-      background: #111;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-
-    .movie-info h1 {
-      margin: 0 0 10px;
-      font-size: 1.8rem;
-    }
-
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      font-size: 1rem;
-      color: #ccc;
-      margin-bottom: 15px;
-    }
-
-    .movie-info p {
-      line-height: 1.6;
-      color: #ddd;
-      margin-bottom: 20px;
-      font-size: 1.1rem;
-    }
-
-    /* Recommendations Section */
-    .recommendations {
-      padding: 20px;
-      background: #111;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-
-    .recommendations h2 {
-      margin-top: 0;
-      margin-bottom: 15px;
-      font-size: 1.5rem;
-      color: #e50914;
-    }
-
-    .recommendations-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 15px;
-    }
-
-    .recommendation-item {
-      background: #222;
-      border-radius: 8px;
-      overflow: hidden;
-      transition: transform 0.2s;
-      cursor: pointer;
-    }
-
-    .recommendation-item:hover {
-      transform: scale(1.05);
-    }
-
-    .recommendation-poster {
-      width: 100%;
-      height: 225px;
-      object-fit: cover;
-    }
-
-    .recommendation-title {
-      padding: 10px;
-      font-size: 1.1rem;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* Disclaimer Styling */
-    .disclaimer {
-      padding: 20px;
-      background: #111;
-      border-radius: 8px;
-      margin-top: 20px;
-      font-size: 0.9rem;
-      color: #999;
-      line-height: 1.5;
-      text-align: center;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .disclaimer h3 {
-      color: #e50914;
-      margin-top: 0;
-      font-size: 1rem;
-    }
-
-    /* Responsive Adjustments */
-    @media (max-width: 768px) {
-      .container {
-        padding: 15px;
-      }
-      
-      .movie-info h1 {
-        font-size: 1.6rem;
-      }
-      
-      .meta {
-        font-size: 0.9rem;
-        gap: 10px;
-      }
-      
-      .server-list {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-      }
-
-      .recommendations-grid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      }
-
-      .recommendation-poster {
-        height: 180px;
-      }
-      
-      .simple-close-btn {
-        top: 85px;
-        right: 15px;
-        font-size: 1.8rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .recommendations-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      }
-
-      .recommendation-poster {
-        height: 150px;
-      }
-      
-      .server-list {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .simple-close-btn {
-        font-size: 1.6rem;
-      }
-      
-      .hamburger-menu {
-        width: 250px;
-      }
-
-      .movie-info h1 {
-        font-size: 1.4rem;
-      }
-
-      .movie-info p {
-        font-size: 1rem;
-      }
-    }
-  </style>
-</head>
-<body class="dark">
-  <!-- FIXED NAVBAR -->
-  <header class="navbar">
-    <div class="menu-toggle" id="menu-toggle">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-    <h1 class="logo">GomoTV</h1>
-    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-      <span class="dark-icon">❍</span>
-      <span class="light-icon" hidden>☼</span>
-    </button>
-    <div class="theme-transition-overlay"></div>
-  </header>
-
-  <!-- HAMBURGER MENU -->
-  <nav class="hamburger-menu" id="hamburger-menu">
-    <div class="menu-search-bar">
-      <input type="text" id="menu-search-input" placeholder="Search movies or shows...">
-      <button id="menu-search-button">🔍</button>
-    </div>
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="genre.html">Genre</a></li>
-      <li><a href="country.html">Country</a></li>
-      <li><a href="movies.html">Movies</a></li> 
-      <li><a href="tvshows.html">TV Shows</a></li>
-      <li><a href="topimdb.html">Top IMDB</a></li> 
-    </ul>
-  </nav>
-  <div class="menu-overlay"></div>
-
-  <!-- MAIN CONTENT -->
-  <div class="container">
-    <!-- Simple Close Button -->
-    <button class="simple-close-btn" id="simple-close-btn">×</button>
+// Content Loading - UPDATED TO FIX MISSING POSTERS
+async function fetchAndDisplay(endpoint, containerSelector, type) {
+  try {
+    const container = document.querySelector(containerSelector);
+    if (!container) return;
     
-    <div class="player-container">
-      <div class="loading" id="loading">Loading player...</div>
-      <iframe id="player-frame" allowfullscreen sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
-    </div>
+    container.innerHTML = '<div class="loading"></div>';
 
-    <div class="server-controls">
-      <div class="server-header" id="server-header">
-        <h3>Server Options</h3>
-        <button class="server-toggle" id="server-toggle">Show</button>
+    const res = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}`);
+    const data = await res.json();
+
+    if (data.results && data.results.length > 0) {
+      displayMedia(data.results, containerSelector, type);
+    } else {
+      container.innerHTML = '<p class="error-message">No content available</p>';
+    }
+  } catch (err) {
+    console.error(`Failed to load content:`, err);
+    document.querySelector(containerSelector).innerHTML =
+      '<p class="error-message">Failed to load content</p>';
+  }
+}
+
+function displayMedia(items, containerSelector, defaultType) {
+  const container = document.querySelector(containerSelector);
+  if (!container) return;
+  
+  container.innerHTML = items.map(item => {
+    const title = item.title || item.name;
+    const imageUrl = getImageUrl(item.poster_path);
+    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+    const type = item.media_type || defaultType;
+    const rating = item.vote_average?.toFixed(1) || 'N/A';
+
+    return `
+      <div class="poster-wrapper" data-id="${item.id}" data-type="${type}">
+        ${item.vote_average > 7 ? '<div class="poster-badge">TOP</div>' : ''}
+        <img src="${imageUrl}" alt="${title}" loading="lazy">
+        <div class="poster-label">${title}</div>
+        <div class="poster-meta">
+          <span>⭐ ${rating}</span>
+          <span>${year}</span>
+        </div>
       </div>
-      <div class="server-list" id="server-list" style="display: none;"></div>
-      <!-- Warning Message Added Here -->
-      <div class="server-warning" id="server-warning" style="display: none;">
-        <span>⚠️</span> Refresh the page or try another server if the video doesn't play.
-      </div>
-    </div>
+    `;
+  }).join('');
 
-    <div class="movie-info">
-      <h1 id="movie-title">Loading...</h1>
-      <div class="meta">
-        <span id="movie-year"></span>
-        <span id="movie-rating"></span>
-        <span id="movie-type"></span>
-        <span id="movie-genres"></span>
-      </div>
-      <p id="movie-overview"></p>
-    </div>
+  setupPosterClickEvents(containerSelector);
+}
 
-    <div class="recommendations" id="recommendations">
-      <h2>Recommended</h2>
-      <div class="recommendations-grid" id="recommendations-grid"></div>
-    </div>
-
-    <div class="disclaimer">
-      <h3>Disclaimer</h3>
-      <p>This website does not host any videos or content on its server. All content is provided by third-party servers. We do not endorse or have control over the content hosted on external servers. If you have any legal issues, please contact the content providers directly.</p>
-    </div>
-  </div>
-
-  <script>
-    // GLOBAL VARIABLES
-    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
-    const BASE_URL = 'https://api.themoviedb.org/3';
-    const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-    const SERVERS = [
-      { 
-        id: 'apimocine', 
-        name: 'Server 1', 
-        url: (t, id) => `https://apimocine.vercel.app/${t}/${id}?autoplay=true` 
-      },
-      { 
-        id: 'vidsrccc', 
-        name: 'Server 2', 
-        url: (t, id) => `https://vidsrc.cc/v2/embed/${t}/${id}` 
-      },
-      { 
-        id: 'vidsrc', 
-        name: 'Server 3', 
-        url: (t, id) => `https://vidsrc.to/embed/${t}/${id}` 
-      },
-      {
-        id: '2embed',
-        name: 'Server 4',
-        url: (t, id) => `https://www.2embed.cc/embed/${t === 'movie' ? 'movie' : 'tv'}/${id}`
-      },
-      {
-        id: 'superembed',
-        name: 'Server 5',
-        url: (t, id) => `https://multiembed.mov/?video_id=${id}&tmdb=1&${t === 'movie' ? 'media=movie' : 'media=tv'}`
-      }
-    ];
-
-    // THEME FUNCTIONS
-    function toggleTheme() {
-      const body = document.body;
-      const isDark = body.classList.contains('dark');
-      const newTheme = isDark ? 'light' : 'dark';
-      
-      const overlay = document.querySelector('.theme-transition-overlay');
-      overlay.style.opacity = '1';
-      overlay.style.pointerEvents = 'auto';
-      
-      setTimeout(() => {
-        body.classList.remove('dark', 'light');
-        body.classList.add(newTheme);
-        localStorage.setItem('theme', newTheme);
-        updateThemeIcons(newTheme);
-        
-        overlay.style.opacity = '0';
-        overlay.style.pointerEvents = 'none';
-      }, 100);
-    }
-
-    function initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.body.classList.add(savedTheme);
-      updateThemeIcons(savedTheme);
-    }
-
-    function updateThemeIcons(theme) {
-      const darkIcon = document.querySelector('.dark-icon');
-      const lightIcon = document.querySelector('.light-icon');
-      if (darkIcon && lightIcon) {
-        darkIcon.hidden = theme === 'light';
-        lightIcon.hidden = theme === 'dark';
-      }
-    }
-
-    // MENU FUNCTIONS
-    function setupMenuToggle() {
-      const menuBtn = document.getElementById('menu-toggle');
-      const menu = document.getElementById('hamburger-menu');
-      const overlay = document.querySelector('.menu-overlay');
-
-      if (!menuBtn || !menu) return;
-
-      menuBtn.addEventListener('click', () => {
-        menuBtn.classList.toggle('active');
-        menu.classList.toggle('active');
-        overlay.classList.toggle('active');
-        document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
-      });
-
-      overlay.addEventListener('click', () => {
-        menuBtn.classList.remove('active');
-        menu.classList.remove('active');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-      });
-
-      // Close menu when clicking on any link
-      const menuLinks = document.querySelectorAll('#hamburger-menu a');
-      if (menuLinks) {
-        menuLinks.forEach(link => {
-          link.addEventListener('click', () => {
-            menuBtn.classList.remove('active');
-            menu.classList.remove('active');
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-          });
-        });
-      }
-    }
-
-    function setupMenuSearch() {
-      const menuSearchInput = document.getElementById('menu-search-input');
-      const menuSearchButton = document.getElementById('menu-search-button');
-
-      if (!menuSearchButton || !menuSearchInput) return;
-
-      function performMenuSearch() {
-        const searchTerm = menuSearchInput.value.trim();
-        if (searchTerm.length >= 2) {
-          document.getElementById('hamburger-menu').classList.remove('active');
-          document.querySelector('.menu-overlay').classList.remove('active');
-          document.getElementById('menu-toggle').classList.remove('active');
-          document.body.style.overflow = '';
-          window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
-        } else {
-          alert('Please enter at least 2 characters');
-        }
-      }
-
-      menuSearchButton.addEventListener('click', performMenuSearch);
-      menuSearchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') performMenuSearch();
-      });
-    }
-
-    // MOVIE/PLAYER FUNCTIONS
-    async function loadContent() {
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-      const type = params.get('type');
-
-      if (!id || !type) {
-        showError('Invalid movie/show ID');
-        return;
-      }
-
-      try {
-        // Load movie/show info
-        const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
-        if (!res.ok) throw new Error('Failed to fetch');
-        const data = await res.json();
-
-        document.title = `${data.title || data.name} - GomoTV`;
-        updateMovieInfo(data, type);
-        
-        // Setup server controls
-        setupServerControls();
-        createServerButtons(type, id);
-        
-        // Load recommendations
-        loadRecommendations(type, id);
-        
-        // Auto-try servers
-        tryServers(type, id);
-      } catch (err) {
-        console.error('Error loading content:', err);
-        showError('Failed to load content');
-      }
-    }
-
-    function setupServerControls() {
-      const header = document.getElementById('server-header');
-      const toggle = document.getElementById('server-toggle');
-      const serverList = document.getElementById('server-list');
-      const warning = document.getElementById('server-warning');
-
-      if (!header || !toggle || !serverList || !warning) return;
-
-      header.addEventListener('click', () => {
-        const isVisible = serverList.style.display === 'grid';
-        serverList.style.display = isVisible ? 'none' : 'grid';
-        toggle.textContent = isVisible ? 'Show' : 'Hide';
-        
-        // Show warning when server options are expanded
-        if (!isVisible) {
-          warning.style.display = 'flex';
-        }
-      });
-    }
-
-    function updateMovieInfo(data, type) {
-      const titleEl = document.getElementById('movie-title');
-      const yearEl = document.getElementById('movie-year');
-      const ratingEl = document.getElementById('movie-rating');
-      const typeEl = document.getElementById('movie-type');
-      const genresEl = document.getElementById('movie-genres');
-      const overviewEl = document.getElementById('movie-overview');
-
-      if (titleEl) titleEl.textContent = data.title || data.name;
-      if (yearEl) yearEl.textContent = (data.release_date || data.first_air_date || '').slice(0, 4);
-      if (ratingEl) ratingEl.textContent = `⭐ ${data.vote_average?.toFixed(1) || 'N/A'}`;
-      if (typeEl) typeEl.textContent = type === 'movie' ? 'Movie' : 'TV Show';
-      if (genresEl) genresEl.textContent = data.genres?.map(g => g.name).join(', ') || 'Unknown';
-      if (overviewEl) overviewEl.textContent = data.overview || 'No overview available.';
-    }
-
-    function createServerButtons(type, id) {
-      const container = document.getElementById('server-list');
-      if (!container) return;
-      
-      container.innerHTML = '';
-      
-      SERVERS.forEach(server => {
-        const btn = document.createElement('button');
-        btn.className = 'server-btn';
-        btn.textContent = server.name;
-        btn.dataset.id = server.id;
-        
-        btn.addEventListener('click', () => {
-          loadServer(server, type, id);
-        });
-        
-        container.appendChild(btn);
-      });
-    }
-
-    async function loadRecommendations(type, id) {
-      try {
-        const res = await fetch(`${BASE_URL}/${type}/${id}/recommendations?api_key=${API_KEY}`);
-        if (!res.ok) throw new Error('Failed to fetch');
-        const data = await res.json();
-        
-        const grid = document.getElementById('recommendations-grid');
-        if (!grid) return;
-        
-        grid.innerHTML = '';
-        
-        if (data.results && data.results.length > 0) {
-          // Show only the first 10 recommendations
-          const recommendations = data.results.slice(0, 10);
-          
-          recommendations.forEach(item => {
-            const posterPath = item.poster_path ? 
-              `${IMAGE_BASE_URL}${item.poster_path}` : 
-              'https://via.placeholder.com/150x225?text=No+Poster';
-            
-            const recommendationItem = document.createElement('div');
-            recommendationItem.className = 'recommendation-item';
-            recommendationItem.innerHTML = `
-              <img src="${posterPath}" alt="${item.title || item.name}" class="recommendation-poster" loading="lazy">
-              <div class="recommendation-title">${item.title || item.name}</div>
-            `;
-            
-            recommendationItem.addEventListener('click', () => {
-              window.location.href = `watch.html?type=${type}&id=${item.id}`;
-            });
-            
-            grid.appendChild(recommendationItem);
-          });
-        } else {
-          grid.innerHTML = '<p>No recommendations available.</p>';
-        }
-      } catch (err) {
-        console.error('Error loading recommendations:', err);
-        const grid = document.getElementById('recommendations-grid');
-        if (grid) grid.innerHTML = '<p>Failed to load recommendations.</p>';
-      }
-    }
-
-    function tryServers(type, id) {
-      let currentIndex = 0;
-      const warning = document.getElementById('server-warning');
-      
-      function tryNextServer() {
-        if (currentIndex >= SERVERS.length) {
-          showError('No working server found');
-          if (warning) warning.style.display = 'flex';
-          return;
-        }
-        
-        const server = SERVERS[currentIndex];
-        updateActiveServerButton(server.id);
-        loadServer(server, type, id, () => {
-          currentIndex++;
-          if (warning && currentIndex > 0) warning.style.display = 'flex';
-          setTimeout(tryNextServer, 1000);
-        });
-      }
-      
-      tryNextServer();
-    }
-
-    function loadServer(server, type, id, onError) {
-      const iframe = document.getElementById('player-frame');
-      const loading = document.getElementById('loading');
-      const warning = document.getElementById('server-warning');
-      
-      if (!iframe || !loading) return;
-      
-      loading.style.display = 'block';
-      iframe.style.display = 'none';
-      if (warning) warning.style.display = 'none';
-      
-      loading.textContent = `Loading ${server.name}...`;
-      const playerUrl = server.url(type, id);
-      iframe.src = playerUrl;
-      
-      // Add timeout to detect if iframe is stuck
-      const loadTimeout = setTimeout(() => {
-        if (loading.style.display !== 'none') {
-          if (onError) onError();
-        }
-      }, 10000); // 10 seconds timeout
-      
-      iframe.onload = () => {
-        clearTimeout(loadTimeout);
-        loading.style.display = 'none';
-        iframe.style.display = 'block';
-        updateActiveServerButton(server.id);
-        
-        // Additional check to detect iframe errors
-        setTimeout(() => {
-          try {
-            if (iframe.contentDocument?.title === "Error" || 
-                iframe.contentDocument?.body.innerText.includes("Error")) {
-              if (onError) onError();
-            }
-          } catch (e) {
-            // Cross-origin frame access error
-            console.log('Cannot access iframe content');
-          }
-        }, 2000);
-      };
-      
-      iframe.onerror = () => {
-        clearTimeout(loadTimeout);
-        if (onError) onError();
-      };
-    }
-
-    function updateActiveServerButton(serverId) {
-      const buttons = document.querySelectorAll('.server-btn');
-      if (buttons) {
-        buttons.forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.id === serverId);
-        });
-      }
-    }
-
-    function showError(message) {
-      const loading = document.getElementById('loading');
-      if (loading) {
-        loading.textContent = message;
-        loading.style.display = 'block';
-      }
-      const iframe = document.getElementById('player-frame');
-      if (iframe) iframe.style.display = 'none';
-      
-      // Show warning message
-      const warning = document.getElementById('server-warning');
-      if (warning) warning.style.display = 'flex';
-    }
-
-    // INITIALIZE EVERYTHING
-    document.addEventListener('DOMContentLoaded', () => {
-      // Initialize theme and menu
-      initTheme();
-      
-      const themeToggle = document.getElementById('theme-toggle');
-      if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-      }
-      
-      setupMenuToggle();
-      setupMenuSearch();
-      
-      // Setup close button
-      const closeBtn = document.getElementById('simple-close-btn');
-      if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-          window.location.href = 'index.html';
-        });
-      }
-      
-      // Load content
-      loadContent();
+function setupPosterClickEvents(containerSelector) {
+  const posters = document.querySelectorAll(`${containerSelector} .poster-wrapper`);
+  if (!posters) return;
+  
+  posters.forEach(poster => {
+    poster.addEventListener('click', () => {
+      const id = poster.dataset.id;
+      const type = poster.dataset.type;
+      window.location.href = `watch.html?id=${id}&type=${type}`;
     });
-  </script>
-</body>
-</html>
+  });
+}
+
+// Hamburger Menu Toggle - KEEPING YOUR ORIGINAL STRUCTURE
+function setupMenuToggle() {
+  const menuBtn = document.getElementById('menu-toggle');
+  const menu = document.getElementById('hamburger-menu');
+  const overlay = document.createElement('div');
+  overlay.className = 'menu-overlay';
+  document.body.appendChild(overlay);
+
+  if (!menuBtn || !menu) return;
+
+  menuBtn.addEventListener('click', () => {
+    menuBtn.classList.toggle('active');
+    menu.classList.toggle('active');
+    overlay.classList.toggle('active');
+    document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+  });
+
+  overlay.addEventListener('click', () => {
+    menuBtn.classList.remove('active');
+    menu.classList.remove('active');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  });
+
+  // Close menu when clicking on any link
+  document.querySelectorAll('#hamburger-menu a').forEach(link => {
+    link.addEventListener('click', () => {
+      menuBtn.classList.remove('active');
+      menu.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  });
+}
+
+// Hamburger Menu Search - KEEPING YOUR ORIGINAL STRUCTURE
+function setupMenuSearch() {
+  const menuSearchInput = document.getElementById('menu-search-input');
+  const menuSearchButton = document.getElementById('menu-search-button');
+
+  if (!menuSearchButton || !menuSearchInput) return;
+
+  function performMenuSearch() {
+    const searchTerm = menuSearchInput.value.trim();
+    if (searchTerm.length >= 2) {
+      document.getElementById('hamburger-menu').classList.remove('active');
+      document.querySelector('.menu-overlay').classList.remove('active');
+      document.getElementById('menu-toggle').classList.remove('active');
+      document.body.style.overflow = '';
+      window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+    } else {
+      alert('Please enter at least 2 characters');
+    }
+  }
+
+  menuSearchButton.addEventListener('click', performMenuSearch);
+  menuSearchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') performMenuSearch();
+  });
+}
+
+// Theme Functions - KEEPING YOUR ORIGINAL STRUCTURE
+function toggleTheme() {
+  const body = document.body;
+  const isDark = body.classList.contains('dark');
+  const newTheme = isDark ? 'light' : 'dark';
+  
+  const overlay = document.querySelector('.theme-transition-overlay');
+  overlay.style.opacity = '1';
+  overlay.style.pointerEvents = 'auto';
+  
+  setTimeout(() => {
+    body.classList.remove('dark', 'light');
+    body.classList.add(newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcons(newTheme);
+    
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+  }, 100);
+}
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.body.classList.add(savedTheme);
+  updateThemeIcons(savedTheme);
+}
+
+function updateThemeIcons(theme) {
+  const darkIcon = document.querySelector('.dark-icon');
+  const lightIcon = document.querySelector('.light-icon');
+  if (darkIcon && lightIcon) {
+    darkIcon.hidden = theme === 'light';
+    lightIcon.hidden = theme === 'dark';
+  }
+}
+
+// Initialize - WITH ADDED ERROR HANDLING
+window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  
+  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+  
+  setupMenuToggle();
+  setupMenuSearch();
+  
+  try {
+    if (document.querySelector('.banner-slider')) {
+      loadBannerSlider();
+    }
+
+    if (document.querySelector('.movie-list')) {
+      fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
+      fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
+      fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
+    }
+  } catch (err) {
+    console.error('Initialization error:', err);
+  }
+});
