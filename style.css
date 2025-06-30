@@ -15,8 +15,8 @@ body {
   line-height: 1.4;
   letter-spacing: 0.5px;
   transition: background-color 0.3s ease, color 0.3s ease;
-  background-color: #121212; /* Default dark background */
-  color: #E0E0E0; /* Default dark text */
+  background-color: #121212;
+  color: #E0E0E0;
 }
 
 /* ===== THEME SYSTEM ===== */
@@ -41,6 +41,60 @@ body.light {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s;
+}
+
+/* ===== BANNER FIXES ===== */
+.banner-slider {
+  position: relative;
+  width: 100%;
+  height: 60vh;
+  max-height: 600px;
+  min-height: 300px;
+  overflow: hidden;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.banner-slider.loaded {
+  opacity: 1;
+}
+
+#poster-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Mobile-specific banner adjustments */
+@media (max-width: 768px) {
+  .banner-slider {
+    height: 50vh;
+    min-height: 250px;
+  }
+  
+  /* Remove any potential margin sources */
+  body {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Gradient transition to content */
+.banner-slider::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 30px;
+  background: linear-gradient(to bottom, transparent, #121212);
+  z-index: 1;
+}
+
+body.light .banner-slider::after {
+  background: linear-gradient(to bottom, transparent, #f4f4f4);
 }
 
 /* ===== NAVBAR STYLES ===== */
@@ -240,23 +294,11 @@ body.light #menu-search-input {
 .featured {
   position: relative;
   width: 100%;
-  margin-bottom: 30px;
-  background-color: #1a1a1a;
+  margin-bottom: 0; /* Removed margin to prevent gaps */
 }
 
 body.light .featured {
   background-color: #eeeeee;
-}
-
-.banner-slider {
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  min-height: 400px;
-  background: #000;
-}
-
-.banner-slider.loaded {
-  opacity: 1;
 }
 
 .poster-box {
@@ -609,4 +651,14 @@ body.light ::-webkit-scrollbar-track {
   .media-section {
     padding: 0 15px;
   }
-}
+  
+  /* Extra mobile fixes for banner */
+  .banner-slider {
+    height: 45vh;
+    min-height: 200px;
+  }
+  
+  .banner-slider::after {
+    height: 20px;
+  }
+  }
