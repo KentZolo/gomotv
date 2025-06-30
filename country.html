@@ -208,7 +208,7 @@
       // Load country list or movies based on URL params
       if (countryCode && countryName) {
         document.getElementById('country-list-section').style.display = 'none';
-        document.getElementById('page-title').textContent = `${countryName} Movies`;
+        document.getElementById('page-title').textContent = `${countryName}`;
         fetchCountryMovies(countryCode, countryName, currentPage);
       } else {
         loadCountryList();
