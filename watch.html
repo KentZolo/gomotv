@@ -14,6 +14,16 @@
       color: #fff;
     }
 
+    body.dark {
+      background-color: #000;
+      color: #fff;
+    }
+
+    body.light {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
     .container {
       max-width: 1200px;
       margin: 0 auto;
@@ -21,7 +31,157 @@
       position: relative;
     }
 
-    /* ===== PLAYER FIXES ===== */
+    /* ===== NAVBAR STYLES ===== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .logo {
+      margin: 0;
+      font-size: 24px;
+      color: #e50914;
+    }
+
+    .menu-toggle {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 24px;
+      height: 18px;
+      cursor: pointer;
+      z-index: 1001;
+    }
+
+    .menu-toggle span {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background-color: #fff;
+      transition: all 0.3s;
+    }
+
+    .menu-toggle.active span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .menu-toggle.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .menu-toggle.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 5px;
+      margin-left: 15px;
+    }
+
+    .theme-transition-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    /* ===== HAMBURGER MENU STYLES ===== */
+    .hamburger-menu {
+      position: fixed;
+      top: 0;
+      left: -300px;
+      width: 280px;
+      height: 100%;
+      background-color: #111;
+      z-index: 1000;
+      transition: left 0.3s;
+      padding-top: 70px;
+      overflow-y: auto;
+    }
+
+    .hamburger-menu.active {
+      left: 0;
+    }
+
+    .menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 999;
+      display: none;
+    }
+
+    .menu-overlay.active {
+      display: block;
+    }
+
+    .hamburger-menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .hamburger-menu li a {
+      display: block;
+      padding: 15px 20px;
+      color: #fff;
+      text-decoration: none;
+      border-bottom: 1px solid #222;
+      transition: background-color 0.2s;
+    }
+
+    .hamburger-menu li a:hover {
+      background-color: #222;
+    }
+
+    .menu-search-bar {
+      padding: 15px;
+      display: flex;
+      border-bottom: 1px solid #222;
+    }
+
+    .menu-search-bar input {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px 0 0 4px;
+      background-color: #222;
+      color: #fff;
+    }
+
+    .menu-search-bar button {
+      padding: 8px 12px;
+      border: none;
+      background-color: #333;
+      color: #fff;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+    }
+
+    /* ===== PLAYER STYLES ===== */
     .player-container {
       position: relative;
       width: 100%;
@@ -31,6 +191,7 @@
       margin-bottom: 20px;
       border-radius: 8px;
       overflow: hidden;
+      margin-top: 70px; /* Space for navbar */
     }
 
     #player-frame {
@@ -43,32 +204,27 @@
       z-index: 10;
     }
 
-    /* Simple Close Button at the top */
+    /* Simple Close Button */
     .simple-close-btn {
       position: absolute;
-      top: 20px;
+      top: 90px; /* Below navbar */
       right: 20px;
-      background: rgba(0,0,0,0.7);
+      background: none;
       color: white;
       border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      font-size: 24px;
+      font-size: 32px;
       cursor: pointer;
       z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s;
+      padding: 0;
+      margin: 0;
+      line-height: 1;
     }
 
     .simple-close-btn:hover {
-      background: #e50914;
-      transform: scale(1.1);
+      color: #e50914;
     }
 
-    /* Server Controls Styling - UPDATED */
+    /* Server Controls Styling */
     .server-controls {
       margin-bottom: 20px;
       background: #111;
@@ -209,7 +365,7 @@
       text-overflow: ellipsis;
     }
 
-    /* Disclaimer Styling - UPDATED */
+    /* Disclaimer Styling */
     .disclaimer {
       padding: 20px;
       background: #111;
@@ -258,8 +414,9 @@
       }
       
       .simple-close-btn {
-        top: 15px;
+        top: 85px;
         right: 15px;
+        font-size: 28px;
       }
     }
 
@@ -277,16 +434,51 @@
       }
       
       .simple-close-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 20px;
+        font-size: 24px;
+      }
+      
+      .hamburger-menu {
+        width: 250px;
       }
     }
   </style>
 </head>
-<body>
+<body class="dark">
+  <!-- FIXED NAVBAR -->
+  <header class="navbar">
+    <div class="menu-toggle" id="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <h1 class="logo">GomoTV</h1>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+      <span class="dark-icon">❍</span>
+      <span class="light-icon" hidden>☼</span>
+    </button>
+    <div class="theme-transition-overlay"></div>
+  </header>
+
+  <!-- HAMBURGER MENU -->
+  <nav class="hamburger-menu" id="hamburger-menu">
+    <div class="menu-search-bar">
+      <input type="text" id="menu-search-input" placeholder="Search movies or shows...">
+      <button id="menu-search-button">🔍</button>
+    </div>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="genre.html">Genre</a></li>
+      <li><a href="country.html">Country</a></li>
+      <li><a href="movies.html">Movies</a></li> 
+      <li><a href="tvshows.html">TV Shows</a></li>
+      <li><a href="topimdb.html">Top IMDB</a></li> 
+    </ul>
+  </nav>
+  <div class="menu-overlay"></div>
+
+  <!-- MAIN CONTENT -->
   <div class="container">
-    <!-- Simple Close Button at the very top -->
+    <!-- Simple Close Button -->
     <button class="simple-close-btn" id="simple-close-btn">×</button>
     
     <div class="player-container">
@@ -356,7 +548,103 @@
       }
     ];
 
+    // Theme Functions
+    function toggleTheme() {
+      const body = document.body;
+      const isDark = body.classList.contains('dark');
+      const newTheme = isDark ? 'light' : 'dark';
+      
+      const overlay = document.querySelector('.theme-transition-overlay');
+      overlay.style.opacity = '1';
+      overlay.style.pointerEvents = 'auto';
+      
+      setTimeout(() => {
+        body.classList.remove('dark', 'light');
+        body.classList.add(newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcons(newTheme);
+        
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+      }, 100);
+    }
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(savedTheme);
+      updateThemeIcons(savedTheme);
+    }
+
+    function updateThemeIcons(theme) {
+      document.querySelector('.dark-icon').hidden = theme === 'light';
+      document.querySelector('.light-icon').hidden = theme === 'dark';
+    }
+
+    // Hamburger Menu Functions
+    function setupMenuToggle() {
+      const menuBtn = document.getElementById('menu-toggle');
+      const menu = document.getElementById('hamburger-menu');
+      const overlay = document.querySelector('.menu-overlay');
+
+      if (!menuBtn || !menu) return;
+
+      menuBtn.addEventListener('click', () => {
+        menuBtn.classList.toggle('active');
+        menu.classList.toggle('active');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+      });
+
+      overlay.addEventListener('click', () => {
+        menuBtn.classList.remove('active');
+        menu.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      });
+
+      // Close menu when clicking on any link
+      document.querySelectorAll('#hamburger-menu a').forEach(link => {
+        link.addEventListener('click', () => {
+          menuBtn.classList.remove('active');
+          menu.classList.remove('active');
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        });
+      });
+    }
+
+    function setupMenuSearch() {
+      const menuSearchInput = document.getElementById('menu-search-input');
+      const menuSearchButton = document.getElementById('menu-search-button');
+
+      if (!menuSearchButton || !menuSearchInput) return;
+
+      function performMenuSearch() {
+        const searchTerm = menuSearchInput.value.trim();
+        if (searchTerm.length >= 2) {
+          document.getElementById('hamburger-menu').classList.remove('active');
+          document.querySelector('.menu-overlay').classList.remove('active');
+          document.getElementById('menu-toggle').classList.remove('active');
+          document.body.style.overflow = '';
+          window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+        } else {
+          alert('Please enter at least 2 characters');
+        }
+      }
+
+      menuSearchButton.addEventListener('click', performMenuSearch);
+      menuSearchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') performMenuSearch();
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
+      // Initialize theme and menu
+      initTheme();
+      document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+      setupMenuToggle();
+      setupMenuSearch();
+
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
       const type = params.get('type');
@@ -390,7 +678,7 @@
 
       // Setup simple close button - redirects to homepage
       document.getElementById('simple-close-btn').addEventListener('click', () => {
-        window.location.href = 'index.html'; // Redirect to homepage
+        window.location.href = 'index.html';
       });
     });
 
@@ -468,64 +756,4 @@
         }
       } catch (err) {
         console.error('Error loading recommendations:', err);
-        document.getElementById('recommendations-grid').innerHTML = '<p>Failed to load recommendations.</p>';
-      }
-    }
-
-    function tryServers(type, id) {
-      let currentIndex = 0;
-      
-      function tryNextServer() {
-        if (currentIndex >= SERVERS.length) {
-          showError('No working server found');
-          return;
-        }
-        
-        const server = SERVERS[currentIndex];
-        updateActiveServerButton(server.id);
-        loadServer(server, type, id, () => {
-          currentIndex++;
-          setTimeout(tryNextServer, 1000); // Retry after 1 second
-        });
-      }
-      
-      tryNextServer();
-    }
-
-    function loadServer(server, type, id, onError) {
-      const iframe = document.getElementById('player-frame');
-      const loading = document.getElementById('loading');
-      
-      loading.style.display = 'block';
-      iframe.style.display = 'none';
-      loading.textContent = `Loading ${server.name}...`;
-      
-      const playerUrl = server.url(type, id);
-      iframe.src = playerUrl;
-      
-      iframe.onload = () => {
-        loading.style.display = 'none';
-        iframe.style.display = 'block';
-        updateActiveServerButton(server.id);
-      };
-      
-      iframe.onerror = () => {
-        if (onError) onError();
-      };
-    }
-
-    function updateActiveServerButton(serverId) {
-      document.querySelectorAll('.server-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.id === serverId);
-      });
-    }
-
-    function showError(message) {
-      const loading = document.getElementById('loading');
-      loading.textContent = message;
-      loading.style.display = 'block';
-      document.getElementById('player-frame').style.display = 'none';
-    }
-  </script>
-</body>
-</html>
+        document.getElementById('recommendatio
