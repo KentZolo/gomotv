@@ -43,29 +43,45 @@ body.light {
   pointer-events: none;
   transition: opacity 0.3s;
 }
+/* ===== THEME TOGGLE FIXES ===== */
+.theme-toggle {
+  /* Remove all borders and outlines */
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  
+  /* Remove any background artifacts */
+  background-color: transparent !important;
+  
+  /* Reset any inherited styles */
+  padding: 0;
+  margin: 0;
+}
 
-.theme-toggle .dark-icon,
-.theme-toggle .light-icon {
+/* If using emoji as icons */
+.theme-toggle span {
   display: inline-block;
-  width: 24px;
-  height: 24px;
-  line-height: 24px;
-  text-align: center;
+  text-shadow: none;
+  border: none;
 }
 
-body.dark .theme-toggle .light-icon,
-body.light .theme-toggle .dark-icon {
-  display: none;
-}
-
+/* Dark mode adjustments */
 body.dark .theme-toggle {
-  color: #ffffff;
+  color: #fff;
+  text-shadow: 0 0 3px rgba(255,255,255,0.3);
 }
 
+/* Light mode adjustments */
 body.light .theme-toggle {
-  color: #333333;
+  color: #333;
+  text-shadow: 0 0 3px rgba(0,0,0,0.1);
 }
 
+/* Remove any pseudo-element borders */
+.theme-toggle::before,
+.theme-toggle::after {
+  content: none !important;
+}
 /* ===== BANNER SYSTEM ===== */
 .banner-container {
   position: relative;
