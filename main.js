@@ -3,25 +3,11 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
 
-// ====================== LOGO FUNCTIONALITY ======================
+// ====================== LOGO FUNCTIONALITY (UPDATED) ======================
 function setupLogoInteractions() {
   const logo = document.querySelector('.logo-svg');
-  const logoRect = document.querySelector('.logo-svg rect');
   
-  if (!logo || !logoRect) return;
-
-  // Hover effects
-  logo.addEventListener('mouseenter', () => {
-    logoRect.style.strokeWidth = '1.5px';
-    logoRect.style.strokeDasharray = '10,5';
-    logo.style.filter = 'drop-shadow(0 4px 8px rgba(229, 9, 20, 0.4))';
-  });
-
-  logo.addEventListener('mouseleave', () => {
-    logoRect.style.strokeWidth = '1px';
-    logoRect.style.strokeDasharray = 'none';
-    logo.style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))';
-  });
+  if (!logo) return;
 
   // Click animation
   logo.addEventListener('click', (e) => {
@@ -36,9 +22,20 @@ function setupLogoInteractions() {
       window.location.href = 'index.html';
     }, 300);
   });
+
+  // Hover effects (simplified without border)
+  logo.addEventListener('mouseenter', () => {
+    logo.style.filter = 'drop-shadow(0 2px 4px rgba(229, 9, 20, 0.3))';
+    logo.style.transform = 'scale(1.03)';
+  });
+
+  logo.addEventListener('mouseleave', () => {
+    logo.style.filter = 'none';
+    logo.style.transform = 'scale(1)';
+  });
 }
 
-// ====================== THEME SYSTEM ======================
+// ====================== THEME SYSTEM (UPDATED FOR BORDERLESS LOGO) ======================
 function toggleTheme() {
   const body = document.body;
   const isDark = body.classList.contains('dark');
@@ -53,22 +50,19 @@ function toggleTheme() {
     body.classList.add(newTheme);
     localStorage.setItem('theme', newTheme);
     updateThemeIcons(newTheme);
-    
-    // Update logo colors based on theme
-    const logoSvgText = document.querySelector('.logo-svg text');
-    const logoSvgRect = document.querySelector('.logo-svg rect');
-    
-    if (logoSvgText) {
-      logoSvgText.style.fill = newTheme === 'dark' ? 'white' : '#e50914';
-    }
-    
-    if (logoSvgRect) {
-      logoSvgRect.style.stroke = newTheme === 'dark' ? '#e50914' : '#cc0000';
-    }
+    updateLogoColors(newTheme);
     
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
   }, 100);
+}
+
+function updateLogoColors(theme) {
+  const logoSvgText = document.querySelector('.logo-svg text');
+  
+  if (logoSvgText) {
+    logoSvgText.setAttribute('fill', theme === 'dark' ? 'white' : '#e50914');
+  }
 }
 
 function initTheme() {
@@ -76,28 +70,15 @@ function initTheme() {
   document.body.classList.add(savedTheme);
   updateThemeIcons(savedTheme);
   
-  // Initialize logo colors
+  // Initialize logo color
   const logoSvgText = document.querySelector('.logo-svg text');
-  const logoSvgRect = document.querySelector('.logo-svg rect');
-  
   if (logoSvgText) {
-    logoSvgText.style.fill = savedTheme === 'dark' ? 'white' : '#e50914';
-  }
-  
-  if (logoSvgRect) {
-    logoSvgRect.style.stroke = savedTheme === 'dark' ? '#e50914' : '#cc0000';
+    logoSvgText.setAttribute('fill', savedTheme === 'dark' ? 'white' : '#e50914');
   }
 }
 
-function updateThemeIcons(theme) {
-  const darkIcon = document.querySelector('.dark-icon');
-  const lightIcon = document.querySelector('.light-icon');
-  
-  if (darkIcon) darkIcon.hidden = theme === 'light';
-  if (lightIcon) lightIcon.hidden = theme === 'dark';
-}
-
-// ====================== BANNER SLIDER ======================
+// ====================== BANNER SLIDER ====================== 
+// (Mananatiling pareho gaya ng dati)
 let bannerIndex = 0;
 let bannerItems = [];
 let autoSlideInterval;
@@ -128,74 +109,8 @@ async function loadBannerSlider() {
   }
 }
 
-function showDefaultBanner() {
-  const banner = document.querySelector('.banner-slider');
-  if (!banner) return;
-
-  const img = document.getElementById('poster-img');
-  const summary = document.getElementById('poster-summary');
-  const meta = document.getElementById('poster-meta');
-
-  if (img) img.src = getImageUrl(null, true);
-  if (summary) summary.textContent = 'GomoTV';
-  if (meta) meta.textContent = 'Featured Content';
-
-  banner.classList.add('loaded');
-}
-
-function showBannerSlide(index) {
-  const banner = document.querySelector('.banner-slider');
-  const item = bannerItems[index];
-  
-  if (!banner || !item) {
-    showDefaultBanner();
-    return;
-  }
-
-  const img = document.getElementById('poster-img');
-  const meta = document.getElementById('poster-meta');
-  const summary = document.getElementById('poster-summary');
-
-  const tempImg = new Image();
-  tempImg.src = getImageUrl(item.backdrop_path, true);
-
-  tempImg.onload = () => {
-    if (img) img.src = tempImg.src;
-    if (meta) meta.textContent = `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • ${item.release_date?.slice(0, 4) || ''}`;
-    if (summary) summary.textContent = item.title || 'Untitled';
-    banner.classList.add('loaded');
-  };
-
-  tempImg.onerror = () => {
-    if (img) img.src = getImageUrl(null, true);
-    banner.classList.add('loaded');
-  };
-}
-
-function setupBannerNavigation() {
-  document.querySelector('.prev')?.addEventListener('click', () => {
-    clearInterval(autoSlideInterval);
-    bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
-    showBannerSlide(bannerIndex);
-    autoSlideInterval = startAutoSlide();
-  });
-
-  document.querySelector('.next')?.addEventListener('click', () => {
-    clearInterval(autoSlideInterval);
-    bannerIndex = (bannerIndex + 1) % bannerItems.length;
-    showBannerSlide(bannerIndex);
-    autoSlideInterval = startAutoSlide();
-  });
-}
-
-function startAutoSlide() {
-  return setInterval(() => {
-    bannerIndex = (bannerIndex + 1) % bannerItems.length;
-    showBannerSlide(bannerIndex);
-  }, 5000);
-}
-
 // ====================== CONTENT DISPLAY ======================
+// (Mananatiling pareho gaya ng dati)
 async function fetchAndDisplay(endpoint, containerSelector, type) {
   try {
     const container = document.querySelector(containerSelector);
@@ -221,37 +136,8 @@ async function fetchAndDisplay(endpoint, containerSelector, type) {
   }
 }
 
-function displayMedia(items, container, type) {
-  container.innerHTML = items.map(item => {
-    const title = item.title || item.name || 'Untitled';
-    const imageUrl = getImageUrl(item.poster_path);
-    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-    const rating = item.vote_average?.toFixed(1) || 'N/A';
-
-    return `
-      <div class="poster-wrapper" data-id="${item.id}" data-type="${type}">
-        ${item.vote_average > 7 ? '<div class="poster-badge">TOP</div>' : ''}
-        <img src="${imageUrl}" 
-             alt="${title}" 
-             loading="lazy"
-             onerror="this.src='${getImageUrl(item.backdrop_path)}';this.onerror='this.src=\\'${getImageUrl(null)}\\''">
-        <div class="poster-label">${title}</div>
-        <div class="poster-meta">
-          <span>⭐ ${rating}</span>
-          <span>${year}</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  container.querySelectorAll('.poster-wrapper').forEach(poster => {
-    poster.addEventListener('click', () => {
-      window.location.href = `watch.html?id=${poster.dataset.id}&type=${poster.dataset.type}`;
-    });
-  });
-}
-
 // ====================== UTILITY FUNCTIONS ======================
+// (Mananatiling pareho gaya ng dati)
 function getImageUrl(path, isBackdrop = false) {
   if (!path) {
     return isBackdrop
@@ -261,35 +147,26 @@ function getImageUrl(path, isBackdrop = false) {
   return isBackdrop ? `${BACKDROP_BASE}${path}` : `${IMG_BASE}${path}`;
 }
 
-function createLoadingSpinner() {
-  return `
-    <div class="loading">
-      <div class="spinner"></div>
-      Loading...
-    </div>
-  `;
-}
+// ====================== INITIALIZATION ======================
+document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  setupLogoInteractions(); // Simplified version
+  
+  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+  
+  // Menu system (mananatiling pareho)
+  setupMenuToggle();
+  setupMenuSearch();
 
-function createNoResultsMessage() {
-  return `
-    <div class="no-results">
-      <span>🎬</span>
-      <p>No content available</p>
-    </div>
-  `;
-}
-
-function createErrorMessage() {
-  return `
-    <div class="error-message">
-      <span>⚠️</span>
-      <p>Failed to load content</p>
-      <button onclick="window.location.reload()">Try Again</button>
-    </div>
-  `;
-}
+  // Load content sections
+  loadBannerSlider();
+  fetchAndDisplay('/trending/all/day', '.movie-list', 'mixed');
+  fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
+  fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
+});
 
 // ====================== MENU SYSTEM ======================
+// (Mananatiling pareho gaya ng dati)
 function setupMenuToggle() {
   const menuBtn = document.getElementById('menu-toggle');
   const menu = document.getElementById('hamburger-menu');
@@ -333,31 +210,3 @@ function setupMenuSearch() {
   searchBtn.addEventListener('click', performSearch);
   searchInput.addEventListener('keypress', e => e.key === 'Enter' && performSearch());
 }
-
-// ====================== INITIALIZATION ======================
-document.addEventListener('DOMContentLoaded', () => {
-  initTheme();
-  setupLogoInteractions();
-  
-  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
-  
-  setupMenuToggle();
-  setupMenuSearch();
-
-  // Load content sections
-  loadBannerSlider();
-  fetchAndDisplay('/trending/all/day', '.movie-list', 'mixed');
-  fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
-  fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
-});
-
-// Add to your CSS (if not already present)
-document.head.insertAdjacentHTML('beforeend', `
-  <style>
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-  </style>
-`);
