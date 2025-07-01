@@ -718,25 +718,23 @@ body.light ::-webkit-scrollbar-track {
     font-size: 0.7rem;
   }
 }
-
+/* Logo container */
 .logo-container {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
-  width: 200px; /* Match your design */
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
 }
 
+/* SVG adjustments */
 .logo-svg {
   width: 100%;
-  height: auto;
-  display: block;
+  height: 100%;
 }
 
-/* Theme colors */
-body.dark .logo-svg text {
-  fill: white;
-}
-
-body.light .logo-svg text {
-  fill: #e50914;
+/* Text vertical centering */
+.logo-svg text {
+  dominant-baseline: middle;
+  text-anchor: middle;
 }
