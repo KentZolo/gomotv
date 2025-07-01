@@ -16,12 +16,26 @@
       <span></span>
       <span></span>
     </div>
-    <h1 class="logo">GOMOTV</h1>
-    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-      <span class="dark-icon">❍</span>
-      <span class="light-icon" hidden>☼</span>
-    </button>
-    <div class="theme-transition-overlay"></div>
+     <svg class="logo-svg" width="180" height="50" viewBox="0 0 180 50">
+    <defs>
+      <filter id="blend">
+        <feBlend mode="screen" in="SourceGraphic" in2="BackgroundImage"/>
+      </filter>
+    </defs>
+    <text x="50%" y="50%" 
+          fill="white"
+          font-family="VT323"
+          font-size="40"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          filter="url(#blend)">GOMOTV</text>
+  </svg>
+  <!-- HANGGANG DITO -->
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+    <span class="dark-icon">❍</span>
+    <span class="light-icon" hidden>☼</span>
+  </button>
+  <div class="theme-transition-overlay"></div>
   </header>
 
   <!-- HAMBURGER MENU (SEPARATE FROM NAVBAR) -->
