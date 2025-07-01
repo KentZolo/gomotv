@@ -3,6 +3,53 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
 
+// ====================== LOGO PAINT EFFECT ======================
+function setupPaintBrushLogo() {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const defs = document.createElementNS(svgNS, "defs");
+  const filter = document.createElementNS(svgNS, "filter");
+  filter.setAttribute("id", "paintbrush");
+  filter.setAttribute("x", "-20%");
+  filter.setAttribute("y", "-20%");
+  filter.setAttribute("width", "140%");
+  filter.setAttribute("height", "140%");
+
+  // Create turbulence for paint texture
+  const feTurbulence = document.createElementNS(svgNS, "feTurbulence");
+  feTurbulence.setAttribute("type", "fractalNoise");
+  feTurbulence.setAttribute("baseFrequency", "0.05");
+  feTurbulence.setAttribute("numOctaves", "3");
+  feTurbulence.setAttribute("result", "noise");
+
+  // Create displacement map
+  const feDisplacementMap = document.createElementNS(svgNS, "feDisplacementMap");
+  feDisplacementMap.setAttribute("in", "SourceGraphic");
+  feDisplacementMap.setAttribute("in2", "noise");
+  feDisplacementMap.setAttribute("scale", "8");
+  feDisplacementMap.setAttribute("xChannelSelector", "R");
+  feDisplacementMap.setAttribute("yChannelSelector", "G");
+
+  // Append filter elements
+  filter.appendChild(feTurbulence);
+  filter.appendChild(feDisplacementMap);
+  defs.appendChild(filter);
+
+  // Add to SVG
+  const svg = document.querySelector('.logo-svg');
+  if (svg) {
+    svg.insertBefore(defs, svg.firstChild);
+    
+    // Apply to text
+    const text = svg.querySelector('text');
+    if (text) {
+      text.setAttribute('filter', 'url(#paintbrush)');
+      text.setAttribute('stroke', '#000');
+      text.setAttribute('stroke-width', '1');
+      text.setAttribute('paint-order', 'stroke');
+    }
+  }
+}
+
 // ====================== CORE FUNCTIONS ======================
 function getImageUrl(path, isBackdrop = false) {
   if (!path) {
@@ -28,7 +75,6 @@ async function loadBannerSlider() {
       setupBannerNavigation();
       startAutoSlide();
       
-      // Add click handler for the entire banner content area
       document.querySelector('.banner-content').addEventListener('click', function() {
         const item = bannerItems[bannerIndex];
         window.location.href = `watch.html?id=${item.id}&type=movie`;
@@ -74,7 +120,6 @@ function showBannerSlide(index) {
   const meta = document.getElementById('poster-meta');
   const summary = document.getElementById('poster-summary');
 
-  // Preload image first
   const tempImg = new Image();
   tempImg.src = getImageUrl(item.backdrop_path, true);
 
@@ -224,16 +269,25 @@ function toggleTheme() {
     body.classList.add(newTheme);
     localStorage.setItem('theme', newTheme);
     updateThemeIcons(newTheme);
+    updateLogoColor(newTheme);
     
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
   }, 100);
 }
 
+function updateLogoColor(theme) {
+  const text = document.querySelector('.logo-svg text');
+  if (text) {
+    text.setAttribute('fill', theme === 'dark' ? '#ffffff' : '#e50914');
+  }
+}
+
 function initTheme() {
   const savedTheme = localStorage.getItem('theme') || 'dark';
   document.body.classList.add(savedTheme);
   updateThemeIcons(savedTheme);
+  updateLogoColor(savedTheme);
 }
 
 function updateThemeIcons(theme) {
@@ -248,13 +302,13 @@ function updateThemeIcons(theme) {
 
 // ====================== INITIALIZATION ======================
 document.addEventListener('DOMContentLoaded', () => {
+  setupPaintBrushLogo(); // Initialize paint brush effect
   initTheme();
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
   
   setupMenuToggle();
   setupMenuSearch();
 
-  // Load content sections
   if (document.querySelector('.banner-slider')) loadBannerSlider();
   if (document.querySelector('.movie-list')) {
     fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
