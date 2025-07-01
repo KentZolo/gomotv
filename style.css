@@ -704,20 +704,6 @@ body.light ::-webkit-scrollbar-track {
     padding: 12px 15px;
   }
 
-  .logo {
-   font-size: 2rem; /* Pinalaki mula sa 1.5rem */
-   letter-spacing: 0.3em; 
-   color: white;
-  -webkit-text-stroke: 0.5px #e50914;
-  text-shadow: 0 0 1px #e50914;
-}
-
-@media (max-width: 768px) {
-  .logo {
-    -webkit-text-stroke: 0.7px #e50914; /* Thicker outline on mobile */
-  }
-}
- 
   .poster-wrapper {
     aspect-ratio: 2/3;
   }
