@@ -7,41 +7,54 @@
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <style>
+    /* Additional inline styles for logo effects */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
 </head>
 <body>
-  <!-- FIXED NAVBAR STRUCTURE -->
+  <!-- FIXED NAVBAR STRUCTURE WITH CENTERED LOGO -->
   <header class="navbar">
     <div class="menu-toggle" id="menu-toggle">
       <span></span>
       <span></span>
       <span></span>
     </div>
-     <svg class="logo-svg" width="200" height="60" viewBox="0 0 200 60">
-  <!-- Background Rectangle -->
-  <rect width="98%" height="90%" 
-        x="1%" y="5%"
-        fill="rgba(0,0,0,0.2)"
-        rx="8"
-        stroke="#e50914"
-        stroke-width="0.5"/>
-  
-  <text x="50%" y="58%"
-      font-family="VT323"
-      font-size="40"
-      text-anchor="middle"
-      dominant-baseline="middle">
-  GOMOTV
-  </text>
-     </svg>
-  <!-- HANGGANG DITO -->
-  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-    <span class="dark-icon">❍</span>
-    <span class="light-icon" hidden>☼</span>
-  </button>
-  <div class="theme-transition-overlay"></div>
+    
+    <!-- CENTERED LOGO CONTAINER -->
+    <div class="logo-container">
+      <svg class="logo-svg" width="200" height="60" viewBox="0 0 200 60">
+        <!-- Background Rectangle with thinner border -->
+        <rect width="98%" height="90%" 
+              x="1%" y="5%"
+              fill="rgba(0,0,0,0.2)"
+              rx="8"
+              stroke="#e50914"
+              stroke-width="1"/>
+        
+        <!-- Logo Text -->
+        <text x="50%" y="58%"
+              font-family="VT323"
+              font-size="40"
+              text-anchor="middle"
+              dominant-baseline="middle">
+          GOMOTV
+        </text>
+      </svg>
+    </div>
+    
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+      <span class="dark-icon">❍</span>
+      <span class="light-icon" hidden>☼</span>
+    </button>
+    <div class="theme-transition-overlay"></div>
   </header>
 
-  <!-- HAMBURGER MENU (SEPARATE FROM NAVBAR) -->
+  <!-- HAMBURGER MENU -->
   <nav class="hamburger-menu" id="hamburger-menu">
     <div class="menu-search-bar">
       <input type="text" id="menu-search-input" placeholder="Search movies or shows...">
@@ -57,7 +70,7 @@
     </ul>
   </nav>
 
-  <!-- UPDATED BANNER SECTION -->
+  <!-- BANNER SECTION -->
   <div class="banner-container">
     <div class="banner-slider">
       <button class="nav prev">‹</button>
@@ -72,7 +85,7 @@
     <div class="banner-bottom-filler"></div>
   </div>
 
-  <!-- CONTENT SECTIONS (REMAIN THE SAME) -->
+  <!-- CONTENT SECTIONS -->
   <section class="media-section">
     <h2>Trending</h2>
     <div class="search-results-grid homepage-grid movie-list"></div>
