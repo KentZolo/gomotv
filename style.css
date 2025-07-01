@@ -58,6 +58,17 @@ body.light {
   box-sizing: border-box;
 }
 
+/* Dark theme header */
+.dark .navbar {
+    background-color: #1a1a2e;
+}
+
+/* Light theme header */
+.light .navbar {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
 body.light .navbar {
   background-color: #ffffff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
