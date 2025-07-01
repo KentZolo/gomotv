@@ -240,13 +240,6 @@ function setupMenuSearch() {
 
 // ====================== THEME SYSTEM ======================
 function toggleTheme() {
- const logoSvg = document.querySelector('.logo-svg text');
- if (newTheme === 'dark') {
-   logoSvg.setAttribute('fill', 'white');
- } else {
-   logoSvg.setAttribute('fill', '#e50914');
-}
-  
   const body = document.body;
   const isDark = body.classList.contains('dark');
   const newTheme = isDark ? 'light' : 'dark';
@@ -264,6 +257,14 @@ function toggleTheme() {
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
   }, 100);
+}
+
+   // Sa theme toggle function
+const logoSvg = document.querySelector('.logo-svg text');
+if (newTheme === 'dark') {
+  logoSvg.setAttribute('fill', 'white');
+} else {
+  logoSvg.setAttribute('fill', '#e50914');
 }
 
 function initTheme() {
