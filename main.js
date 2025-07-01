@@ -3,14 +3,80 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
 
-// ====================== IMAGE HANDLING ======================
-function getImageUrl(path, isBackdrop = false) {
-  if (!path) {
-    return isBackdrop
-      ? 'https://via.placeholder.com/1920x1080/222/666?text=No+Banner'
-      : 'https://via.placeholder.com/500x750/222/666?text=No+Poster';
+// ====================== LOGO FUNCTIONALITY ======================
+function setupLogoInteractions() {
+  const logoSvg = document.querySelector('.logo-svg');
+  const logoSvgText = document.querySelector('.logo-svg text');
+  const logoSvgRect = document.querySelector('.logo-svg rect');
+  
+  if (!logoSvg || !logoSvgText || !logoSvgRect) return;
+
+  // Hover effects
+  logoSvg.addEventListener('mouseenter', () => {
+    logoSvgRect.style.strokeWidth = '2px';
+    logoSvgRect.style.strokeDasharray = '4,4';
+  });
+
+  logoSvg.addEventListener('mouseleave', () => {
+    logoSvgRect.style.strokeWidth = '1.5px';
+    logoSvgRect.style.strokeDasharray = '2,2';
+  });
+
+  // Click animation
+  logoSvg.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = 'index.html';
+  });
+}
+
+// ====================== THEME SYSTEM ======================
+function toggleTheme() {
+  const body = document.body;
+  const isDark = body.classList.contains('dark');
+  const newTheme = isDark ? 'light' : 'dark';
+  
+  const overlay = document.querySelector('.theme-transition-overlay');
+  overlay.style.opacity = '1';
+  overlay.style.pointerEvents = 'auto';
+  
+  setTimeout(() => {
+    body.classList.remove('dark', 'light');
+    body.classList.add(newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcons(newTheme);
+    updateLogoColors(newTheme);
+    
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+  }, 100);
+}
+
+function updateLogoColors(theme) {
+  const logoSvgText = document.querySelector('.logo-svg text');
+  const logoSvgRect = document.querySelector('.logo-svg rect');
+  
+  if (logoSvgText) {
+    logoSvgText.setAttribute('fill', theme === 'dark' ? 'white' : '#e50914');
   }
-  return isBackdrop ? `${BACKDROP_BASE}${path}` : `${IMG_BASE}${path}`;
+  
+  if (logoSvgRect) {
+    logoSvgRect.setAttribute('stroke', theme === 'dark' ? '#ff4d4d' : '#cc0000');
+  }
+}
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.body.classList.add(savedTheme);
+  updateThemeIcons(savedTheme);
+  updateLogoColors(savedTheme);
+}
+
+function updateThemeIcons(theme) {
+  const darkIcon = document.querySelector('.dark-icon');
+  const lightIcon = document.querySelector('.light-icon');
+  
+  if (darkIcon) darkIcon.hidden = theme === 'light';
+  if (lightIcon) lightIcon.hidden = theme === 'dark';
 }
 
 // ====================== BANNER SLIDER ======================
@@ -71,7 +137,6 @@ function showBannerSlide(index) {
   const meta = document.getElementById('poster-meta');
   const summary = document.getElementById('poster-summary');
 
-  // Preload image with error handling
   const tempImg = new Image();
   tempImg.src = getImageUrl(item.backdrop_path, true);
 
@@ -156,7 +221,6 @@ function displayMedia(items, container, type) {
     `;
   }).join('');
 
-  // Add click handlers
   container.querySelectorAll('.poster-wrapper').forEach(poster => {
     poster.addEventListener('click', () => {
       window.location.href = `watch.html?id=${poster.dataset.id}&type=${poster.dataset.type}`;
@@ -164,7 +228,16 @@ function displayMedia(items, container, type) {
   });
 }
 
-// ====================== UI COMPONENTS ======================
+// ====================== UTILITY FUNCTIONS ======================
+function getImageUrl(path, isBackdrop = false) {
+  if (!path) {
+    return isBackdrop
+      ? 'https://via.placeholder.com/1920x1080/222/666?text=No+Banner'
+      : 'https://via.placeholder.com/500x750/222/666?text=No+Poster';
+  }
+  return isBackdrop ? `${BACKDROP_BASE}${path}` : `${IMG_BASE}${path}`;
+}
+
 function createLoadingSpinner() {
   return `
     <div class="loading">
@@ -238,44 +311,11 @@ function setupMenuSearch() {
   searchInput.addEventListener('keypress', e => e.key === 'Enter' && performSearch());
 }
 
-// ====================== THEME SYSTEM ======================
-function toggleTheme() {
-  const body = document.body;
-  const isDark = body.classList.contains('dark');
-  const newTheme = isDark ? 'light' : 'dark';
-  
-  const overlay = document.querySelector('.theme-transition-overlay');
-  overlay.style.opacity = '1';
-  overlay.style.pointerEvents = 'auto';
-  
-  setTimeout(() => {
-    body.classList.remove('dark', 'light');
-    body.classList.add(newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeIcons(newTheme);
-    
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none';
-  }, 100);
-}
-
-function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  document.body.classList.add(savedTheme);
-  updateThemeIcons(savedTheme);
-}
-
-function updateThemeIcons(theme) {
-  const darkIcon = document.querySelector('.dark-icon');
-  const lightIcon = document.querySelector('.light-icon');
-  
-  if (darkIcon) darkIcon.hidden = theme === 'light';
-  if (lightIcon) lightIcon.hidden = theme === 'dark';
-}
-
 // ====================== INITIALIZATION ======================
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
+  setupLogoInteractions();
+  
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
   
   setupMenuToggle();
@@ -287,19 +327,3 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
   fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
 });
-
-// Sa theme toggle function
-const logoSvg = document.querySelector('.logo-svg text');
-if (newTheme === 'dark') {
-  logoSvg.setAttribute('fill', 'white');
-} else {
-  logoSvg.setAttribute('fill', '#e50914');
-}
-
-// Sa theme toggle script
-const logoRect = document.querySelector('.logo-svg rect');
-if (theme === 'dark') {
-  logoRect.setAttribute('stroke', '#ff4d4d'); // Brighter red
-} else {
-  logoRect.setAttribute('stroke', '#cc0000'); // Darker red
-}
