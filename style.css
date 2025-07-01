@@ -706,12 +706,14 @@ body.light ::-webkit-scrollbar-track {
 
   .logo {
   font-size: 2rem; /* Pinalaki mula sa 1.5rem */
+  font-weight: 100;
+  display: inline-block;
   letter-spacing: 0.3em; 
   margin: 0;
   color: #e50914;
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  transform: scaleX(0.4);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
