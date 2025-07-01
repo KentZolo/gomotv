@@ -735,3 +735,22 @@ body.dark .logo-svg text {
 body.light .logo-svg text {
   fill: #e50914;
 }
+
+.logo-svg rect {
+  transition: all 0.3s ease;
+}
+.logo-svg:hover rect {
+  stroke-width: 2;
+  stroke-dasharray: 4,4;
+}
+
+@media (max-width: 768px) {
+  .logo-svg {
+    width: 160px;
+    height: 50px;
+  }
+  .logo-svg rect {
+    stroke-width: 1.2;
+    rx: 6;
+  }
+}
