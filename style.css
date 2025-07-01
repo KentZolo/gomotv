@@ -718,3 +718,20 @@ body.light ::-webkit-scrollbar-track {
     font-size: 0.7rem;
   }
 }
+/* Logo styling */
+.logo-svg {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 50px;
+  width: auto;
+  z-index: 10;
+}
+
+/* Para sa dark/light theme */
+body.dark .logo-svg text {
+  fill: white;
+}
+body.light .logo-svg text {
+  fill: #e50914;
+}
