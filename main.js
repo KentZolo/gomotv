@@ -13,13 +13,14 @@ function getImageUrl(path, isBackdrop = false) {
   return isBackdrop ? `${BACKDROP_BASE}${path}` : `${IMG_BASE}${path}`;
 }
 
-// ====================== BANNER SLIDER (FIXED FLASH ISSUE) ======================
+// ====================== BANNER SLIDER ======================
 let bannerIndex = 0;
 let bannerItems = [];
+let autoSlideInterval;
 
 async function loadBannerSlider() {
   try {
-    const res = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}`);
+    const res = await fetch(`${BASE_URL}/trending/all/day?api_key=${API_KEY}`);
     const data = await res.json();
     bannerItems = data.results.slice(0, 10);
 
@@ -44,10 +45,15 @@ function showDefaultBanner() {
   if (img) {
     img.src = getImageUrl(null, true);
     img.alt = 'Default Banner';
+    img.style.cursor = 'default';
   }
 
   const summary = document.getElementById('poster-summary');
-  if (summary) summary.textContent = 'GomoTV';
+  if (summary) {
+    summary.textContent = 'GomoTV';
+    summary.style.cursor = 'default';
+    summary.onclick = null;
+  }
 
   const meta = document.getElementById('poster-meta');
   if (meta) meta.textContent = 'Featured Content';
@@ -75,14 +81,21 @@ function showBannerSlide(index) {
   tempImg.onload = () => {
     if (img) {
       img.src = tempImg.src;
-      img.alt = item.title;
+      img.alt = item.title || item.name;
       img.dataset.id = item.id;
-      img.dataset.type = 'movie';
-      img.onclick = () => window.location.href = `watch.html?id=${item.id}&type=movie`;
+      img.dataset.type = item.media_type || 'movie';
+      img.style.cursor = 'pointer';
     }
 
-    if (meta) meta.textContent = `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
-    if (summary) summary.textContent = item.title;
+    if (meta) {
+      meta.textContent = `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • ${item.media_type === 'tv' ? 'TV Show' : 'Movie'} • ${(item.release_date || item.first_air_date)?.slice(0, 4) || ''}`;
+    }
+    
+    if (summary) {
+      summary.textContent = item.title || item.name;
+      summary.style.cursor = 'pointer';
+      summary.onclick = () => window.location.href = `watch.html?id=${item.id}&type=${item.media_type || 'movie'}`;
+    }
 
     banner.classList.add('loaded');
   };
@@ -96,7 +109,11 @@ function setupBannerNavigation() {
 }
 
 function startAutoSlide() {
-  setInterval(nextSlide, 5000);
+  if (autoSlideInterval) clearInterval(autoSlideInterval);
+  
+  autoSlideInterval = setInterval(() => {
+    nextSlide();
+  }, 5000);
 }
 
 function prevSlide() {
@@ -154,10 +171,12 @@ function displayMedia(items, containerSelector, type) {
     `;
   }).join('');
 
-  container.querySelectorAll('.poster-wrapper').forEach(poster => {
-    poster.addEventListener('click', () => {
+  // Event delegation for better performance
+  container.addEventListener('click', (e) => {
+    const poster = e.target.closest('.poster-wrapper');
+    if (poster) {
       window.location.href = `watch.html?id=${poster.dataset.id}&type=${poster.dataset.type}`;
-    });
+    }
   });
 }
 
@@ -251,10 +270,30 @@ document.addEventListener('DOMContentLoaded', () => {
   setupMenuToggle();
   setupMenuSearch();
 
+  // Banner event delegation
+  document.querySelector('.banner-slider')?.addEventListener('click', (e) => {
+    const item = bannerItems[bannerIndex];
+    if (item && (e.target.closest('#poster-img') || e.target.closest('#poster-summary'))) {
+      window.location.href = `watch.html?id=${item.id}&type=${item.media_type || 'movie'}`;
+    }
+  });
+
+  // Pause auto-slide on hover
+  const banner = document.querySelector('.banner-slider');
+  if (banner) {
+    banner.addEventListener('mouseenter', () => {
+      if (autoSlideInterval) clearInterval(autoSlideInterval);
+    });
+
+    banner.addEventListener('mouseleave', () => {
+      startAutoSlide();
+    });
+  }
+
   // Load content sections
   if (document.querySelector('.banner-slider')) loadBannerSlider();
   if (document.querySelector('.movie-list')) {
-    fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
+    fetchAndDisplay('/trending/all/day', '.movie-list', 'mixed');
     fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
     fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
   }
