@@ -259,14 +259,6 @@ function toggleTheme() {
   }, 100);
 }
 
-   // Sa theme toggle function
-const logoSvg = document.querySelector('.logo-svg text');
-if (newTheme === 'dark') {
-  logoSvg.setAttribute('fill', 'white');
-} else {
-  logoSvg.setAttribute('fill', '#e50914');
-}
-
 function initTheme() {
   const savedTheme = localStorage.getItem('theme') || 'dark';
   document.body.classList.add(savedTheme);
@@ -295,3 +287,11 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
   fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
 });
+
+// Sa theme toggle function
+const logoSvg = document.querySelector('.logo-svg text');
+if (newTheme === 'dark') {
+  logoSvg.setAttribute('fill', 'white');
+} else {
+  logoSvg.setAttribute('fill', '#e50914');
+}
