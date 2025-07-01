@@ -754,38 +754,3 @@ body.dark .logo-svg text {
 body.light .logo-svg text {
   fill: #333333; /* or #e50914 for red */
 }
-
-/* Adjust navbar to ensure logo fits */
-.navbar {
-  position: relative;
-  padding: 15px 100px; /* Increase side padding to make space */
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .logo-svg {
-    height: 35px;
-  }
-  
-  .logo-svg text {
-    font-size: 28px;
-  }
-  
-  .navbar {
-    padding: 15px 70px;
-  }
-}
-
-@media (max-width: 480px) {
-  .logo-svg {
-    height: 30px;
-  }
-  
-  .logo-svg text {
-    font-size: 24px;
-  }
-  
-  .navbar {
-    padding: 12px 50px;
-  }
-}
