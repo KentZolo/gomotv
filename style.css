@@ -719,6 +719,29 @@ body.light ::-webkit-scrollbar-track {
   }
 }
 /* Pilitin ang kulay gamit CSS */
+.logo-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.logo-svg {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.logo-svg:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 8px rgba(229, 9, 20, 0.4));
+}
+
+.logo-svg:hover rect {
+  stroke-width: 1.2px;
+  stroke-dasharray: 10,5;
+}
+
 .logo-text {
   fill: white; 
   transition: fill 0.3s ease;
@@ -737,7 +760,12 @@ body.light .logo-svg rect {
   stroke: #e50914; /* Parehong kulay para consistent */
 }
 
-/* Hover effect kung gusto mo */
-.logo-svg:hover rect {
-  stroke-width: 1.2px; /* Bahagyang lumalapad kapag hinover */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.logo-svg:active {
+  animation: pulse 0.3s ease;
 }
