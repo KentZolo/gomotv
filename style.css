@@ -44,6 +44,28 @@ body.light {
   transition: opacity 0.3s;
 }
 
+.theme-toggle .dark-icon,
+.theme-toggle .light-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+}
+
+body.dark .theme-toggle .light-icon,
+body.light .theme-toggle .dark-icon {
+  display: none;
+}
+
+body.dark .theme-toggle {
+  color: #ffffff;
+}
+
+body.light .theme-toggle {
+  color: #333333;
+}
+
 /* ===== BANNER SYSTEM ===== */
 .banner-container {
   position: relative;
