@@ -16,27 +16,34 @@
       <span></span>
       <span></span>
     </div>
-     <svg class="logo-svg" width="180" height="50" viewBox="0 0 180 50">
-    <defs>
-      <filter id="blend">
-        <feBlend mode="screen" in="SourceGraphic" in2="BackgroundImage"/>
-      </filter>
-    </defs>
-    <rect width="98%" height="90%"
-        x="1%" y="5%"
+     <svg class="logo-svg" width="200" height="60" viewBox="0 0 200 60">
+  <defs>
+    <filter id="blend">
+      <feBlend mode="screen" in="SourceGraphic" in2="BackgroundImage"/>
+    </filter>
+  </defs>
+  
+  <!-- Rectangle Background -->
+  <rect width="98%" 
+        height="90%"
+        x="1%" 
+        y="5%"
         fill="rgba(0,0,0,0.2)"
         rx="8"
         stroke="#e50914"
         stroke-width="1.5"
         stroke-dasharray="2,2"/>
-    <text x="50%" y="50%" 
-          fill="white"
-          font-family="VT323"
-          font-size="40"
-          text-anchor="middle"
-          dominant-baseline="middle"
-          filter="url(#blend)">GOMOTV</text>
-  </svg>
+  
+  <!-- Centered Text -->
+  <text x="50%" 
+        y="55%" <!-- Adjusted for VT323 font -->
+        fill="white"
+        font-family="VT323"
+        font-size="40"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        filter="url(#blend)">GOMOTV</text>
+     </svg>
   <!-- HANGGANG DITO -->
   <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
     <span class="dark-icon">❍</span>
