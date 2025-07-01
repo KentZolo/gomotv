@@ -240,6 +240,13 @@ function setupMenuSearch() {
 
 // ====================== THEME SYSTEM ======================
 function toggleTheme() {
+ const logoSvg = document.querySelector('.logo-svg text');
+ if (newTheme === 'dark') {
+   logoSvg.setAttribute('fill', 'white');
+ } else {
+   logoSvg.setAttribute('fill', '#e50914');
+}
+  
   const body = document.body;
   const isDark = body.classList.contains('dark');
   const newTheme = isDark ? 'light' : 'dark';
