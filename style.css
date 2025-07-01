@@ -718,7 +718,7 @@ body.light ::-webkit-scrollbar-track {
     font-size: 0.7rem;
   }
 }
-/* I-update ang .logo-container styles */
+/* ===== LOGO SYSTEM ===== */
 .logo-container {
   position: absolute;
   left: 50%;
@@ -727,33 +727,65 @@ body.light ::-webkit-scrollbar-track {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1;
 }
 
-/* I-adjust ang SVG dimensions */
 .logo-svg {
-  height: 40px; /* Fixed height para consistent */
+  height: 40px;
   width: auto;
 }
 
-/* I-remove ang previous SVG text styles at palitan ng: */
 .logo-svg text {
   font-family: 'VT323', monospace;
   font-size: 32px;
   font-weight: bold;
-  fill: currentColor;
+  fill: #ffffff; /* Default color */
+  transition: fill 0.3s ease;
+  dominant-baseline: middle;
+  text-anchor: middle;
 }
 
-/* Dagdag ng transition para smooth color change */
-.navbar {
-  transition: background-color 0.3s ease;
-}
-
-/* Dark mode logo color */
+/* Dark mode - white text */
 body.dark .logo-svg text {
   fill: #ffffff;
 }
 
-/* Light mode logo color */
+/* Light mode - dark gray/red text */
 body.light .logo-svg text {
-  fill: #e50914; /* Pula para sa light mode */
+  fill: #333333; /* or #e50914 for red */
+}
+
+/* Adjust navbar to ensure logo fits */
+.navbar {
+  position: relative;
+  padding: 15px 100px; /* Increase side padding to make space */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .logo-svg {
+    height: 35px;
+  }
+  
+  .logo-svg text {
+    font-size: 28px;
+  }
+  
+  .navbar {
+    padding: 15px 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-svg {
+    height: 30px;
+  }
+  
+  .logo-svg text {
+    font-size: 24px;
+  }
+  
+  .navbar {
+    padding: 12px 50px;
+  }
 }
