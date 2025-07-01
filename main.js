@@ -3,12 +3,12 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
 
-// ====================== CORE FUNCTIONS ======================
+// ====================== IMAGE HANDLING ======================
 function getImageUrl(path, isBackdrop = false) {
   if (!path) {
     return isBackdrop
-      ? 'https://via.placeholder.com/1920x1080?text=No+Banner'
-      : 'https://via.placeholder.com/500x750?text=No+Poster';
+      ? 'https://via.placeholder.com/1920x1080/222/666?text=No+Banner'
+      : 'https://via.placeholder.com/500x750/222/666?text=No+Poster';
   }
   return isBackdrop ? `${BACKDROP_BASE}${path}` : `${IMG_BASE}${path}`;
 }
@@ -20,16 +20,17 @@ let bannerItems = [];
 async function loadBannerSlider() {
   try {
     const res = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}`);
+    if (!res.ok) throw new Error('Failed to fetch banner data');
+    
     const data = await res.json();
-    bannerItems = data.results.slice(0, 10);
+    bannerItems = data.results.filter(item => item.backdrop_path).slice(0, 10);
 
     if (bannerItems.length > 0) {
       showBannerSlide(bannerIndex);
       setupBannerNavigation();
       startAutoSlide();
       
-      // Add click handler for the entire banner content area
-      document.querySelector('.banner-content').addEventListener('click', function() {
+      document.querySelector('.banner-content')?.addEventListener('click', () => {
         const item = bannerItems[bannerIndex];
         window.location.href = `watch.html?id=${item.id}&type=movie`;
       });
@@ -47,15 +48,11 @@ function showDefaultBanner() {
   if (!banner) return;
 
   const img = document.getElementById('poster-img');
-  if (img) {
-    img.src = getImageUrl(null, true);
-    img.alt = 'Default Banner';
-  }
-
   const summary = document.getElementById('poster-summary');
-  if (summary) summary.textContent = 'GomoTV';
-
   const meta = document.getElementById('poster-meta');
+
+  if (img) img.src = getImageUrl(null, true);
+  if (summary) summary.textContent = 'GomoTV';
   if (meta) meta.textContent = 'Featured Content';
 
   banner.classList.add('loaded');
@@ -74,72 +71,71 @@ function showBannerSlide(index) {
   const meta = document.getElementById('poster-meta');
   const summary = document.getElementById('poster-summary');
 
-  // Preload image first
+  // Preload image with error handling
   const tempImg = new Image();
   tempImg.src = getImageUrl(item.backdrop_path, true);
 
   tempImg.onload = () => {
-    if (img) {
-      img.src = tempImg.src;
-      img.alt = item.title;
-    }
-
-    if (meta) meta.textContent = `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
-    if (summary) summary.textContent = item.title;
-
+    if (img) img.src = tempImg.src;
+    if (meta) meta.textContent = `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • ${item.release_date?.slice(0, 4) || ''}`;
+    if (summary) summary.textContent = item.title || 'Untitled';
     banner.classList.add('loaded');
   };
 
-  tempImg.onerror = () => showDefaultBanner();
+  tempImg.onerror = () => {
+    if (img) img.src = getImageUrl(null, true);
+    banner.classList.add('loaded');
+  };
 }
 
 function setupBannerNavigation() {
-  document.querySelector('.prev')?.addEventListener('click', prevSlide);
-  document.querySelector('.next')?.addEventListener('click', nextSlide);
+  document.querySelector('.prev')?.addEventListener('click', () => {
+    bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
+    showBannerSlide(bannerIndex);
+  });
+
+  document.querySelector('.next')?.addEventListener('click', () => {
+    bannerIndex = (bannerIndex + 1) % bannerItems.length;
+    showBannerSlide(bannerIndex);
+  });
 }
 
 function startAutoSlide() {
-  setInterval(nextSlide, 5000);
+  return setInterval(() => {
+    bannerIndex = (bannerIndex + 1) % bannerItems.length;
+    showBannerSlide(bannerIndex);
+  }, 5000);
 }
 
-function prevSlide() {
-  bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
-  showBannerSlide(bannerIndex);
-}
-
-function nextSlide() {
-  bannerIndex = (bannerIndex + 1) % bannerItems.length;
-  showBannerSlide(bannerIndex);
-}
-
-// ====================== CONTENT LOADING ======================
+// ====================== CONTENT DISPLAY ======================
 async function fetchAndDisplay(endpoint, containerSelector, type) {
   try {
     const container = document.querySelector(containerSelector);
     if (!container) return;
     
-    container.innerHTML = '<div class="loading"></div>';
+    container.innerHTML = createLoadingSpinner();
 
     const res = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}`);
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    
     const data = await res.json();
+    const validItems = data.results?.filter(item => item && (item.poster_path || item.backdrop_path)) || [];
 
-    if (data.results?.length > 0) {
-      displayMedia(data.results, containerSelector, type);
-    } else {
-      container.innerHTML = '<p class="no-content">No content available</p>';
+    if (validItems.length === 0) {
+      container.innerHTML = createNoResultsMessage();
+      return;
     }
+
+    displayMedia(validItems, container, type);
   } catch (err) {
     console.error(`Failed to load ${containerSelector}:`, err);
-    document.querySelector(containerSelector).innerHTML = '<p class="error">Failed to load content</p>';
+    document.querySelector(containerSelector).innerHTML = createErrorMessage();
   }
 }
 
-function displayMedia(items, containerSelector, type) {
-  const container = document.querySelector(containerSelector);
-  if (!container) return;
-  
+function displayMedia(items, container, type) {
   container.innerHTML = items.map(item => {
-    const title = item.title || item.name;
+    const title = item.title || item.name || 'Untitled';
     const imageUrl = getImageUrl(item.poster_path);
     const year = (item.release_date || item.first_air_date || '').slice(0, 4);
     const rating = item.vote_average?.toFixed(1) || 'N/A';
@@ -147,7 +143,10 @@ function displayMedia(items, containerSelector, type) {
     return `
       <div class="poster-wrapper" data-id="${item.id}" data-type="${type}">
         ${item.vote_average > 7 ? '<div class="poster-badge">TOP</div>' : ''}
-        <img src="${imageUrl}" alt="${title}" loading="lazy">
+        <img src="${imageUrl}" 
+             alt="${title}" 
+             loading="lazy"
+             onerror="this.src='${getImageUrl(item.backdrop_path)}';this.onerror='this.src=\\'${getImageUrl(null)}\\''">
         <div class="poster-label">${title}</div>
         <div class="poster-meta">
           <span>⭐ ${rating}</span>
@@ -157,11 +156,41 @@ function displayMedia(items, containerSelector, type) {
     `;
   }).join('');
 
+  // Add click handlers
   container.querySelectorAll('.poster-wrapper').forEach(poster => {
     poster.addEventListener('click', () => {
       window.location.href = `watch.html?id=${poster.dataset.id}&type=${poster.dataset.type}`;
     });
   });
+}
+
+// ====================== UI COMPONENTS ======================
+function createLoadingSpinner() {
+  return `
+    <div class="loading">
+      <div class="spinner"></div>
+      Loading...
+    </div>
+  `;
+}
+
+function createNoResultsMessage() {
+  return `
+    <div class="no-results">
+      <span>🎬</span>
+      <p>No content available</p>
+    </div>
+  `;
+}
+
+function createErrorMessage() {
+  return `
+    <div class="error-message">
+      <span>⚠️</span>
+      <p>Failed to load content</p>
+      <button onclick="window.location.reload()">Try Again</button>
+    </div>
+  `;
 }
 
 // ====================== MENU SYSTEM ======================
@@ -237,13 +266,11 @@ function initTheme() {
 }
 
 function updateThemeIcons(theme) {
-  const icons = {
-    dark: document.querySelector('.dark-icon'),
-    light: document.querySelector('.light-icon')
-  };
+  const darkIcon = document.querySelector('.dark-icon');
+  const lightIcon = document.querySelector('.light-icon');
   
-  if (icons.dark) icons.dark.hidden = theme === 'light';
-  if (icons.light) icons.light.hidden = theme === 'dark';
+  if (darkIcon) darkIcon.hidden = theme === 'light';
+  if (lightIcon) lightIcon.hidden = theme === 'dark';
 }
 
 // ====================== INITIALIZATION ======================
@@ -255,10 +282,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupMenuSearch();
 
   // Load content sections
-  if (document.querySelector('.banner-slider')) loadBannerSlider();
-  if (document.querySelector('.movie-list')) {
-    fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
-    fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
-    fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
-  }
+  loadBannerSlider();
+  fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
+  fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
+  fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
 });
