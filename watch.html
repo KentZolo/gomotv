@@ -283,6 +283,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
+      cursor: pointer;
     }
 
     .server-header h3 {
@@ -300,6 +301,7 @@
       cursor: pointer;
       font-family: 'VT323', monospace;
       font-size: 1rem;
+      pointer-events: auto;
     }
 
     .server-list {
@@ -319,6 +321,7 @@
       transition: all 0.2s;
       font-size: 1rem;
       font-family: 'VT323', monospace;
+      user-select: none;
     }
 
     .server-btn:hover {
@@ -428,6 +431,13 @@
       width: 100%;
       height: 225px;
       object-fit: cover;
+      background-color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 0.9rem;
+      text-align: center;
     }
 
     .recommendation-title {
@@ -774,12 +784,30 @@
 
       if (!header || !toggle || !serverList || !warning) return;
 
-      header.addEventListener('click', () => {
+      // Make the entire header clickable
+      header.style.cursor = 'pointer';
+      
+      header.addEventListener('click', (e) => {
+        // Prevent event bubbling if clicking on the toggle button directly
+        if (e.target === toggle) return;
+        
         const isVisible = serverList.style.display === 'grid';
         serverList.style.display = isVisible ? 'none' : 'grid';
         toggle.textContent = isVisible ? 'Show' : 'Hide';
         
         // Show warning when server options are expanded
+        if (!isVisible) {
+          warning.style.display = 'flex';
+        }
+      });
+
+      // Also make the toggle button work independently
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent triggering the header click
+        const isVisible = serverList.style.display === 'grid';
+        serverList.style.display = isVisible ? 'none' : 'grid';
+        toggle.textContent = isVisible ? 'Show' : 'Hide';
+        
         if (!isVisible) {
           warning.style.display = 'flex';
         }
@@ -836,14 +864,17 @@
           const recommendations = data.results.slice(0, 10);
           
           recommendations.forEach(item => {
-            const posterPath = item.poster_path ? 
-              `${IMAGE_BASE_URL}${item.poster_path}` : 
-              'https://via.placeholder.com/150x225?text=No+Poster';
+            // Use backdrop image if poster is not available
+            const imagePath = item.poster_path || item.backdrop_path;
+            const posterPath = imagePath ? 
+              `${IMAGE_BASE_URL}${imagePath}` : 
+              'https://via.placeholder.com/150x225?text=No+Image';
             
             const recommendationItem = document.createElement('div');
             recommendationItem.className = 'recommendation-item';
             recommendationItem.innerHTML = `
-              <img src="${posterPath}" alt="${item.title || item.name}" class="recommendation-poster" loading="lazy">
+              <img src="${posterPath}" alt="${item.title || item.name}" class="recommendation-poster" loading="lazy"
+                   onerror="this.src='https://via.placeholder.com/150x225?text=No+Image'">
               <div class="recommendation-title">${item.title || item.name}</div>
             `;
             
