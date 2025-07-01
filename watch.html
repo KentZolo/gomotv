@@ -334,19 +334,20 @@
 
     /* Server Warning Message */
     .server-warning {
-      background-color: rgba(255, 152, 0, 0.1);
+      background-color: rgba(255, 152, 0, 0.2);
       color: #ff9800;
-      font-size: 0.85rem;
-      padding: 8px 15px;
+      font-size: 1rem;
+      padding: 10px 15px;
       text-align: center;
       border-radius: 4px;
       margin-top: 15px;
-      display: none;
+      display: flex;
       align-items: center;
       gap: 8px;
-      border: 1px solid rgba(255, 152, 0, 0.3);
+      border: 1px solid rgba(255, 152, 0, 0.5);
       width: 100%;
       box-sizing: border-box;
+      margin-bottom: 10px;
     }
 
     .server-warning span {
@@ -580,14 +581,14 @@
     </div>
 
     <div class="server-controls">
+      <div class="server-warning" id="server-warning">
+        <span>⚠️</span> Video not playing? Refresh the page, try a different server, or search for the title.
+      </div>
       <div class="server-header" id="server-header">
         <h3>Server Options</h3>
         <button class="server-toggle" id="server-toggle">Show</button>
       </div>
       <div class="server-list" id="server-list" style="display: none;"></div>
-      <div class="server-warning" id="server-warning" style="display: none;">
-        <span>⚠️</span> Video not playing? Refresh the page, try a different server, or search for the title.
-      </div>
     </div>
 
     <div class="movie-info">
@@ -780,37 +781,24 @@
       const header = document.getElementById('server-header');
       const toggle = document.getElementById('server-toggle');
       const serverList = document.getElementById('server-list');
-      const warning = document.getElementById('server-warning');
 
-      if (!header || !toggle || !serverList || !warning) return;
+      if (!header || !toggle || !serverList) return;
 
-      // Make the entire header clickable
       header.style.cursor = 'pointer';
       
       header.addEventListener('click', (e) => {
-        // Prevent event bubbling if clicking on the toggle button directly
         if (e.target === toggle) return;
         
         const isVisible = serverList.style.display === 'grid';
         serverList.style.display = isVisible ? 'none' : 'grid';
         toggle.textContent = isVisible ? 'Show' : 'Hide';
-        
-        // Show warning when server options are expanded
-        if (!isVisible) {
-          warning.style.display = 'flex';
-        }
       });
 
-      // Also make the toggle button work independently
       toggle.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent triggering the header click
+        e.stopPropagation();
         const isVisible = serverList.style.display === 'grid';
         serverList.style.display = isVisible ? 'none' : 'grid';
         toggle.textContent = isVisible ? 'Show' : 'Hide';
-        
-        if (!isVisible) {
-          warning.style.display = 'flex';
-        }
       });
     }
 
@@ -896,7 +884,6 @@
 
     function tryServers(type, id) {
       let currentIndex = 0;
-      const warning = document.getElementById('server-warning');
       
       // Show server options immediately when trying servers
       const serverList = document.getElementById('server-list');
@@ -909,14 +896,12 @@
       function tryNextServer() {
         if (currentIndex >= SERVERS.length) {
           showError('No working server found. Please try another server.');
-          if (warning) warning.style.display = 'flex';
           return;
         }
         
         const server = SERVERS[currentIndex];
         loadServer(server, type, id, () => {
           currentIndex++;
-          if (warning && currentIndex > 0) warning.style.display = 'flex';
           setTimeout(tryNextServer, 1000);
         });
       }
@@ -1026,10 +1011,6 @@
         serverList.style.display = 'grid';
         serverToggle.textContent = 'Hide';
       }
-      
-      // Show warning message
-      const warning = document.getElementById('server-warning');
-      if (warning) warning.style.display = 'flex';
     }
 
     // INITIALIZE EVERYTHING
