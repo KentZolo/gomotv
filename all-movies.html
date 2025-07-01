@@ -81,6 +81,54 @@
       color: #333;
     }
 
+    /* YEAR SELECTION STYLES */
+    .year-list-section {
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .year-list-section h2 {
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+      color: #e50914;
+      text-align: center;
+    }
+    
+    .year-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    .year-link {
+      display: block;
+      padding: 15px;
+      background: rgba(229, 9, 20, 0.1);
+      border: 1px solid rgba(229, 9, 20, 0.3);
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s;
+      cursor: pointer;
+      font-size: 1.3rem;
+    }
+    
+    .year-link:hover {
+      background: rgba(229, 9, 20, 0.2);
+      transform: translateY(-3px);
+    }
+    
+    body.light .year-link {
+      background: rgba(229, 9, 20, 0.05);
+      border-color: rgba(229, 9, 20, 0.2);
+    }
+    
+    body.light .year-link:hover {
+      background: rgba(229, 9, 20, 0.1);
+    }
+
     /* MOVIE GRID STYLES */
     .search-results-grid {
       display: grid;
@@ -192,9 +240,14 @@
 
     /* RESPONSIVE STYLES */
     @media (max-width: 768px) {
-      .search-results-grid {
+      .year-grid, .search-results-grid {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
         gap: 15px;
+      }
+      
+      .year-link {
+        font-size: 1.2rem;
+        padding: 12px;
       }
       
       .pagination button {
@@ -204,9 +257,14 @@
     }
 
     @media (max-width: 480px) {
-      .search-results-grid {
+      .year-grid, .search-results-grid {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         gap: 10px;
+      }
+      
+      .year-link {
+        font-size: 1.1rem;
+        padding: 10px;
       }
       
       .poster-label {
@@ -235,7 +293,7 @@
 <body>
   <header class="navbar">
     <button onclick="history.back()" class="menu-toggle">←</button>
-    <h1 class="logo">All Movies</h1>
+    <h1 class="logo" id="page-title">All Movies</h1>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
       <span class="dark-icon">❍</span>
       <span class="light-icon" hidden>☼</span>
@@ -243,13 +301,16 @@
   </header>
 
   <main>
-    <div class="pagination" id="pagination-top"></div>
-    
-    <div class="search-results-grid" id="results-grid">
-      <!-- Movies will be loaded here -->
+    <div class="year-list-section" id="year-list-section">
+      <h2>Select a Year:</h2>
+      <div class="year-grid" id="year-grid">
+        <!-- Years will be loaded here -->
+      </div>
     </div>
     
-    <div class="pagination" id="pagination-bottom"></div>
+    <div id="pagination-top" class="pagination"></div>
+    <div class="search-results-grid" id="results-grid"></div>
+    <div id="pagination-bottom" class="pagination"></div>
     
     <div class="disclaimer">
       Content availability may vary by region. Not all titles may be available in your area.
@@ -260,14 +321,30 @@
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
     const BASE_URL = 'https://api.themoviedb.org/3';
     const IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
-    let currentPage = 1;
+    
+    const params = new URLSearchParams(location.search);
+    const selectedYear = params.get('year');
+    let currentPage = parseInt(params.get('page')) || 1;
     let totalPages = 1;
+
+    // Generate years from 2000 to 2025
+    const YEARS = [];
+    for (let year = 2000; year <= 2025; year++) {
+      YEARS.push(year);
+    }
 
     // Initialize the page
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-      loadMovies();
+      
+      if (selectedYear) {
+        document.getElementById('year-list-section').style.display = 'none';
+        document.getElementById('page-title').textContent = `Movies from ${selectedYear}`;
+        fetchMoviesByYear(selectedYear, currentPage);
+      } else {
+        loadYearList();
+      }
     });
 
     // Theme functions
@@ -297,26 +374,55 @@
       }
     }
 
+    // Year selection functions
+    function loadYearList() {
+      const yearGrid = document.getElementById('year-grid');
+      yearGrid.innerHTML = YEARS.map(year => `
+        <a href="all-movies.html?year=${year}" class="year-link">
+          ${year}
+        </a>
+      `).join('');
+    }
+
     // Movie loading functions
-    async function loadMovies(page = 1) {
+    async function fetchMoviesByYear(year, page = 1) {
       currentPage = page;
+      
       try {
         document.getElementById('results-grid').innerHTML = '<div class="loading">Loading movies...</div>';
         
+        // Get movies released in the selected year, sorted by popularity
         const response = await fetch(
-          `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`
+          `${BASE_URL}/discover/movie?api_key=${API_KEY}` +
+          `&primary_release_year=${year}&sort_by=popularity.desc&page=${page}`
         );
         const data = await response.json();
         
-        renderMovies(data.results);
-        totalPages = data.total_pages > 500 ? 500 : data.total_pages; // TMDB limit
-        renderPagination();
+        if (data.results.length > 0) {
+          renderMovies(data.results);
+          totalPages = data.total_pages > 500 ? 500 : data.total_pages;
+          renderPagination();
+        } else {
+          // If no results, show popular movies from that year
+          await fetchPopularMovies(page, year);
+        }
       } catch (error) {
-        console.error('Error loading movies:', error);
-        document.getElementById('results-grid').innerHTML = `
-          <div class="error-message">Failed to load movies. Please try again later.</div>
-        `;
+        console.error('Error fetching movies by year:', error);
+        await fetchPopularMovies(page, year);
       }
+    }
+
+    async function fetchPopularMovies(page = 1, year = null) {
+      let url = `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${page}`;
+      if (year) {
+        url += `&primary_release_year=${year}`;
+      }
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      renderMovies(data.results);
+      totalPages = data.total_pages > 500 ? 500 : data.total_pages;
+      renderPagination();
     }
 
     function renderMovies(movies) {
@@ -415,8 +521,11 @@
 
     function goToPage(page) {
       if (page < 1 || page > totalPages) return;
-      loadMovies(page);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (selectedYear) {
+        window.location.href = `all-movies.html?year=${selectedYear}&page=${page}`;
+      } else {
+        window.location.href = `all-movies.html?page=${page}`;
+      }
     }
   </script>
 </body>
