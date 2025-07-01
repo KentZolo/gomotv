@@ -573,22 +573,22 @@
     <!-- Simple Close Button -->
     <button class="simple-close-btn" id="simple-close-btn">×</button>
     
-     <!-- Add this inside the player-container div -->
-<div class="player-container">
-  <div class="player-loading-overlay" id="player-loading">
-    <div class="loading-spinner"></div>
-    <p>Connecting to server...</p>
-  </div>
-  <div class="player-error" id="player-error">
-    <div class="error-content">
-      <span>⚠️</span>
-      <h3>Playback Error</h3>
-      <p id="error-message">Failed to load video</p>
-      <button id="retry-button">Try Another Server</button>
+    <div class="player-container">
+      <div class="loading" id="loading">Loading player...</div>
+      <div class="player-error" id="player-error"></div>
+      <iframe id="player-frame" allowfullscreen sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
     </div>
-  </div>
-  <iframe id="player-frame" allowfullscreen sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
-</div>
+
+    <div class="server-controls">
+      <div class="server-header" id="server-header">
+        <h3>Server Options</h3>
+        <button class="server-toggle" id="server-toggle">Show</button>
+      </div>
+      <div class="server-list" id="server-list" style="display: none;"></div>
+      <div class="server-warning" id="server-warning" style="display: none;">
+        <span>⚠️</span> Refresh the page or try another server if the video doesn't play.
+      </div>
+    </div>
 
     <div class="movie-info">
       <h1 id="movie-title">Loading...</h1>
@@ -924,94 +924,113 @@
       tryNextServer();
     }
 
-    // Update the loadServer function in your main.js
-async function loadServer(server, type, id, onError) {
-  const iframe = document.getElementById('player-frame');
-  const loading = document.getElementById('player-loading');
-  const errorDisplay = document.getElementById('player-error');
-  const errorMessage = document.getElementById('error-message');
-  const retryButton = document.getElementById('retry-button');
-
-  // Reset states
-  iframe.style.display = 'none';
-  loading.style.display = 'flex';
-  errorDisplay.style.display = 'none';
-  iframe.src = '';
-  
-  // Update active server button
-  updateActiveServerButton(server.id);
-
-  // Create new iframe for clean state
-  const newIframe = document.createElement('iframe');
-  newIframe.id = 'player-frame';
-  newIframe.className = iframe.className;
-  newIframe.allowFullscreen = true;
-  newIframe.sandbox = 'allow-forms allow-scripts allow-same-origin allow-popups';
-  iframe.parentNode.replaceChild(newIframe, iframe);
-
-  const playerUrl = server.url(type, id);
-  newIframe.src = playerUrl;
-
-  // Timeout after 15 seconds
-  const timeout = setTimeout(() => {
-    showError('Connection timeout. Server may be unavailable.');
-    if (onError) onError();
-  }, 15000);
-
-  newIframe.onload = () => {
-    clearTimeout(timeout);
-    loading.style.display = 'none';
-    newIframe.style.display = 'block';
-    
-    // Additional content check
-    setTimeout(() => {
-      try {
-        const doc = newIframe.contentDocument || newIframe.contentWindow.document;
-        if (doc.body.innerText.includes("Not Found") || 
-            doc.body.innerText.includes("Error")) {
-          showError('Content not available on this server');
+    function loadServer(server, type, id, onError) {
+      const iframe = document.getElementById('player-frame');
+      const loading = document.getElementById('loading');
+      const errorMsg = document.getElementById('player-error');
+      
+      if (!iframe || !loading || !errorMsg) return;
+      
+      // Reset state
+      loading.style.display = 'block';
+      iframe.style.display = 'none';
+      errorMsg.style.display = 'none';
+      iframe.src = ''; // Clear previous source
+      
+      loading.textContent = `Loading ${server.name}...`;
+      updateActiveServerButton(server.id);
+      
+      // Create a new iframe element to ensure clean state
+      const newIframe = document.createElement('iframe');
+      newIframe.id = 'player-frame';
+      newIframe.className = iframe.className;
+      newIframe.allowFullscreen = true;
+      newIframe.sandbox = 'allow-forms allow-scripts allow-same-origin allow-popups';
+      
+      // Replace the old iframe with the new one
+      iframe.parentNode.replaceChild(newIframe, iframe);
+      
+      const playerUrl = server.url(type, id);
+      newIframe.src = playerUrl;
+      
+      let hasLoaded = false;
+      const loadTimeout = setTimeout(() => {
+        if (!hasLoaded) {
+          loading.textContent = `Timeout loading ${server.name}`;
           if (onError) onError();
         }
-      } catch (e) {
-        // Cross-origin restriction - can't check content
-        console.log('Cannot access iframe content');
+      }, 15000); // 15 seconds timeout
+      
+      newIframe.onload = () => {
+        hasLoaded = true;
+        clearTimeout(loadTimeout);
+        loading.style.display = 'none';
+        newIframe.style.display = 'block';
+        
+        // Additional check after a short delay
+        setTimeout(() => {
+          try {
+            // Check for common error indicators
+            const doc = newIframe.contentDocument || newIframe.contentWindow.document;
+            if (doc.title.toLowerCase().includes("error") || 
+                doc.body.innerText.toLowerCase().includes("error") ||
+                doc.body.innerText.toLowerCase().includes("not found")) {
+              if (onError) onError();
+            }
+          } catch (e) {
+            // Cross-origin frame access error - we can't check content
+            console.log('Cannot access iframe content');
+          }
+        }, 2000);
+      };
+      
+      newIframe.onerror = () => {
+        clearTimeout(loadTimeout);
+        loading.textContent = `Error loading ${server.name}`;
+        if (onError) onError();
+      };
+    }
+
+    function updateActiveServerButton(serverId) {
+      const buttons = document.querySelectorAll('.server-btn');
+      if (buttons) {
+        buttons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.id === serverId);
+        });
       }
-    }, 2000);
-  };
+    }
 
-  newIframe.onerror = () => {
-    clearTimeout(timeout);
-    showError('Failed to load video player');
-    if (onError) onError();
-  };
-
-  // Retry button handler
-  retryButton.onclick = () => {
-    tryServers(type, id);
-  };
-}
-
-function showError(message) {
-  const loading = document.getElementById('player-loading');
-  const errorDisplay = document.getElementById('player-error');
-  const errorMessage = document.getElementById('error-message');
-  
-  loading.style.display = 'none';
-  errorDisplay.style.display = 'flex';
-  errorMessage.textContent = message;
-  
-  // Show server options
-  const serverList = document.getElementById('server-list');
-  const serverToggle = document.getElementById('server-toggle');
-  if (serverList && serverToggle) {
-    serverList.style.display = 'grid';
-    serverToggle.textContent = 'Hide';
-  }
-  
-  // Show warning
-  const warning = document.getElementById('server-warning');
-  if (warning) warning.style.display = 'flex';
-}
+    function showError(message) {
+      const loading = document.getElementById('loading');
+      const errorMsg = document.getElementById('player-error');
+      const iframe = document.getElementById('player-frame');
+      
+      if (loading) {
+        loading.style.display = 'none';
+      }
+      
+      if (errorMsg) {
+        errorMsg.textContent = message;
+        errorMsg.style.display = 'block';
+      }
+      
+      if (iframe) {
+        iframe.style.display = 'none';
+        iframe.src = ''; // Clear the iframe source
+      }
+      
+      // Show server options by default when there's an error
+      const serverList = document.getElementById('server-list');
+      const serverToggle = document.getElementById('server-toggle');
+      if (serverList && serverToggle) {
+        serverList.style.display = 'grid';
+        serverToggle.textContent = 'Hide';
+      }
+      
+      // Show warning message
+      const warning = document.getElementById('server-warning');
+      if (warning) warning.style.display = 'flex';
+    }
 
     // INITIALIZE EVERYTHING
     document.addEventListener('DOMContentLoaded', () => {
