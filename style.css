@@ -731,26 +731,37 @@ body.light ::-webkit-scrollbar-track {
 }
 
 .logo-svg {
-  height: 40px;
+  height: 50px; /* Pinalaki mula 40px */
   width: auto;
 }
 
 .logo-svg text {
   font-family: 'VT323', monospace;
-  font-size: 32px;
+  font-size: 42px; /* Pinalaki mula 32px */
   font-weight: bold;
-  fill: #ffffff; /* Default color */
+  fill: #ffffff;
   transition: fill 0.3s ease;
   dominant-baseline: middle;
   text-anchor: middle;
 }
 
-/* Dark mode - white text */
-body.dark .logo-svg text {
-  fill: #ffffff;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .logo-svg {
+    height: 45px; /* Pinalaki mula 35px */
+  }
+  
+  .logo-svg text {
+    font-size: 38px; /* Pinalaki mula 28px */
+  }
 }
 
-/* Light mode - dark gray/red text */
-body.light .logo-svg text {
-  fill: #333333; /* or #e50914 for red */
+@media (max-width: 480px) {
+  .logo-svg {
+    height: 40px; /* Pinalaki mula 30px */
+  }
+  
+  .logo-svg text {
+    font-size: 34px; /* Pinalaki mula 24px */
+  }
 }
