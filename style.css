@@ -727,3 +727,17 @@ body.light ::-webkit-scrollbar-track {
 body.light .logo-text {
   fill: #e50914;
 }
+
+.logo-svg rect {
+  stroke-width: 1px; /* Mas manipis na border */
+  transition: stroke 0.3s ease, stroke-width 0.3s ease;
+}
+
+body.light .logo-svg rect {
+  stroke: #e50914; /* Parehong kulay para consistent */
+}
+
+/* Hover effect kung gusto mo */
+.logo-svg:hover rect {
+  stroke-width: 1.2px; /* Bahagyang lumalapad kapag hinover */
+}
