@@ -718,35 +718,42 @@ body.light ::-webkit-scrollbar-track {
     font-size: 0.7rem;
   }
 }
-/* Logo container */
+/* I-update ang .logo-container styles */
 .logo-container {
   position: absolute;
   left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 200px;
-}
-
-/* SVG adjustments */
-.logo-svg {
-  width: 100%;
+  transform: translateX(-50%);
   height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Text vertical centering */
+/* I-adjust ang SVG dimensions */
+.logo-svg {
+  height: 40px; /* Fixed height para consistent */
+  width: auto;
+}
+
+/* I-remove ang previous SVG text styles at palitan ng: */
 .logo-svg text {
-  dominant-baseline: middle;
-  text-anchor: middle;
+  font-family: 'VT323', monospace;
+  font-size: 32px;
+  font-weight: bold;
+  fill: currentColor;
 }
 
-.logo-svg text {
-  fill: var(--logo-color, white); /* Default color */
+/* Dagdag ng transition para smooth color change */
+.navbar {
+  transition: background-color 0.3s ease;
 }
 
-body.dark {
-  --logo-color: white;
+/* Dark mode logo color */
+body.dark .logo-svg text {
+  fill: #ffffff;
 }
 
-body.light {
-  --logo-color: #e50914;
+/* Light mode logo color */
+body.light .logo-svg text {
+  fill: #e50914; /* Pula para sa light mode */
 }
