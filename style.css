@@ -718,55 +718,11 @@ body.light ::-webkit-scrollbar-track {
     font-size: 0.7rem;
   }
 }
-/* SVG Logo Container */
-.logo-svg {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 200px;
-  height: 60px;
-  z-index: 10;
-  pointer-events: none; /* Para hindi ma-block ang clicks */
+/* Pilitin ang kulay gamit CSS */
+.logo-text {
+  fill: white !important; 
 }
 
-/* Para sa theme switching */
-body.dark .logo-svg text {
-  fill: white;
-}
-body.light .logo-svg text {
-  fill: #e50914;
-}
-
-/* Rectangle hover effects */
-.logo-svg rect {
-  transition: all 0.3s ease;
-}
-.logo-svg:hover rect {
-  stroke-width: 2px;
-  stroke-dasharray: 4,4;
-  fill: rgba(0,0,0,0.3);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .logo-svg {
-    width: 160px;
-    height: 50px;
-  }
-  .logo-svg text {
-    font-size: 36px;
-  }
-  .logo-svg rect {
-    stroke-width: 1.2px;
-    rx: 6;
-  }
-}
-
-/* Pixel-perfect alignment for VT323 font */
-.logo-svg text {
-  font-weight: bold;
-  letter-spacing: 1px;
-  text-shadow: 1px 1px 0px rgba(0,0,0,0.2);
-  fill: inherit !important; 
+body.light .logo-text {
+  fill: #e50914 !important;
 }
