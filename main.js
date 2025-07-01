@@ -5,27 +5,36 @@ const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
 
 // ====================== LOGO FUNCTIONALITY ======================
 function setupLogoInteractions() {
-  const logoSvg = document.querySelector('.logo-svg');
-  const logoSvgText = document.querySelector('.logo-svg text');
-  const logoSvgRect = document.querySelector('.logo-svg rect');
+  const logo = document.querySelector('.logo-svg');
+  const logoRect = document.querySelector('.logo-svg rect');
   
-  if (!logoSvg || !logoSvgText || !logoSvgRect) return;
+  if (!logo || !logoRect) return;
 
   // Hover effects
-  logoSvg.addEventListener('mouseenter', () => {
-    logoSvgRect.style.strokeWidth = '2px';
-    logoSvgRect.style.strokeDasharray = '4,4';
+  logo.addEventListener('mouseenter', () => {
+    logoRect.style.strokeWidth = '1.5px';
+    logoRect.style.strokeDasharray = '10,5';
+    logo.style.filter = 'drop-shadow(0 4px 8px rgba(229, 9, 20, 0.4))';
   });
 
-  logoSvg.addEventListener('mouseleave', () => {
-    logoSvgRect.style.strokeWidth = '1.5px';
-    logoSvgRect.style.strokeDasharray = '2,2';
+  logo.addEventListener('mouseleave', () => {
+    logoRect.style.strokeWidth = '1px';
+    logoRect.style.strokeDasharray = 'none';
+    logo.style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))';
   });
 
   // Click animation
-  logoSvg.addEventListener('click', (e) => {
+  logo.addEventListener('click', (e) => {
     e.preventDefault();
-    window.location.href = 'index.html';
+    
+    // Pulse animation
+    logo.style.animation = 'none';
+    void logo.offsetWidth; // Trigger reflow
+    logo.style.animation = 'pulse 0.3s ease';
+    
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 300);
   });
 }
 
@@ -44,31 +53,40 @@ function toggleTheme() {
     body.classList.add(newTheme);
     localStorage.setItem('theme', newTheme);
     updateThemeIcons(newTheme);
-    updateLogoColors(newTheme);
+    
+    // Update logo colors based on theme
+    const logoSvgText = document.querySelector('.logo-svg text');
+    const logoSvgRect = document.querySelector('.logo-svg rect');
+    
+    if (logoSvgText) {
+      logoSvgText.style.fill = newTheme === 'dark' ? 'white' : '#e50914';
+    }
+    
+    if (logoSvgRect) {
+      logoSvgRect.style.stroke = newTheme === 'dark' ? '#e50914' : '#cc0000';
+    }
     
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
   }, 100);
 }
 
-function updateLogoColors(theme) {
-  const logoSvgText = document.querySelector('.logo-svg text');
-  const logoSvgRect = document.querySelector('.logo-svg rect');
-  
-  if (logoSvgText) {
-    logoSvgText.setAttribute('fill', theme === 'dark' ? 'white' : '#e50914');
-  }
-  
-  if (logoSvgRect) {
-    logoSvgRect.setAttribute('stroke', theme === 'dark' ? '#ff4d4d' : '#cc0000');
-  }
-}
-
 function initTheme() {
   const savedTheme = localStorage.getItem('theme') || 'dark';
   document.body.classList.add(savedTheme);
   updateThemeIcons(savedTheme);
-  updateLogoColors(savedTheme);
+  
+  // Initialize logo colors
+  const logoSvgText = document.querySelector('.logo-svg text');
+  const logoSvgRect = document.querySelector('.logo-svg rect');
+  
+  if (logoSvgText) {
+    logoSvgText.style.fill = savedTheme === 'dark' ? 'white' : '#e50914';
+  }
+  
+  if (logoSvgRect) {
+    logoSvgRect.style.stroke = savedTheme === 'dark' ? '#e50914' : '#cc0000';
+  }
 }
 
 function updateThemeIcons(theme) {
@@ -82,6 +100,7 @@ function updateThemeIcons(theme) {
 // ====================== BANNER SLIDER ======================
 let bannerIndex = 0;
 let bannerItems = [];
+let autoSlideInterval;
 
 async function loadBannerSlider() {
   try {
@@ -94,7 +113,7 @@ async function loadBannerSlider() {
     if (bannerItems.length > 0) {
       showBannerSlide(bannerIndex);
       setupBannerNavigation();
-      startAutoSlide();
+      autoSlideInterval = startAutoSlide();
       
       document.querySelector('.banner-content')?.addEventListener('click', () => {
         const item = bannerItems[bannerIndex];
@@ -155,13 +174,17 @@ function showBannerSlide(index) {
 
 function setupBannerNavigation() {
   document.querySelector('.prev')?.addEventListener('click', () => {
+    clearInterval(autoSlideInterval);
     bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
     showBannerSlide(bannerIndex);
+    autoSlideInterval = startAutoSlide();
   });
 
   document.querySelector('.next')?.addEventListener('click', () => {
+    clearInterval(autoSlideInterval);
     bannerIndex = (bannerIndex + 1) % bannerItems.length;
     showBannerSlide(bannerIndex);
+    autoSlideInterval = startAutoSlide();
   });
 }
 
@@ -323,7 +346,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Load content sections
   loadBannerSlider();
-  fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
+  fetchAndDisplay('/trending/all/day', '.movie-list', 'mixed');
   fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
   fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
 });
+
+// Add to your CSS (if not already present)
+document.head.insertAdjacentHTML('beforeend', `
+  <style>
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
+`);
