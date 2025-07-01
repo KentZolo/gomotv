@@ -738,3 +738,15 @@ body.light ::-webkit-scrollbar-track {
   dominant-baseline: middle;
   text-anchor: middle;
 }
+
+.logo-svg text {
+  fill: var(--logo-color, white); /* Default color */
+}
+
+body.dark {
+  --logo-color: white;
+}
+
+body.light {
+  --logo-color: #e50914;
+}
