@@ -295,3 +295,11 @@ if (newTheme === 'dark') {
 } else {
   logoSvg.setAttribute('fill', '#e50914');
 }
+
+// Sa theme toggle script
+const logoRect = document.querySelector('.logo-svg rect');
+if (theme === 'dark') {
+  logoRect.setAttribute('stroke', '#ff4d4d'); // Brighter red
+} else {
+  logoRect.setAttribute('stroke', '#cc0000'); // Darker red
+}
