@@ -743,6 +743,11 @@ body.light ::-webkit-scrollbar-track {
   transition: fill 0.3s ease;
   dominant-baseline: middle;
   text-anchor: middle;
+  filter: url(#paintbrush);
+  fill: #e50914; /* Kulay ng pintura */
+  paint-order: stroke; /* Para mas mukhang brush stroke */
+  stroke: #000; /* Outline ng brush */
+  stroke-width: 1px;
 }
 
 /* Responsive adjustments */
