@@ -24,13 +24,13 @@ body {
 body.dark {
   background-color: #121212;
   color: #E0E0E0;
-  --logo-color: white; /* Added for logo */
+  --logo-color: white;
 }
 
 body.light {
   background-color: #f4f4f4;
   color: #333333;
-  --logo-color: black; /* Added for logo */
+  --logo-color: black;
 }
 
 .theme-transition-overlay {
@@ -56,7 +56,7 @@ body.light {
   position: sticky;
   top: 0;
   z-index: 1000;
-  min-height: 50px; /* Changed from fixed height */
+  min-height: 50px;
 }
 
 body.light .navbar {
@@ -65,21 +65,21 @@ body.light .navbar {
 }
 
 .logo {
-  font-size: 1.8rem; /* Increased from 1.5rem */
+  font-size: 1.8rem;
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 50%; /* Reduced from 70% */
+  max-width: 50%;
   z-index: 1;
-  color: var(--logo-color); /* Updated to use CSS variable */
+  color: var(--logo-color);
   transition: color 0.3s;
 }
 
 .logo:hover {
-  color: #ff6b6b; /* Added hover effect */
+  color: #ff6b6b;
 }
 
 /* ===== MENU TOGGLE BUTTON ===== */
@@ -376,7 +376,7 @@ body.light .nav:hover {
 .prev { left: 20px; }
 .next { right: 20px; }
 
-/* ===== CONTENT SECTIONS ===== */
+/* ===== MEDIA SECTIONS (UPDATED) ===== */
 .media-section {
   margin: 40px 0;
   padding: 0 20px;
@@ -389,6 +389,8 @@ body.light .nav:hover {
   position: relative;
   padding-bottom: 10px;
   color: #ffffff;
+  text-align: right;
+  padding-right: 10px;
 }
 
 body.light .media-section h2 {
@@ -399,13 +401,13 @@ body.light .media-section h2 {
   content: "";
   position: absolute;
   bottom: 0;
-  left: 0;
+  right: 0;
   width: 50px;
   height: 3px;
   background-color: #e50914;
 }
 
-/* ===== POSTER GRIDS ===== */
+/* ===== POSTER GRIDS (UPDATED TO MATCH TOPIMDB.HTML) ===== */
 .homepage-grid,
 .search-results-grid {
   display: grid;
@@ -423,11 +425,7 @@ body.light .media-section h2 {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #999;
-  font-size: 0.9rem;
-  text-align: center;
+  flex-direction: column;
 }
 
 body.light .poster-wrapper {
@@ -460,46 +458,23 @@ body.light .poster-wrapper img[src*="placeholder"] {
   background: #eeeeee;
 }
 
-.poster-label {
+/* Rating badge - same as topimdb.html */
+.rating-badge {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 10px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
-  color: white;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #ffd700;
+  padding: 3px 6px;
+  border-radius: 4px;
   font-size: 0.9rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   z-index: 3;
-}
-
-body.light .poster-label {
-  color: #333333;
-}
-
-.poster-meta {
-  position: absolute;
-  bottom: 35px;
-  left: 0;
-  right: 0;
-  padding: 0 10px;
-  color: #cccccc;
-  font-size: 0.8rem;
-  display: flex;
-  gap: 8px;
-  z-index: 3;
-}
-
-body.light .poster-meta {
-  color: #666666;
 }
 
 .poster-badge {
   position: absolute;
   top: 10px;
-  right: 10px;
+  left: 10px;
   background-color: #e50914;
   color: white;
   font-size: 0.7rem;
@@ -507,6 +482,39 @@ body.light .poster-meta {
   padding: 3px 8px;
   border-radius: 4px;
   z-index: 3;
+}
+
+.poster-info {
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.poster-label {
+  font-size: 1.2rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: white;
+  margin-bottom: 5px;
+}
+
+body.light .poster-label {
+  color: #333333;
+}
+
+.poster-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  color: #aaaaaa;
+}
+
+body.light .poster-meta {
+  color: #666666;
 }
 
 /* ===== PAGINATION ===== */
@@ -726,6 +734,14 @@ body.light .disclaimer {
 
   .media-section h2 {
     font-size: 1.3rem;
+    text-align: center;
+    padding-right: 0;
+  }
+
+  .media-section h2::after {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
   }
 
   .logo {
@@ -779,13 +795,11 @@ body.light .disclaimer {
   }
   
   .poster-label {
-    font-size: 0.8rem;
-    padding: 8px;
+    font-size: 1rem;
   }
   
   .poster-meta {
-    bottom: 30px;
-    font-size: 0.7rem;
+    font-size: 0.9rem;
   }
 
   .year-link {
@@ -793,23 +807,3 @@ body.light .disclaimer {
     padding: 10px;
   }
 }
-
-/* ===== SVG LOGO (For index.html) ===== */
-.logo-container {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 200px;
-}
-
-.logo-svg {
-  width: 100%;
-  height: 100%;
-}
-
-.logo-svg text {
-  dominant-baseline: middle;
-  text-anchor: middle;
-  fill: var(--logo-color, white);
-  }
