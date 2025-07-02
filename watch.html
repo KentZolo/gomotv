@@ -50,21 +50,26 @@
       backdrop-filter: blur(5px);
     }
 
-    .logo {
-      margin: 0;
-      font-size: 1.5rem;
-      color: #e50914;
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 70%;
+   .logo {
+     margin: 0;
+     font-size: 1.5rem;
+     color: var(--logo-color); /* Gamitin ang CSS variable */
+     position: absolute;
+     left: 50%;
+     transform: translateX(-50%);
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     max-width: 70%;
+     transition: color 0.3s; /* Para sa smooth transition */
     }
 
-    body.light .logo {
-      color: #333;
+    body.dark {
+     --logo-color: white; /* White sa dark mode */
+    }
+
+    body.light {
+     --logo-color: black; /* Black sa light mode */
     }
 
     .menu-toggle {
