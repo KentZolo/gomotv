@@ -54,6 +54,23 @@ body.light {
   transition: opacity 0.3s;
 }
 
+/* ===== THEME TOGGLE BUTTON ===== */
+.theme-toggle {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 5px;
+  margin-left: 15px;
+  transition: color 0.3s;
+  outline: none;
+}
+
+.theme-toggle:hover {
+  opacity: 0.8;
+}
+
 /* ===== FIXED NAVBAR (ALL PAGES) ===== */
 .navbar {
   position: fixed;
@@ -563,4 +580,4 @@ body.light .footer {
     height: 40px;
     font-size: 18px;
   }
-}
+  }
