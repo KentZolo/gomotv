@@ -31,11 +31,14 @@ let trendingMovies = [];
 let popularMovies = [];
 let popularTVShows = [];
 let bannerItems = [];
+let bannerInterval;
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
-  setupEventListeners();
+  setupMenuToggle();
+  setupMenuSearch();
+  setupBannerNavigation();
   fetchAllContent();
 });
 
@@ -75,125 +78,61 @@ function updateThemeIcons(theme) {
 }
 
 // ===== MENU FUNCTIONS =====
-function setupEventListeners() {
-  // Theme toggle
-  if (themeToggle) {
-    themeToggle.addEventListener('click', toggleTheme);
-  }
+function setupMenuToggle() {
+  if (!menuToggle || !hamburgerMenu || !menuOverlay) return;
 
-  // Menu toggle
-  if (menuToggle && hamburgerMenu && menuOverlay) {
-    menuToggle.addEventListener('click', toggleMenu);
-    menuOverlay.addEventListener('click', toggleMenu);
-  }
+  const toggleMenu = () => {
+    menuToggle.classList.toggle('active');
+    hamburgerMenu.classList.toggle('active');
+    menuOverlay.classList.toggle('active');
+    document.body.style.overflow = hamburgerMenu.classList.contains('active') ? 'hidden' : '';
+  };
 
-  // Menu search
-  if (menuSearchButton && menuSearchInput) {
-    menuSearchButton.addEventListener('click', performMenuSearch);
-    menuSearchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') performMenuSearch();
-    });
-  }
+  menuToggle.addEventListener('click', toggleMenu);
+  menuOverlay.addEventListener('click', toggleMenu);
 
-  // Banner navigation
-  if (prevBtn && nextBtn) {
-    prevBtn.addEventListener('click', showPrevBanner);
-    nextBtn.addEventListener('click', showNextBanner);
-  }
+  // Close menu when clicking on any link
+  document.querySelectorAll('#hamburger-menu a').forEach(link => {
+    link.addEventListener('click', toggleMenu);
+  });
 }
 
-function toggleMenu() {
-  menuToggle.classList.toggle('active');
-  hamburgerMenu.classList.toggle('active');
-  menuOverlay.classList.toggle('active');
-  document.body.style.overflow = hamburgerMenu.classList.contains('active') ? 'hidden' : '';
-}
+function setupMenuSearch() {
+  if (!menuSearchButton || !menuSearchInput) return;
 
-function performMenuSearch() {
-  const searchTerm = menuSearchInput.value.trim();
-  if (searchTerm.length >= 2) {
-    toggleMenu();
-    window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
-  } else {
-    alert('Please enter at least 2 characters');
-  }
-}
-
-// ===== CONTENT FETCHING =====
-async function fetchAllContent() {
-  try {
-    const [trendingRes, popularMoviesRes, popularTVRes] = await Promise.all([
-      fetch(`${BASE_URL}/trending/movie/day?api_key=${API_KEY}`),
-      fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}`),
-      fetch(`${BASE_URL}/tv/popular?api_key=${API_KEY}`)
-    ]);
-
-    if (!trendingRes.ok || !popularMoviesRes.ok || !popularTVRes.ok) {
-      throw new Error('Failed to fetch content');
+  const performSearch = () => {
+    const searchTerm = menuSearchInput.value.trim();
+    if (searchTerm.length >= 2) {
+      window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+    } else {
+      alert('Please enter at least 2 characters');
     }
+  };
 
-    trendingMovies = await trendingRes.json();
-    popularMovies = await popularMoviesRes.json();
-    popularTVShows = await popularTVRes.json();
-
-    // Combine first 5 items from each category for banner
-    bannerItems = [
-      ...trendingMovies.results.slice(0, 5),
-      ...popularMovies.results.slice(0, 5),
-      ...popularTVShows.results.slice(0, 5)
-    ];
-
-    displayAllContent();
-    updateBanner();
-  } catch (error) {
-    console.error('Error fetching content:', error);
-    // You might want to show an error message to users here
-  }
-}
-
-// ===== CONTENT DISPLAY =====
-function displayAllContent() {
-  displayContentGrid(trendingMovies.results, movieList, 'movie');
-  displayContentGrid(popularMovies.results, popularList, 'movie');
-  displayContentGrid(popularTVShows.results, tvList, 'tv');
-}
-
-function displayContentGrid(items, container, type) {
-  if (!container) return;
-  
-  container.innerHTML = items.slice(0, 20).map(item => `
-    <div class="poster-wrapper" data-id="${item.id}" data-type="${type}">
-      <img src="${IMAGE_BASE_URL}${item.poster_path}" alt="${item.title || item.name}" loading="lazy"
-           onerror="this.src='https://via.placeholder.com/150x225?text=No+Image'">
-      <div class="poster-info">
-        <div class="poster-label">${item.title || item.name}</div>
-        <div class="poster-meta">
-          <span>${(item.release_date || item.first_air_date || '').slice(0, 4)}</span>
-          <span>⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</span>
-        </div>
-      </div>
-      ${item.vote_average > 7.5 ? `<div class="rating-badge">Top Rated</div>` : ''}
-    </div>
-  `).join('');
-
-  // Add click event listeners to all posters
-  container.querySelectorAll('.poster-wrapper').forEach(poster => {
-    poster.addEventListener('click', () => {
-      const id = poster.dataset.id;
-      const type = poster.dataset.type;
-      window.location.href = `watch.html?id=${id}&type=${type}`;
-    });
+  menuSearchButton.addEventListener('click', performSearch);
+  menuSearchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') performSearch();
   });
 }
 
 // ===== BANNER FUNCTIONS =====
+function setupBannerNavigation() {
+  if (prevBtn) prevBtn.addEventListener('click', showPrevBanner);
+  if (nextBtn) nextBtn.addEventListener('click', showNextBanner);
+  
+  if (bannerSlider) {
+    bannerSlider.addEventListener('mouseenter', pauseBannerRotation);
+    bannerSlider.addEventListener('mouseleave', startBannerRotation);
+  }
+}
+
 function updateBanner() {
-  if (bannerItems.length === 0) return;
+  if (!bannerItems.length) return;
 
   const currentItem = bannerItems[currentBannerIndex];
-  const isMovie = currentItem.hasOwnProperty('title');
+  const isMovie = 'title' in currentItem;
 
-  // Set image source with loading state
+  // Smooth image transition
   posterImg.style.opacity = 0;
   posterImg.onload = () => {
     posterImg.style.opacity = 1;
@@ -213,32 +152,100 @@ function updateBanner() {
 function showNextBanner() {
   currentBannerIndex = (currentBannerIndex + 1) % bannerItems.length;
   updateBanner();
+  resetBannerRotation();
 }
 
 function showPrevBanner() {
   currentBannerIndex = (currentBannerIndex - 1 + bannerItems.length) % bannerItems.length;
   updateBanner();
+  resetBannerRotation();
 }
 
-// ===== AUTO BANNER ROTATION =====
-let bannerInterval;
-
 function startBannerRotation() {
-  // Clear existing interval if any
-  if (bannerInterval) clearInterval(bannerInterval);
-  
-  // Start new interval (change every 8 seconds)
   bannerInterval = setInterval(showNextBanner, 8000);
 }
 
-// Start rotation when user is not hovering over banner
-if (bannerSlider) {
-  bannerSlider.addEventListener('mouseenter', () => {
-    if (bannerInterval) clearInterval(bannerInterval);
-  });
-
-  bannerSlider.addEventListener('mouseleave', startBannerRotation);
+function pauseBannerRotation() {
+  if (bannerInterval) clearInterval(bannerInterval);
 }
 
-// Initialize banner rotation
-startBannerRotation();
+function resetBannerRotation() {
+  pauseBannerRotation();
+  startBannerRotation();
+}
+
+// ===== CONTENT FETCHING =====
+async function fetchAllContent() {
+  try {
+    const [trendingRes, popularMoviesRes, popularTVRes] = await Promise.all([
+      fetch(`${BASE_URL}/trending/movie/day?api_key=${API_KEY}`),
+      fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}`),
+      fetch(`${BASE_URL}/tv/popular?api_key=${API_KEY}`)
+    ]);
+
+    if (!trendingRes.ok || !popularMoviesRes.ok || !popularTVRes.ok) {
+      throw new Error('Failed to fetch content');
+    }
+
+    trendingMovies = await trendingRes.json();
+    popularMovies = await popularMoviesRes.json();
+    popularTVShows = await popularTVRes.json();
+
+    // Prepare banner items (mix of trending and popular)
+    bannerItems = [
+      ...trendingMovies.results.slice(0, 3),
+      ...popularMovies.results.slice(0, 3),
+      ...popularTVShows.results.slice(0, 3)
+    ].filter(item => item.backdrop_path || item.poster_path);
+
+    displayAllContent();
+    if (bannerItems.length > 0) {
+      updateBanner();
+      startBannerRotation();
+    }
+  } catch (error) {
+    console.error('Error fetching content:', error);
+    // You might want to show an error state to users here
+  }
+}
+
+function displayAllContent() {
+  displayContentGrid(trendingMovies.results, movieList, 'movie');
+  displayContentGrid(popularMovies.results, popularList, 'movie');
+  displayContentGrid(popularTVShows.results, tvList, 'tv');
+}
+
+function displayContentGrid(items, container, type) {
+  if (!container || !items) return;
+  
+  container.innerHTML = items.slice(0, 20).map(item => `
+    <div class="poster-wrapper" data-id="${item.id}" data-type="${type}">
+      <img src="${item.poster_path ? IMAGE_BASE_URL + item.poster_path : 'https://via.placeholder.com/150x225?text=No+Image'}" 
+           alt="${item.title || item.name}" 
+           loading="lazy"
+           onerror="this.src='https://via.placeholder.com/150x225?text=No+Image'">
+      <div class="poster-info">
+        <div class="poster-label">${item.title || item.name}</div>
+        <div class="poster-meta">
+          <span>${(item.release_date || item.first_air_date || '').slice(0, 4)}</span>
+          <span>⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</span>
+        </div>
+      </div>
+      ${item.vote_average > 7.5 ? `<div class="rating-badge">Top Rated</div>` : ''}
+    </div>
+  `).join('');
+
+  // Add click handlers to all posters
+  container.querySelectorAll('.poster-wrapper').forEach(poster => {
+    poster.addEventListener('click', () => {
+      const id = poster.dataset.id;
+      const type = poster.dataset.type;
+      window.location.href = `watch.html?id=${id}&type=${type}`;
+    });
+  });
+}
+
+// ===== EVENT LISTENERS =====
+if (themeToggle) {
+  themeToggle.addEventListener('click', toggleTheme);
+}
