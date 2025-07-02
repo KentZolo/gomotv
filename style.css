@@ -54,26 +54,29 @@ body.light {
   transition: opacity 0.3s;
 }
 
-/* ===== HEADER & NAVBAR ===== */
+/* ===== FIXED NAVBAR (ALL PAGES) ===== */
 .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  background-color: #000;
-  position: sticky;
-  top: 0;
+  padding: 15px 20px;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
   z-index: 1000;
   min-height: 50px;
 }
 
 body.light .navbar {
-  background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.8);
 }
 
-.logo {
-  font-size: 1.8rem;
+/* ===== LOGO (HOMEPAGE SIZE PRESERVED) ===== */
+.homepage .logo {
+  font-size: 1.8rem; /* Homepage specific size */
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -86,11 +89,17 @@ body.light .navbar {
   transition: color 0.3s;
 }
 
+/* Other pages logo size (adjust if needed) */
+.logo:not(.homepage .logo) {
+  font-size: 1.5rem;
+  /* Other logo styles */
+}
+
 .logo:hover {
   color: #ff6b6b;
 }
 
-/* ===== MENU SYSTEM ===== */
+/* ===== HAMBURGER MENU SYSTEM ===== */
 .menu-toggle {
   display: flex;
   flex-direction: column;
@@ -113,7 +122,7 @@ body.light .navbar {
 }
 
 body.light .menu-toggle span {
-  background-color: #333333;
+  background-color: #333;
 }
 
 .menu-toggle.active span:nth-child(1) {
@@ -131,18 +140,18 @@ body.light .menu-toggle span {
 .hamburger-menu {
   position: fixed;
   top: 0;
-  left: -300px;
+  left: -280px;
   width: 280px;
   height: 100vh;
   background-color: #111;
   z-index: 1000;
-  transition: left 0.3s;
+  transition: left 0.3s ease;
   padding-top: 70px;
   overflow-y: auto;
 }
 
 body.light .hamburger-menu {
-  background-color: #ffffff;
+  background-color: #fff;
   box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
 }
 
@@ -157,7 +166,7 @@ body.light .hamburger-menu {
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,0.7);
-  z-index: 90;
+  z-index: 999;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -168,7 +177,78 @@ body.light .hamburger-menu {
   pointer-events: auto;
 }
 
-/* ===== IMPROVED BANNER SYSTEM ===== */
+/* Menu content */
+.hamburger-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.hamburger-menu li a {
+  display: block;
+  padding: 15px 20px;
+  color: #fff;
+  text-decoration: none;
+  border-bottom: 1px solid #222;
+  transition: background-color 0.2s;
+  font-size: 1.2rem;
+}
+
+body.light .hamburger-menu li a {
+  color: #333;
+  border-bottom: 1px solid #ddd;
+}
+
+.hamburger-menu li a:hover {
+  background-color: #222;
+}
+
+body.light .hamburger-menu li a:hover {
+  background-color: #f0f0f0;
+}
+
+.menu-search-bar {
+  padding: 15px;
+  border-bottom: 1px solid #222;
+}
+
+body.light .menu-search-bar {
+  border-bottom: 1px solid #ddd;
+}
+
+.menu-search-bar input {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  background-color: #222;
+  color: #fff;
+  font-family: 'VT323', monospace;
+  font-size: 1rem;
+}
+
+body.light .menu-search-bar input {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.menu-search-bar button {
+  padding: 8px 12px;
+  border: none;
+  background-color: #333;
+  color: #fff;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  font-family: 'VT323', monospace;
+  font-size: 1rem;
+}
+
+/* ===== MAIN CONTENT SPACING ===== */
+.main-content {
+  margin-top: 70px; /* Offset for fixed navbar */
+}
+
+/* ===== BANNER SYSTEM ===== */
 .banner-container {
   position: relative;
   width: 100%;
@@ -195,13 +275,10 @@ body.light .hamburger-menu {
   transition: opacity 0.5s ease;
 }
 
-/* Hide alt text when no image is loaded */
-#poster-img:not([src]), 
 #poster-img[src=""] {
   opacity: 0;
 }
 
-/* Navigation arrows */
 .banner-slider .nav {
   position: absolute;
   top: 50%;
@@ -265,23 +342,7 @@ body.light .banner-gradient-overlay {
   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
-/* Loading state for banner */
-.banner-loading {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #111;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #444;
-  font-size: 1.2rem;
-  z-index: 1;
-}
-
-/* ===== CONTENT SECTIONS ===== */
+/* ===== MEDIA SECTIONS ===== */
 .media-section {
   margin: 40px 0;
   padding: 0 20px;
