@@ -13,26 +13,33 @@ function getImageUrl(path, isBackdrop = false) {
   return isBackdrop ? `${BACKDROP_BASE}${path}` : `${IMG_BASE}${path}`;
 }
 
-// ====================== BANNER SLIDER ======================
+// ====================== BANNER SLIDER - UPDATED SPACING ======================
 let bannerIndex = 0;
 let bannerItems = [];
+let autoSlideInterval;
 
 async function loadBannerSlider() {
   try {
-    const res = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}`);
+    // Clear existing interval if any
+    if (autoSlideInterval) clearInterval(autoSlideInterval);
+    
+    const res = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=en-US&page=1`);
     const data = await res.json();
-    bannerItems = data.results.slice(0, 10);
+    bannerItems = data.results.slice(0, 8); // Limit to 8 items for better performance
 
     if (bannerItems.length > 0) {
       showBannerSlide(bannerIndex);
       setupBannerNavigation();
       startAutoSlide();
       
-      // Add click handler for the entire banner content area
-      document.querySelector('.banner-content').addEventListener('click', function() {
-        const item = bannerItems[bannerIndex];
-        window.location.href = `watch.html?id=${item.id}&type=movie`;
-      });
+      // Add click handler for banner content
+      const bannerContent = document.querySelector('.banner-content');
+      if (bannerContent) {
+        bannerContent.addEventListener('click', () => {
+          const item = bannerItems[bannerIndex];
+          window.location.href = `watch.html?id=${item.id}&type=movie`;
+        });
+      }
     } else {
       showDefaultBanner();
     }
@@ -47,16 +54,12 @@ function showDefaultBanner() {
   if (!banner) return;
 
   const img = document.getElementById('poster-img');
-  if (img) {
-    img.src = getImageUrl(null, true);
-    img.alt = 'Default Banner';
-  }
-
-  const summary = document.getElementById('poster-summary');
-  if (summary) summary.textContent = 'GomoTV';
-
   const meta = document.getElementById('poster-meta');
+  const summary = document.getElementById('poster-summary');
+
+  if (img) img.src = getImageUrl(null, true);
   if (meta) meta.textContent = 'Featured Content';
+  if (summary) summary.textContent = 'GomoTV';
 
   banner.classList.add('loaded');
 }
@@ -74,18 +77,26 @@ function showBannerSlide(index) {
   const meta = document.getElementById('poster-meta');
   const summary = document.getElementById('poster-summary');
 
-  // Preload image first
+  // Show loading state
+  banner.classList.remove('loaded');
+
+  // Preload image
   const tempImg = new Image();
   tempImg.src = getImageUrl(item.backdrop_path, true);
 
   tempImg.onload = () => {
     if (img) {
       img.src = tempImg.src;
-      img.alt = item.title;
+      img.alt = item.title || 'Movie Banner';
     }
 
-    if (meta) meta.textContent = `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • Movie • ${item.release_date?.slice(0, 4) || ''}`;
-    if (summary) summary.textContent = item.title;
+    if (meta) {
+      meta.textContent = `⭐ ${item.vote_average?.toFixed(1) || 'N/A'} • ${item.release_date?.slice(0, 4) || ''}`;
+    }
+    
+    if (summary) {
+      summary.textContent = item.title || 'Featured Movie';
+    }
 
     banner.classList.add('loaded');
   };
@@ -94,33 +105,52 @@ function showBannerSlide(index) {
 }
 
 function setupBannerNavigation() {
-  document.querySelector('.prev')?.addEventListener('click', prevSlide);
-  document.querySelector('.next')?.addEventListener('click', nextSlide);
+  const prevBtn = document.querySelector('.banner-prev');
+  const nextBtn = document.querySelector('.banner-next');
+  
+  if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+  if (nextBtn) nextBtn.addEventListener('click', nextSlide);
 }
 
 function startAutoSlide() {
-  setInterval(nextSlide, 5000);
+  autoSlideInterval = setInterval(() => {
+    nextSlide();
+  }, 6000); // 6 seconds interval
 }
 
 function prevSlide() {
   bannerIndex = (bannerIndex - 1 + bannerItems.length) % bannerItems.length;
   showBannerSlide(bannerIndex);
+  resetAutoSlide();
 }
 
 function nextSlide() {
   bannerIndex = (bannerIndex + 1) % bannerItems.length;
   showBannerSlide(bannerIndex);
+  resetAutoSlide();
 }
 
-// ====================== CONTENT LOADING ======================
-async function fetchAndDisplay(endpoint, containerSelector, type) {
+function resetAutoSlide() {
+  clearInterval(autoSlideInterval);
+  startAutoSlide();
+}
+
+// ====================== CONTENT LOADING - UPDATED SPACING ======================
+async function fetchAndDisplay(endpoint, containerSelector, type, params = '') {
   try {
     const container = document.querySelector(containerSelector);
     if (!container) return;
     
-    container.innerHTML = '<div class="loading"></div>';
+    // Show loading state with animation
+    container.innerHTML = `
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading content...</p>
+      </div>
+    `;
 
-    const res = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}`);
+    const url = `${BASE_URL}${endpoint}?api_key=${API_KEY}&language=en-US${params}`;
+    const res = await fetch(url);
     const data = await res.json();
 
     if (data.results?.length > 0) {
@@ -130,7 +160,23 @@ async function fetchAndDisplay(endpoint, containerSelector, type) {
     }
   } catch (err) {
     console.error(`Failed to load ${containerSelector}:`, err);
-    document.querySelector(containerSelector).innerHTML = '<p class="error">Failed to load content</p>';
+    const container = document.querySelector(containerSelector);
+    if (container) {
+      container.innerHTML = `
+        <div class="error-message">
+          <p>Failed to load content. Please try again later.</p>
+          <button class="retry-btn">Retry</button>
+        </div>
+      `;
+      
+      // Add retry functionality
+      const retryBtn = container.querySelector('.retry-btn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+          fetchAndDisplay(endpoint, containerSelector, type, params);
+        });
+      }
+    }
   }
 }
 
@@ -138,7 +184,7 @@ function displayMedia(items, containerSelector, type) {
   const container = document.querySelector(containerSelector);
   if (!container) return;
   
-  container.innerHTML = items.map(item => {
+  container.innerHTML = items.slice(0, 12).map(item => { // Limit to 12 items
     const title = item.title || item.name;
     const imageUrl = getImageUrl(item.poster_path);
     const year = (item.release_date || item.first_air_date || '').slice(0, 4);
@@ -147,7 +193,7 @@ function displayMedia(items, containerSelector, type) {
 
     return `
       <div class="poster-wrapper" data-id="${item.id}" data-type="${type}">
-        ${item.vote_average > 7 ? '<div class="poster-badge">TOP</div>' : ''}
+        ${item.vote_average > 7.5 ? '<div class="poster-badge">TOP</div>' : ''}
         <div class="rating-badge">⭐ ${rating}</div>
         <img src="${imageUrl}" alt="${title}" loading="lazy">
         <div class="poster-info">
@@ -161,7 +207,7 @@ function displayMedia(items, containerSelector, type) {
     `;
   }).join('');
 
-  // Add click event to each media item
+  // Add click events
   container.querySelectorAll('.poster-wrapper').forEach(poster => {
     poster.addEventListener('click', () => {
       const id = poster.dataset.id;
@@ -175,10 +221,10 @@ function displayMedia(items, containerSelector, type) {
 function setupMenuToggle() {
   const menuBtn = document.getElementById('menu-toggle');
   const menu = document.getElementById('hamburger-menu');
-  const overlay = document.createElement('div');
   
   if (!menuBtn || !menu) return;
 
+  const overlay = document.createElement('div');
   overlay.className = 'menu-overlay';
   document.body.appendChild(overlay);
 
@@ -192,6 +238,7 @@ function setupMenuToggle() {
   menuBtn.addEventListener('click', toggleMenu);
   overlay.addEventListener('click', toggleMenu);
 
+  // Close menu when clicking links
   document.querySelectorAll('#hamburger-menu a').forEach(link => {
     link.addEventListener('click', toggleMenu);
   });
@@ -213,7 +260,9 @@ function setupMenuSearch() {
   };
 
   searchBtn.addEventListener('click', performSearch);
-  searchInput.addEventListener('keypress', e => e.key === 'Enter' && performSearch());
+  searchInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter') performSearch();
+  });
 }
 
 // ====================== THEME SYSTEM ======================
@@ -223,8 +272,10 @@ function toggleTheme() {
   const newTheme = isDark ? 'light' : 'dark';
   
   const overlay = document.querySelector('.theme-transition-overlay');
-  overlay.style.opacity = '1';
-  overlay.style.pointerEvents = 'auto';
+  if (overlay) {
+    overlay.style.opacity = '1';
+    overlay.style.pointerEvents = 'auto';
+  }
   
   setTimeout(() => {
     body.classList.remove('dark', 'light');
@@ -232,8 +283,10 @@ function toggleTheme() {
     localStorage.setItem('theme', newTheme);
     updateThemeIcons(newTheme);
     
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none';
+    if (overlay) {
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+    }
   }, 100);
 }
 
@@ -244,28 +297,59 @@ function initTheme() {
 }
 
 function updateThemeIcons(theme) {
-  const icons = {
-    dark: document.querySelector('.dark-icon'),
-    light: document.querySelector('.light-icon')
-  };
+  const darkIcon = document.querySelector('.dark-icon');
+  const lightIcon = document.querySelector('.light-icon');
   
-  if (icons.dark) icons.dark.hidden = theme === 'light';
-  if (icons.light) icons.light.hidden = theme === 'dark';
+  if (darkIcon) darkIcon.hidden = theme === 'light';
+  if (lightIcon) lightIcon.hidden = theme === 'dark';
 }
 
-// ====================== INITIALIZATION ======================
+// ====================== INITIALIZATION - UPDATED CONTENT LOADING ======================
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize theme
   initTheme();
-  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
   
+  // Setup theme toggle
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', toggleTheme);
+  }
+
+  // Setup menu
   setupMenuToggle();
   setupMenuSearch();
 
-  // Load content sections
-  if (document.querySelector('.banner-slider')) loadBannerSlider();
+  // Load banner if exists
+  if (document.querySelector('.banner-slider')) {
+    loadBannerSlider();
+  }
+
+  // Load content sections with proper spacing
   if (document.querySelector('.movie-list')) {
-    fetchAndDisplay('/trending/all/day', '.movie-list', 'mixed');
-    fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
-    fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
+    // Add slight delay between loads for better performance
+    setTimeout(() => {
+      fetchAndDisplay('/trending/all/day', '.movie-list', 'mixed');
+    }, 100);
+    
+    setTimeout(() => {
+      fetchAndDisplay('/movie/popular', '.popular-list', 'movie', '&page=1');
+    }, 300);
+    
+    setTimeout(() => {
+      fetchAndDisplay('/tv/popular', '.tv-list', 'tv', '&page=1');
+    }, 500);
+  }
+});
+
+// Handle window resize for responsive adjustments
+window.addEventListener('resize', () => {
+  // Recalculate banner height if needed
+  if (document.querySelector('.banner-slider')) {
+    const banner = document.querySelector('.banner-slider');
+    if (window.innerWidth < 768) {
+      banner.style.height = '40vh';
+    } else {
+      banner.style.height = '55vh';
+    }
   }
 });
