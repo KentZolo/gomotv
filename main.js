@@ -143,23 +143,30 @@ function displayMedia(items, containerSelector, type) {
     const imageUrl = getImageUrl(item.poster_path);
     const year = (item.release_date || item.first_air_date || '').slice(0, 4);
     const rating = item.vote_average?.toFixed(1) || 'N/A';
+    const mediaType = type === 'movie' ? 'Movie' : 'TV Show';
 
     return `
       <div class="poster-wrapper" data-id="${item.id}" data-type="${type}">
         ${item.vote_average > 7 ? '<div class="poster-badge">TOP</div>' : ''}
+        <div class="rating-badge">⭐ ${rating}</div>
         <img src="${imageUrl}" alt="${title}" loading="lazy">
-        <div class="poster-label">${title}</div>
-        <div class="poster-meta">
-          <span>⭐ ${rating}</span>
-          <span>${year}</span>
+        <div class="poster-info">
+          <div class="poster-label">${title}</div>
+          <div class="poster-meta">
+            <span>${mediaType}</span>
+            <span>${year}</span>
+          </div>
         </div>
       </div>
     `;
   }).join('');
 
+  // Add click event to each media item
   container.querySelectorAll('.poster-wrapper').forEach(poster => {
     poster.addEventListener('click', () => {
-      window.location.href = `watch.html?id=${poster.dataset.id}&type=${poster.dataset.type}`;
+      const id = poster.dataset.id;
+      const type = poster.dataset.type;
+      window.location.href = `watch.html?id=${id}&type=${type}`;
     });
   });
 }
@@ -257,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load content sections
   if (document.querySelector('.banner-slider')) loadBannerSlider();
   if (document.querySelector('.movie-list')) {
-    fetchAndDisplay('/trending/all/day', '.movie-list', 'movie');
+    fetchAndDisplay('/trending/all/day', '.movie-list', 'mixed');
     fetchAndDisplay('/movie/popular', '.popular-list', 'movie');
     fetchAndDisplay('/tv/popular', '.tv-list', 'tv');
   }
