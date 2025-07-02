@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
-<body>
+<body class="dark">
   <!-- FIXED NAVBAR STRUCTURE -->
   <header class="navbar">
     <div class="menu-toggle" id="menu-toggle">
@@ -39,43 +39,46 @@
       <li><a href="topimdb.html">Top IMDB</a></li> 
     </ul>
   </nav>
+  <div class="menu-overlay"></div>
 
-  <!-- UPDATED BANNER SECTION WITH PROPER SPACING -->
+  <!-- IMPROVED BANNER SECTION -->
   <div class="banner-container">
     <div class="banner-slider">
-      <button class="nav banner-prev">‹</button>
-      <img id="poster-img" src="" alt="Featured Content" loading="eager">
+      <button class="nav prev" aria-label="Previous banner">‹</button>
+      <div class="banner-image-container">
+        <img id="poster-img" src="" alt="" loading="eager">
+      </div>
       <div class="banner-gradient-overlay"></div>
       <div class="banner-content">
-        <p id="poster-meta" class="banner-meta">Loading...</p>
-        <h2 id="poster-summary" class="banner-title">GomoTV</h2>
+        <p id="poster-meta" class="loading-text">Loading...</p>
+        <h2 id="poster-summary">Featured Content</h2>
       </div>
-      <button class="nav banner-next">›</button>
+      <button class="nav next" aria-label="Next banner">›</button>
     </div>
+    <div class="banner-bottom-filler"></div>
   </div>
 
-  <!-- CONTENT SECTIONS WITH PROPER SPACING -->
-  <main class="content-container">
-    <section class="media-section">
-      <h2>Trending Today</h2>
-      <div class="search-results-grid movie-list"></div>
-    </section>
+  <!-- CONTENT SECTIONS -->
+  <section class="media-section">
+    <h2>Trending</h2>
+    <div class="search-results-grid homepage-grid movie-list"></div>
+  </section>
 
-    <section class="media-section">
-      <h2>Popular Movies</h2>
-      <div class="search-results-grid popular-list"></div>
-    </section>
+  <section class="media-section">
+    <h2>Popular Movies</h2>
+    <div class="search-results-grid homepage-grid popular-list"></div>
+  </section>
 
-    <section class="media-section">
-      <h2>Popular TV Shows</h2>
-      <div class="search-results-grid tv-list"></div>
-    </section>
-  </main>
+  <section class="media-section">
+    <h2>Popular TV Shows</h2>
+    <div class="search-results-grid homepage-grid tv-list"></div>
+  </section>
 
-  <div id="modal-container"></div>
-  
   <footer class="footer">
-    © 2025 - GomoTV. This website does not host any videos or content on its server. All content is provided by third-party servers.
+    © 2025 - GomoTV. This website does not host any videos or content on its server. 
+    All content is provided by third-party servers. We do not endorse or have control 
+    over the content hosted on external servers. If you have any legal issues, please 
+    contact the content providers directly.
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
