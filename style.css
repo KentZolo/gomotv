@@ -168,7 +168,7 @@ body.light .hamburger-menu {
   pointer-events: auto;
 }
 
-/* ===== BANNER SYSTEM - FIXED SPACING ===== */
+/* ===== IMPROVED BANNER SYSTEM ===== */
 .banner-container {
   position: relative;
   width: 100%;
@@ -183,6 +183,54 @@ body.light .hamburger-menu {
   max-height: 600px;
   overflow: hidden;
   background: #000;
+}
+
+.banner-slider img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* Hide alt text when no image is loaded */
+#poster-img:not([src]), 
+#poster-img[src=""] {
+  opacity: 0;
+}
+
+/* Navigation arrows */
+.banner-slider .nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 60px;
+  font-size: 24px;
+  z-index: 10;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+}
+
+.banner-slider .nav:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.banner-slider .prev {
+  left: 20px;
+}
+
+.banner-slider .next {
+  right: 20px;
 }
 
 .banner-gradient-overlay {
@@ -217,7 +265,23 @@ body.light .banner-gradient-overlay {
   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
-/* ===== CONTENT SECTIONS - FIXED SPACING ===== */
+/* Loading state for banner */
+.banner-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #444;
+  font-size: 1.2rem;
+  z-index: 1;
+}
+
+/* ===== CONTENT SECTIONS ===== */
 .media-section {
   margin: 40px 0;
   padding: 0 20px;
@@ -231,7 +295,7 @@ body.light .banner-gradient-overlay {
   border-left: 4px solid #e50914;
 }
 
-/* ===== POSTER GRIDS - MATCHING TOPIMDB ===== */
+/* ===== POSTER GRIDS ===== */
 .homepage-grid,
 .search-results-grid {
   display: grid;
@@ -384,6 +448,20 @@ body.light .footer {
   .media-section h2 {
     font-size: 1.6rem;
   }
+
+  .banner-slider .nav {
+    width: 30px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  .banner-slider .prev {
+    left: 10px;
+  }
+
+  .banner-slider .next {
+    right: 10px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -417,5 +495,11 @@ body.light .footer {
   .media-section h2 {
     font-size: 1.4rem;
     margin-bottom: 15px;
+  }
+
+  .banner-slider .nav {
+    width: 25px;
+    height: 40px;
+    font-size: 18px;
   }
 }
