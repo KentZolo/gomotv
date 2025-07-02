@@ -24,11 +24,13 @@ body {
 body.dark {
   background-color: #121212;
   color: #E0E0E0;
+  --logo-color: white; /* Added for logo */
 }
 
 body.light {
   background-color: #f4f4f4;
   color: #333333;
+  --logo-color: #e50914; /* Added for logo */
 }
 
 .theme-transition-overlay {
@@ -54,8 +56,7 @@ body.light {
   position: sticky;
   top: 0;
   z-index: 1000;
-  height: 50px;
-  box-sizing: border-box;
+  min-height: 50px; /* Changed from fixed height */
 }
 
 body.light .navbar {
@@ -64,20 +65,21 @@ body.light .navbar {
 }
 
 .logo {
-  font-size: 1.5rem;
-  margin: 0;
-  color: #e50914;
+  font-size: 1.8rem; /* Increased from 1.5rem */
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 70%;
+  max-width: 50%; /* Reduced from 70% */
+  z-index: 1;
+  color: var(--logo-color); /* Updated to use CSS variable */
+  transition: color 0.3s;
 }
 
-body.light .logo {
-  color: #333;
+.logo:hover {
+  color: #ff6b6b; /* Added hover effect */
 }
 
 /* ===== MENU TOGGLE BUTTON ===== */
@@ -126,6 +128,14 @@ body.light .menu-toggle span {
   font-size: 1.3rem;
   cursor: pointer;
   padding: 5px;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  transition: opacity 0.3s;
+}
+
+.theme-toggle:hover {
+  opacity: 0.8;
 }
 
 body.light .theme-toggle {
@@ -717,16 +727,21 @@ body.light .disclaimer {
   .media-section h2 {
     font-size: 1.3rem;
   }
+
+  .logo {
+    font-size: 1.6rem;
+  }
 }
 
 @media (max-width: 480px) {
   .navbar {
     padding: 8px 15px;
-    height: 45px;
+    min-height: 45px;
   }
   
   .logo {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
+    max-width: 60%;
   }
   
   .theme-toggle {
@@ -797,12 +812,4 @@ body.light .disclaimer {
   dominant-baseline: middle;
   text-anchor: middle;
   fill: var(--logo-color, white);
-}
-
-body.dark {
-  --logo-color: white;
-}
-
-body.light {
-  --logo-color: #e50914;
   }
