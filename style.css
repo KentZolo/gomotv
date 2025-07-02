@@ -30,7 +30,7 @@ body.dark {
 body.light {
   background-color: #f4f4f4;
   color: #333333;
-  --logo-color: #e50914; /* Added for logo */
+  --logo-color: black; /* Added for logo */
 }
 
 .theme-transition-overlay {
