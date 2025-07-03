@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Genres - GomoTV</title>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-  
   <style>
+    /* BASE STYLES */
     body {
       font-family: 'VT323', monospace;
       background-color: #141414;
@@ -23,6 +23,7 @@
       color: #333;
     }
 
+    /* UPDATED HEADER - REMOVED RED BORDER, ADDED ARROW BUTTON */
     .navbar {
       display: flex;
       justify-content: space-between;
@@ -80,6 +81,7 @@
       color: #333;
     }
 
+    /* GENRE LIST SECTION */
     .genre-list-section {
       padding: 20px;
       margin-top: 20px;
@@ -124,6 +126,32 @@
     }
     
     body.light .genre-link:hover {
+      background: rgba(229, 9, 20, 0.1);
+    }
+
+    #page-title {
+      padding: 15px;
+      text-align: center;
+      color: inherit;
+      font-size: 1.8rem;
+      margin: 20px auto;
+      display: block;
+      max-width: 80%;
+      background: none;
+      border: none;
+    }
+    
+    #page-title:hover {
+      background: rgba(229, 9, 20, 0.2);
+      transform: translateY(-3px);
+    }
+    
+    body.light #page-title {
+      background: rgba(229, 9, 20, 0.05);
+      border-color: rgba(229, 9, 20, 0.2);
+    }
+    
+    body.light #page-title:hover {
       background: rgba(229, 9, 20, 0.1);
     }
 
@@ -237,6 +265,11 @@
         padding: 12px;
       }
       
+      #page-title {
+        font-size: 1.6rem;
+        padding: 12px;
+      }
+      
       .pagination button {
         padding: 6px 12px;
         font-size: 1rem;
@@ -251,6 +284,11 @@
       
       .genre-link {
         font-size: 1.1rem;
+        padding: 10px;
+      }
+      
+      #page-title {
+        font-size: 1.4rem;
         padding: 10px;
       }
       
@@ -277,7 +315,8 @@
     }
   </style>
 </head>
-<body class="dark">
+<body>
+  <!-- UPDATED HEADER WITH ARROW BUTTON AND NO RED BORDER -->
   <header class="navbar">
     <button onclick="history.back()" class="menu-toggle">←</button>
     <h1 class="logo" id="page-title">Genres</h1>
@@ -290,7 +329,9 @@
   <main class="container">
     <div class="genre-list-section" id="genre-list-section">
       <h2>Select a Genre:</h2>
-      <div class="genre-grid" id="genre-grid"></div>
+      <div class="genre-grid" id="genre-grid">
+        <!-- Genres will be loaded here -->
+      </div>
     </div>
     
     <div id="pagination-top" class="pagination"></div>
@@ -360,6 +401,19 @@
       localStorage.setItem('theme', newTheme);
       updateThemeIcons(newTheme);
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+      
+      if (genreId && genreName) {
+        document.getElementById('genre-list-section').style.display = 'none';
+        document.getElementById('page-title').textContent = `${decodeURIComponent(genreName)} Movies`;
+        fetchGenreMovies(genreId, genreName, currentPage);
+      } else {
+        loadGenreList();
+      }
+    });
 
     function loadGenreList() {
       const genreGrid = document.getElementById('genre-grid');
@@ -437,19 +491,10 @@
         </div>
       `).join('');
 
-      // Modified click handler to ensure navigation works
       document.querySelectorAll('.poster-wrapper').forEach(poster => {
-        poster.addEventListener('click', async (e) => {
+        poster.addEventListener('click', () => {
           const id = poster.dataset.id;
           const type = poster.dataset.type;
-          
-          // Store movie info in session storage for the watch page
-          sessionStorage.setItem('currentMovie', JSON.stringify({
-            id: id,
-            type: type
-          }));
-          
-          // Navigate immediately
           window.location.href = `watch.html?id=${id}&type=${type}`;
         });
       });
@@ -522,44 +567,6 @@
       if (page < 1 || page > totalPages) return;
       window.location.href = `genre.html?name=${encodeURIComponent(genreName)}&genre=${genreId}&page=${page}`;
     }
-
-    // Initialize Adsterra (will only trigger once per session)
-    function initAds() {
-      if (!sessionStorage.getItem('adShown')) {
-        try {
-          // Load Adsterra script dynamically
-          const script = document.createElement('script');
-          script.src = '//activelymoonlight.com/a9/48/b5/a948b5f59db616a7ea2e7a5f79e3d0d3.js';
-          script.dataset.cfasync = 'false';
-          script.onload = function() {
-            if (typeof _adstera !== 'undefined') {
-              _adstera.trigger();
-              sessionStorage.setItem('adShown', 'true');
-            }
-          };
-          document.body.appendChild(script);
-        } catch (e) {
-          console.error("Ad error:", e);
-        }
-      }
-    }
-
-    // INITIALIZE
-    document.addEventListener('DOMContentLoaded', () => {
-      initTheme();
-      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-      
-      // Initialize ads after a short delay
-      setTimeout(initAds, 2000);
-      
-      if (genreId && genreName) {
-        document.getElementById('genre-list-section').style.display = 'none';
-        document.getElementById('page-title').textContent = `${decodeURIComponent(genreName)} Movies`;
-        fetchGenreMovies(genreId, genreName, currentPage);
-      } else {
-        loadGenreList();
-      }
-    });
   </script>
 </body>
 </html>
