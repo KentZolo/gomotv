@@ -33,32 +33,6 @@ let popularTVShows = [];
 let bannerItems = [];
 let bannerInterval;
 
-// ===== OPTIMIZED AD IMPLEMENTATION =====
-function setupAdTriggers() {
-  document.querySelectorAll('.poster-wrapper').forEach(poster => {
-    poster.addEventListener('click', function() {
-      const id = this.dataset.id;
-      const type = this.dataset.type;
-      
-      // Load ad only once per session
-      if (!sessionStorage.getItem('adShown')) {
-        try {
-          const adScript = document.createElement('script');
-          adScript.src = '//activelymoonlight.com/a9/48/b5/a948b5f59db616a7ea2e7a5f79e3d0d3.js';
-          adScript.dataset.cfasync = 'false';
-          document.body.appendChild(adScript);
-          sessionStorage.setItem('adShown', 'true');
-        } catch (err) {
-          console.error('[Ads] Error loading ad:', err);
-        }
-      }
-      
-      // Instant navigation
-      window.location.href = `watch.html?id=${id}&type=${type}`;
-    });
-  });
-}
-
 // ===== THEME FUNCTIONS ===== 
 function initTheme() {
   const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -184,6 +158,17 @@ function resetBannerRotation() {
   startBannerRotation();
 }
 
+// ===== POSTER CLICK HANDLER =====
+function setupPosterClicks() {
+  document.querySelectorAll('.poster-wrapper').forEach(poster => {
+    poster.addEventListener('click', function() {
+      const id = this.dataset.id;
+      const type = this.dataset.type;
+      window.location.href = `watch.html?id=${id}&type=${type}`;
+    });
+  });
+}
+
 // ===== CONTENT FETCHING =====
 async function fetchAllContent() {
   try {
@@ -239,7 +224,7 @@ function displayContentGrid(items, container, type) {
     </div>
   `).join('');
 
-  setupAdTriggers();
+  setupPosterClicks();
 }
 
 // ===== INITIALIZATION =====
