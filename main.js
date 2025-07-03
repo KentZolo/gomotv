@@ -241,14 +241,18 @@ if (themeToggle) {
 }
 // ===== POPUNDER FIRST CLICK ONLY (GLOBAL) =====
 document.addEventListener('DOMContentLoaded', () => {
-  if (!sessionStorage.getItem('popunderShown')) {
+  const lastShown = localStorage.getItem('popunderLastShown');
+  const now = Date.now();
+  const cooldown = 5 * 60 * 1000; // 5 minutes
+
+  if (!lastShown || now - lastShown > cooldown) {
     const handleFirstClick = () => {
       const adScript = document.createElement('script');
       adScript.src = '//activelymoonlight.com/a9/48/b5/a948b5f59db616a7ea2e7a5f79e3d0d3.js';
       adScript.type = 'text/javascript';
       document.body.appendChild(adScript);
 
-      sessionStorage.setItem('popunderShown', 'true');
+      localStorage.setItem('popunderLastShown', Date.now());
       document.removeEventListener('click', handleFirstClick);
     };
 
