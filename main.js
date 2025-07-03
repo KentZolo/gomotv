@@ -33,38 +33,57 @@ let popularTVShows = [];
 let bannerItems = [];
 let bannerInterval;
 
-// ===== AD IMPLEMENTATION (FIXED VERSION) =====
-function loadAdScript() {
-  try {
-    const adScript = document.createElement('script');
-    adScript.src = '//activelymoonlight.com/a9/48/b5/a948b5f59db616a7ea2e7a5f79e3d0d3.js';
-    adScript.dataset.cfasync = 'false';
-    document.body.appendChild(adScript);
-    sessionStorage.setItem('adShown', 'true');
-    console.log('[Ads] Ad loaded successfully');
-  } catch (err) {
-    console.error('[Ads] Error loading ad:', err);
-  }
-}
-
+// ===== FIXED AD IMPLEMENTATION =====
 function setupAdTriggers() {
   document.querySelectorAll('.poster-wrapper').forEach(poster => {
-    poster.addEventListener('click', (e) => {
-      // 1. Kunin muna ang navigation details
-      const id = poster.dataset.id;
-      const type = poster.dataset.type;
+    // Add loading indicator
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'poster-loading';
+    loadingIndicator.innerHTML = '<div class="spinner"></div>';
+    poster.appendChild(loadingIndicator);
+    
+    poster.addEventListener('click', function(e) {
+      // Prevent multiple clicks
+      if (this.classList.contains('clicked')) return;
+      this.classList.add('clicked');
       
-      // 2. Mag-navigate agad
-      window.location.href = `watch.html?id=${id}&type=${type}`;
+      // Show loading indicator
+      loadingIndicator.style.display = 'flex';
       
-      // 3. I-trigger ang ad (after 100ms)
-      setTimeout(() => {
-        if (!sessionStorage.getItem('adShown')) {
-          loadAdScript();
+      // Get navigation details
+      const id = this.dataset.id;
+      const type = this.dataset.type;
+      
+      // Load ad only if not shown in this session
+      if (!sessionStorage.getItem('adShown')) {
+        try {
+          const adScript = document.createElement('script');
+          adScript.src = '//activelymoonlight.com/a9/48/b5/a948b5f59db616a7ea2e7a5f79e3d0d3.js';
+          adScript.dataset.cfasync = 'false';
+          adScript.onload = () => {
+            sessionStorage.setItem('adShown', 'true');
+            proceedToPage(id, type);
+          };
+          adScript.onerror = () => {
+            proceedToPage(id, type);
+          };
+          document.body.appendChild(adScript);
+        } catch (err) {
+          console.error('[Ads] Error loading ad:', err);
+          proceedToPage(id, type);
         }
-      }, 100);
+      } else {
+        proceedToPage(id, type);
+      }
     });
   });
+}
+
+function proceedToPage(id, type) {
+  // Small delay to ensure smooth transition
+  setTimeout(() => {
+    window.location.href = `watch.html?id=${id}&type=${type}`;
+  }, 100);
 }
 
 // ===== THEME FUNCTIONS ===== 
@@ -246,6 +265,43 @@ function displayContentGrid(items, container, type) {
       ${item.vote_average > 7.5 ? `<div class="rating-badge">Top Rated</div>` : ''}
     </div>
   `).join('');
+  
+  // Add CSS for loading indicator
+  const style = document.createElement('style');
+  style.textContent = `
+    .poster-wrapper {
+      position: relative;
+      overflow: hidden;
+    }
+    .poster-loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #e50914;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // Initialize ad triggers after content is loaded
+  setupAdTriggers();
 }
 
 // ===== INITIALIZATION =====
@@ -255,7 +311,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupMenuSearch();
   setupBannerNavigation();
   fetchAllContent();
-  setupAdTriggers(); // Initialize ad triggers
 });
 
 // ===== EVENT LISTENERS =====
