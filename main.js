@@ -33,33 +33,41 @@ let popularTVShows = [];
 let bannerItems = [];
 let bannerInterval;
 
-// ===== AD IMPLEMENTATION =====
+// ===== AD IMPLEMENTATION (FIXED VERSION) =====
 function loadAdScript() {
   try {
     const adScript = document.createElement('script');
-    adScript.src = '//activelymoonlight.com/ap/70/b5/a948b5py59db616a7ea2e7a5f79e3d0d3.js';
+    adScript.src = '//activelymoonlight.com/a9/48/b5/a948b5f59db616a7ea2e7a5f79e3d0d3.js';
     adScript.dataset.cfasync = 'false';
     document.body.appendChild(adScript);
     sessionStorage.setItem('adShown', 'true');
-    console.log('[Ads] Ad loaded (once per session)');
+    console.log('[Ads] Ad loaded successfully');
   } catch (err) {
-    console.error('[Ads] Failed to load ad:', err);
+    console.error('[Ads] Error loading ad:', err);
   }
 }
 
 function setupAdTriggers() {
   document.querySelectorAll('.poster-wrapper').forEach(poster => {
     poster.addEventListener('click', (e) => {
+      // 1. Kunin muna ang navigation details
+      const id = poster.dataset.id;
+      const type = poster.dataset.type;
+      
+      // 2. Mag-navigate agad
+      window.location.href = `watch.html?id=${id}&type=${type}`;
+      
+      // 3. I-trigger ang ad (after 100ms)
       setTimeout(() => {
         if (!sessionStorage.getItem('adShown')) {
           loadAdScript();
         }
-      }, 300);
-    }, { once: true });
+      }, 100);
+    });
   });
 }
 
-// ===== THEME FUNCTIONS =====
+// ===== THEME FUNCTIONS ===== 
 function initTheme() {
   const savedTheme = localStorage.getItem('theme') || 'dark';
   document.body.classList.add(savedTheme);
@@ -88,10 +96,8 @@ function toggleTheme() {
 function updateThemeIcons(theme) {
   const darkIcon = document.querySelector('.dark-icon');
   const lightIcon = document.querySelector('.light-icon');
-  if (darkIcon && lightIcon) {
-    darkIcon.hidden = theme === 'light';
-    lightIcon.hidden = theme === 'dark';
-  }
+  darkIcon.hidden = theme === 'light';
+  lightIcon.hidden = theme === 'dark';
 }
 
 // ===== MENU FUNCTIONS =====
@@ -107,7 +113,6 @@ function setupMenuToggle() {
 
   menuToggle.addEventListener('click', toggleMenu);
   menuOverlay.addEventListener('click', toggleMenu);
-
   document.querySelectorAll('#hamburger-menu a').forEach(link => {
     link.addEventListener('click', toggleMenu);
   });
@@ -135,7 +140,6 @@ function setupMenuSearch() {
 function setupBannerNavigation() {
   if (prevBtn) prevBtn.addEventListener('click', showPrevBanner);
   if (nextBtn) nextBtn.addEventListener('click', showNextBanner);
-  
   if (bannerSlider) {
     bannerSlider.addEventListener('mouseenter', pauseBannerRotation);
     bannerSlider.addEventListener('mouseleave', startBannerRotation);
@@ -197,10 +201,6 @@ async function fetchAllContent() {
       fetch(`${BASE_URL}/tv/popular?api_key=${API_KEY}`)
     ]);
 
-    if (!trendingRes.ok || !popularMoviesRes.ok || !popularTVRes.ok) {
-      throw new Error('Failed to fetch content');
-    }
-
     trendingMovies = await trendingRes.json();
     popularMovies = await popularMoviesRes.json();
     popularTVShows = await popularTVRes.json();
@@ -246,8 +246,6 @@ function displayContentGrid(items, container, type) {
       ${item.vote_average > 7.5 ? `<div class="rating-badge">Top Rated</div>` : ''}
     </div>
   `).join('');
-
-  // Navigation is now handled by setupAdTriggers()
 }
 
 // ===== INITIALIZATION =====
@@ -257,13 +255,10 @@ document.addEventListener('DOMContentLoaded', () => {
   setupMenuSearch();
   setupBannerNavigation();
   fetchAllContent();
-  
-  if (!sessionStorage.getItem('adShown')) {
-    setupAdTriggers();
-  }
+  setupAdTriggers(); // Initialize ad triggers
 });
 
 // ===== EVENT LISTENERS =====
 if (themeToggle) {
   themeToggle.addEventListener('click', toggleTheme);
-      }
+}
