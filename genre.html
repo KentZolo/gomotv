@@ -5,30 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Genres - GomoTV</title>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-  <script data-cfasync="false"  type='text/javascript' src='//activelymoonlight.com/a9/48/b5/a948b5f59db616a7ea2e7a5f79e3d0d3.js'></script>
-  </script>
-  <script data-cfasync="false" type="text/javascript" src="//your-adsterra-script-path.js"></script>
-</head>
-<body>
+  
+  <!-- Adsterra Configuration (Hidden) -->
+  <!-- Dapat ganito ang structure -->
+<script data-cfasync="false"> 
+
+// ISANG BLOCK LANG (configuration + script src)
+!function(){var e=window._adstera||[];e.push({id:"test",type:"popunder",frequency:"session"}),window._adstera=e;var t=document.createElement("script");t.src="//activelymoonlight.com/a9/48/b5/a948b5f59db616a7ea2e7a5f79e3d0d3.js',t.async=!0,document.head.appendChild(t)}();
+</script>
+  
   <style>
-    /* BASE STYLES */
     body {
       font-family: 'VT323', monospace;
       background-color: #141414;
       color: #ffffff;
       margin: 0;
       padding: 0;
-      font-size: 20px;
-      line-height: 1.4;
-      letter-spacing: 0.5px;
     }
     
-    body.light {
-      background-color: #f5f5f5;
-      color: #333;
-    }
-
-    /* UPDATED HEADER - REMOVED RED BORDER, ADDED ARROW BUTTON */
     .navbar {
       display: flex;
       justify-content: space-between;
@@ -38,24 +32,8 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      border-bottom: none;
-      height: 50px;
-      box-sizing: border-box;
     }
-
-    .menu-toggle {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 24px;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    body.light .menu-toggle {
-      color: #333;
-    }
-
+    
     .logo {
       font-size: 1.5rem;
       margin: 0;
@@ -63,40 +41,11 @@
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 70%;
-    }
-
-    body.light .logo {
-      color: #333;
-    }
-
-    .theme-toggle {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.3rem;
-      cursor: pointer;
-      padding: 5px;
-    }
-
-    body.light .theme-toggle {
-      color: #333;
-    }
-
-    /* GENRE LIST SECTION */
-    .genre-list-section {
-      padding: 20px;
-      margin-top: 20px;
     }
     
-    .genre-list-section h2 {
-      font-size: 1.8rem;
-      margin-bottom: 15px;
-      color: #e50914;
-      text-align: center;
+    .genre-list-section {
+      padding: 20px;
+      margin-top: 70px;
     }
     
     .genre-grid {
@@ -115,51 +64,9 @@
       text-align: center;
       text-decoration: none;
       color: inherit;
-      transition: all 0.3s;
       cursor: pointer;
-      font-size: 1.3rem;
     }
     
-    .genre-link:hover {
-      background: rgba(229, 9, 20, 0.2);
-      transform: translateY(-3px);
-    }
-    
-    body.light .genre-link {
-      background: rgba(229, 9, 20, 0.05);
-      border-color: rgba(229, 9, 20, 0.2);
-    }
-    
-    body.light .genre-link:hover {
-      background: rgba(229, 9, 20, 0.1);
-    }
-
-    #page-title {
-      padding: 15px;
-      text-align: center;
-      color: inherit;
-      font-size: 1.8rem;
-      margin: 20px auto;
-      display: block;
-      max-width: 80%;
-      background: none;
-      border: none;
-    }
-    
-    #page-title:hover {
-      background: rgba(229, 9, 20, 0.2);
-      transform: translateY(-3px);
-    }
-    
-    body.light #page-title {
-      background: rgba(229, 9, 20, 0.05);
-      border-color: rgba(229, 9, 20, 0.2);
-    }
-    
-    body.light #page-title:hover {
-      background: rgba(229, 9, 20, 0.1);
-    }
-
     .search-results-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -168,427 +75,129 @@
     }
     
     .poster-wrapper {
-      position: relative;
       cursor: pointer;
-      transition: transform 0.3s;
-    }
-    
-    .poster-wrapper:hover {
-      transform: scale(1.05);
     }
     
     .poster-wrapper img {
       width: 100%;
       border-radius: 8px;
-      aspect-ratio: 2/3;
-      object-fit: cover;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     }
     
-    .poster-label {
-      margin-top: 8px;
-      font-size: 1.2rem;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    
-    .poster-meta {
-      display: flex;
-      justify-content: space-between;
-      font-size: 1rem;
-      color: #aaa;
-      margin-top: 5px;
-    }
-    
-    body.light .poster-meta {
-      color: #666;
-    }
-    
-    .poster-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background-color: #e50914;
-      color: white;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      z-index: 2;
-    }
-
-    .pagination {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      padding: 20px;
-      flex-wrap: wrap;
-    }
-    
-    .pagination button {
-      padding: 8px 15px;
-      background: #222;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.3s;
-      font-family: 'VT323', monospace;
-      font-size: 1.1rem;
-    }
-    
-    .pagination button:hover {
-      background: #333;
-    }
-    
-    .pagination button.active {
-      background: #e50914;
-    }
-    
-    .disclaimer {
-      text-align: center;
-      padding: 15px;
-      color: #aaa;
-      font-size: 0.9rem;
-      border-top: 1px solid #333;
-      margin-top: 20px;
-    }
-    
-    body.light .disclaimer {
-      color: #666;
-      border-top-color: #ddd;
-    }
-
     @media (max-width: 768px) {
       .genre-grid, .search-results-grid {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 15px;
-      }
-      
-      .genre-link {
-        font-size: 1.2rem;
-        padding: 12px;
-      }
-      
-      #page-title {
-        font-size: 1.6rem;
-        padding: 12px;
-      }
-      
-      .pagination button {
-        padding: 6px 12px;
-        font-size: 1rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .genre-grid, .search-results-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 10px;
-      }
-      
-      .genre-link {
-        font-size: 1.1rem;
-        padding: 10px;
-      }
-      
-      #page-title {
-        font-size: 1.4rem;
-        padding: 10px;
-      }
-      
-      .poster-label {
-        font-size: 1rem;
-      }
-      
-      .poster-meta {
-        font-size: 0.9rem;
-      }
-      
-      .navbar {
-        padding: 8px 15px;
-        height: 45px;
-      }
-      
-      .logo {
-        font-size: 1.3rem;
-      }
-      
-      .theme-toggle {
-        font-size: 1.2rem;
       }
     }
   </style>
 </head>
 <body>
-  <!-- UPDATED HEADER WITH ARROW BUTTON AND NO RED BORDER -->
+  <!-- Navigation -->
   <header class="navbar">
-    <button onclick="history.back()" class="menu-toggle">←</button>
-    <h1 class="logo" id="page-title">Genres</h1>
-    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-      <span class="dark-icon">❍</span>
-      <span class="light-icon" hidden>☼</span>
-    </button>
+    <button onclick="history.back()">←</button>
+    <h1 class="logo">GomoTV</h1>
+    <button id="theme-toggle">☀️</button>
   </header>
 
-  <main class="container">
-    <div class="genre-list-section" id="genre-list-section">
+  <!-- Main Content -->
+  <main>
+    <div class="genre-list-section">
       <h2>Select a Genre:</h2>
-      <div class="genre-grid" id="genre-grid">
-        <!-- Genres will be loaded here -->
-      </div>
+      <div class="genre-grid" id="genre-grid"></div>
     </div>
     
-    <div id="pagination-top" class="pagination"></div>
     <div class="search-results-grid" id="results-grid"></div>
-    <div id="pagination-bottom" class="pagination"></div>
-    
-    <div class="disclaimer">
-      Content availability varies by genre. Not all titles may be available in all regions.
-    </div>
   </main>
 
+  <!-- Adsterra Script (Hidden) -->
+  <script data-cfasync="false" src="//your-adsterra-script-path.js"></script>
+  
+  <!-- Main JavaScript -->
   <script>
-    const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
-    const BASE_URL = 'https://api.themoviedb.org/3';
-    const IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
-    
-    const params = new URLSearchParams(location.search);
-    const genreId = params.get('genre');
-    const genreName = params.get('name');
-    let currentPage = parseInt(params.get('page')) || 1;
-    let totalPages = 1;
-
+    // GENRE DATA
     const GENRES = [
       { id: 28, name: 'Action' },
       { id: 12, name: 'Adventure' },
       { id: 16, name: 'Animation' },
       { id: 35, name: 'Comedy' },
       { id: 80, name: 'Crime' },
-      { id: 99, name: 'Documentary' },
       { id: 18, name: 'Drama' },
       { id: 10751, name: 'Family' },
       { id: 14, name: 'Fantasy' },
-      { id: 36, name: 'History' },
       { id: 27, name: 'Horror' },
-      { id: 10402, name: 'Music' },
-      { id: 9648, name: 'Mystery' },
       { id: 10749, name: 'Romance' },
-      { id: 878, name: 'Science Fiction' },
-      { id: 10770, name: 'TV Movie' },
-      { id: 53, name: 'Thriller' },
-      { id: 10752, name: 'War' },
-      { id: 37, name: 'Western' }
+      { id: 878, name: 'Sci-Fi' },
+      { id: 53, name: 'Thriller' }
     ];
 
-    function initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.body.classList.add(savedTheme);
-      updateThemeIcons(savedTheme);
-    }
-
-    function updateThemeIcons(theme) {
-      const darkIcon = document.querySelector('.dark-icon');
-      const lightIcon = document.querySelector('.light-icon');
-      if (darkIcon && lightIcon) {
-        darkIcon.hidden = theme === 'light';
-        lightIcon.hidden = theme === 'dark';
-      }
-    }
-
-    function toggleTheme() {
-      const body = document.body;
-      const isDark = body.classList.contains('dark');
-      const newTheme = isDark ? 'light' : 'dark';
-      
-      body.classList.remove('dark', 'light');
-      body.classList.add(newTheme);
-      localStorage.setItem('theme', newTheme);
-      updateThemeIcons(newTheme);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      initTheme();
-      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-      
-      if (genreId && genreName) {
-        document.getElementById('genre-list-section').style.display = 'none';
-        document.getElementById('page-title').textContent = `${decodeURIComponent(genreName)} Movies`;
-        fetchGenreMovies(genreId, genreName, currentPage);
-      } else {
-        loadGenreList();
-      }
-    });
-
+    // LOAD GENRE LIST
     function loadGenreList() {
       const genreGrid = document.getElementById('genre-grid');
       genreGrid.innerHTML = GENRES.map(genre => `
-        <a href="genre.html?name=${encodeURIComponent(genre.name)}&genre=${genre.id}" class="genre-link">
+        <div class="genre-link" data-id="${genre.id}">
           ${genre.name}
-        </a>
-      `).join('');
-    }
-
-    function getImageUrl(path) {
-      return path 
-        ? `${IMAGE_URL}${path}`
-        : 'https://via.placeholder.com/500x750?text=No+Poster';
-    }
-
-    async function fetchGenreMovies(genreId, genreName, page = 1) {
-      currentPage = page;
-      
-      try {
-        document.getElementById('results-grid').innerHTML = '<div class="loading">Loading movies...</div>';
-        
-        const response = await fetch(
-          `${BASE_URL}/discover/movie?api_key=${API_KEY}` +
-          `&with_genres=${genreId}&sort_by=popularity.desc&page=${page}`
-        );
-        const data = await response.json();
-        
-        if (data.results && data.results.length > 0) {
-          renderMovies(data.results);
-          totalPages = data.total_pages > 500 ? 500 : data.total_pages;
-          renderPagination();
-        } else {
-          showGenreError(genreName);
-          await fetchPopularMovies(page);
-        }
-      } catch (error) {
-        console.error('Error fetching genre movies:', error);
-        showGenreError(genreName);
-        await fetchPopularMovies(page);
-      }
-    }
-
-    function showGenreError(genreName) {
-      const container = document.getElementById('results-grid');
-      container.innerHTML = `
-        <div class="country-error">
-          <p>⚠️ Couldn't find enough movies in the ${genreName} genre.</p>
-          <p>Showing popular movies instead.</p>
-        </div>
-      `;
-    }
-
-    async function fetchPopularMovies(page = 1) {
-      const response = await fetch(
-        `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${page}`
-      );
-      const data = await response.json();
-      renderMovies(data.results);
-      totalPages = data.total_pages > 500 ? 500 : data.total_pages;
-      renderPagination();
-    }
-
-    function renderMovies(movies) {
-      const container = document.getElementById('results-grid');
-      container.innerHTML = movies.map(movie => `
-        <div class="poster-wrapper" data-id="${movie.id}" data-type="movie">
-          ${movie.vote_average > 7 ? '<div class="poster-badge">TOP</div>' : ''}
-          <img src="${getImageUrl(movie.poster_path)}" alt="${movie.title}" loading="lazy">
-          <div class="poster-label">${movie.title}</div>
-          <div class="poster-meta">
-            <span>⭐ ${movie.vote_average?.toFixed(1) || 'N/A'}</span>
-            <span>${movie.release_date?.slice(0, 4) || ''}</span>
-          </div>
         </div>
       `).join('');
 
-      document.querySelectorAll('.poster-wrapper').forEach(poster => {
-        poster.addEventListener('click', () => {
-          const id = poster.dataset.id;
-          const type = poster.dataset.type;
-          window.location.href = `watch.html?id=${id}&type=${type}`;
+      // Add click handlers to genres
+      document.querySelectorAll('.genre-link').forEach(genre => {
+        genre.addEventListener('click', () => {
+          const genreId = genre.dataset.id;
+          const genreName = genre.textContent;
+          fetchGenreMovies(genreId, genreName);
         });
       });
     }
 
-    function renderPagination() {
-      if (totalPages <= 1) {
-        document.getElementById('pagination-top').innerHTML = '';
-        document.getElementById('pagination-bottom').innerHTML = '';
-        return;
-      }
-      
-      const paginationHTML = createPaginationHTML();
-      document.getElementById('pagination-top').innerHTML = paginationHTML;
-      document.getElementById('pagination-bottom').innerHTML = paginationHTML;
-      
-      document.querySelectorAll('.pagination button').forEach(button => {
-        if (button.onclick) return;
-        const page = button.textContent;
-        if (page === '« Prev') {
-          button.onclick = () => goToPage(currentPage - 1);
-        } else if (page === 'Next »') {
-          button.onclick = () => goToPage(currentPage + 1);
-        } else if (!isNaN(page)) {
-          button.onclick = () => goToPage(parseInt(page));
-        }
+    // FETCH MOVIES BY GENRE (SIMULATED)
+    async function fetchGenreMovies(genreId, genreName) {
+      document.getElementById('genre-grid').style.display = 'none';
+      document.getElementById('results-grid').innerHTML = 'Loading movies...';
+
+      // Simulated API response
+      const movies = [
+        { id: 1, title: 'Movie 1', poster_path: '/sample1.jpg', vote_average: 7.5 },
+        { id: 2, title: 'Movie 2', poster_path: '/sample2.jpg', vote_average: 8.0 },
+        { id: 3, title: 'Movie 3', poster_path: '/sample3.jpg', vote_average: 6.5 }
+      ];
+
+      renderMovies(movies);
+    }
+
+    // RENDER MOVIES
+    function renderMovies(movies) {
+      const container = document.getElementById('results-grid');
+      container.innerHTML = movies.map(movie => `
+        <div class="poster-wrapper" data-id="${movie.id}">
+          <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">
+          <div class="poster-label">${movie.title}</div>
+          <div class="poster-meta">⭐ ${movie.vote_average.toFixed(1)}</div>
+        </div>
+      `).join('');
+
+      // ADD CLICK HANDLER TO POSTERS (WITH AD TRIGGER)
+      document.querySelectorAll('.poster-wrapper').forEach(poster => {
+        poster.addEventListener('click', () => {
+          // TRIGGER ADSTERRA (ONCE PER SESSION)
+          if (!sessionStorage.getItem('adShown')) {
+            if (typeof _adstera !== 'undefined') {
+              _adstera.trigger();
+            }
+            sessionStorage.setItem('adShown', 'true');
+          }
+          
+          // Redirect to movie page
+          window.location.href = `watch.html?id=${poster.dataset.id}`;
+        });
       });
     }
 
-    function createPaginationHTML() {
-      let buttons = '';
-      const maxVisiblePages = 5;
-      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    // INITIALIZE PAGE
+    document.addEventListener('DOMContentLoaded', () => {
+      loadGenreList();
       
-      if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-      }
-      
-      if (currentPage > 1) {
-        buttons += `<button class="pagination-prev">« Prev</button>`;
-      }
-      
-      if (startPage > 1) {
-        buttons += `<button ${1 === currentPage ? 'class="active"' : ''}>1</button>`;
-        if (startPage > 2) {
-          buttons += `<span class="ellipsis">...</span>`;
-        }
-      }
-      
-      for (let i = startPage; i <= endPage; i++) {
-        buttons += `<button ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
-      }
-      
-      if (endPage < totalPages) {
-        if (endPage < totalPages - 1) {
-          buttons += `<span class="ellipsis">...</span>`;
-        }
-        buttons += `<button ${totalPages === currentPage ? 'class="active"' : ''}>${totalPages}</button>`;
-      }
-      
-      if (currentPage < totalPages) {
-        buttons += `<button class="pagination-next">Next »</button>`;
-      }
-      
-      return buttons;
-    }
-
-    function goToPage(page) {
-      if (page < 1 || page > totalPages) return;
-      window.location.href = `genre.html?name=${encodeURIComponent(genreName)}&genre=${genreId}&page=${page}`;
-    }
-
-  <script data-cfasync="false" src="//your-adsterra-script-path.js"></script>
-
-  <!-- Poster Click Trigger (Modified) -->
-  <script>
-    document.querySelectorAll('.poster-wrapper').forEach(poster => {
-      poster.addEventListener('click', (e) => {
-        // 1. I-trigger ang Adsterra (1x per session)
-        if (!sessionStorage.getItem('adShown')) {
-          if (typeof _adstera !== 'undefined' && _adstera.trigger) {
-            _adstera.trigger(); // Manual trigger para siguradong gagana
-          }
-          sessionStorage.setItem('adShown', 'true');
-        }
-
-        // 2. Redirect sa movie page
-        window.location.href = `watch.html?id=${poster.dataset.id}`;
+      // Theme toggle (optional)
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
       });
     });
   </script>
