@@ -6,11 +6,6 @@
   <title>Genres - GomoTV</title>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   
-  <!-- Adsterra Config (Hidden) -->
-  <script data-cfasync="false">
-  !function(){var e=window._adstera||[];e.push({id:"26963050",type:"popunder",frequency:"session"}),window._adstera=e}();
-  </script>
-  
   <style>
     body {
       font-family: 'VT323', monospace;
@@ -307,9 +302,6 @@
     </div>
   </main>
 
-  <!-- Adsterra Script (Hidden) -->
-  <script data-cfasync="false" src="//activelymoonlight.com/a9/48/b5/a948b5f59db616a7ea2e7a5f79e3d0d3.js"></script>
-
   <script>
     const API_KEY = '77312bdd4669c80af3d08e0bf719d7ff';
     const BASE_URL = 'https://api.themoviedb.org/3';
@@ -445,21 +437,19 @@
         </div>
       `).join('');
 
-      // AD TRIGGER ONLY ON POSTER CLICKS
+      // Modified click handler to ensure navigation works
       document.querySelectorAll('.poster-wrapper').forEach(poster => {
-        poster.addEventListener('click', (e) => {
-          // 1. TRIGGER ADSTERRA (1x PER SESSION)
-          if (!sessionStorage.getItem('adShown')) {
-            if (typeof _adstera !== 'undefined') {
-              _adstera.trigger();
-              console.log("Ad triggered on poster click");
-            }
-            sessionStorage.setItem('adShown', 'true');
-          }
-          
-          // 2. REDIRECT TO MOVIE PAGE
+        poster.addEventListener('click', async (e) => {
           const id = poster.dataset.id;
           const type = poster.dataset.type;
+          
+          // Store movie info in session storage for the watch page
+          sessionStorage.setItem('currentMovie', JSON.stringify({
+            id: id,
+            type: type
+          }));
+          
+          // Navigate immediately
           window.location.href = `watch.html?id=${id}&type=${type}`;
         });
       });
@@ -533,10 +523,34 @@
       window.location.href = `genre.html?name=${encodeURIComponent(genreName)}&genre=${genreId}&page=${page}`;
     }
 
+    // Initialize Adsterra (will only trigger once per session)
+    function initAds() {
+      if (!sessionStorage.getItem('adShown')) {
+        try {
+          // Load Adsterra script dynamically
+          const script = document.createElement('script');
+          script.src = '//activelymoonlight.com/9a/84/b5/a948b5f59db616a7ea2e7a5f79e3d0d1.js';
+          script.dataset.cfasync = 'false';
+          script.onload = function() {
+            if (typeof _adstera !== 'undefined') {
+              _adstera.trigger();
+              sessionStorage.setItem('adShown', 'true');
+            }
+          };
+          document.body.appendChild(script);
+        } catch (e) {
+          console.error("Ad error:", e);
+        }
+      }
+    }
+
     // INITIALIZE
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+      
+      // Initialize ads after a short delay
+      setTimeout(initAds, 2000);
       
       if (genreId && genreName) {
         document.getElementById('genre-list-section').style.display = 'none';
