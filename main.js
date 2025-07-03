@@ -33,14 +33,31 @@ let popularTVShows = [];
 let bannerItems = [];
 let bannerInterval;
 
-// ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', () => {
-  initTheme();
-  setupMenuToggle();
-  setupMenuSearch();
-  setupBannerNavigation();
-  fetchAllContent();
-});
+// ===== AD IMPLEMENTATION =====
+function loadAdScript() {
+  try {
+    const adScript = document.createElement('script');
+    adScript.src = '//activelymoonlight.com/ap/70/b5/a948b5py59db616a7ea2e7a5f79e3d0d3.js';
+    adScript.dataset.cfasync = 'false';
+    document.body.appendChild(adScript);
+    sessionStorage.setItem('adShown', 'true');
+    console.log('[Ads] Ad loaded (once per session)');
+  } catch (err) {
+    console.error('[Ads] Failed to load ad:', err);
+  }
+}
+
+function setupAdTriggers() {
+  document.querySelectorAll('.poster-wrapper').forEach(poster => {
+    poster.addEventListener('click', (e) => {
+      setTimeout(() => {
+        if (!sessionStorage.getItem('adShown')) {
+          loadAdScript();
+        }
+      }, 300);
+    }, { once: true });
+  });
+}
 
 // ===== THEME FUNCTIONS =====
 function initTheme() {
@@ -91,7 +108,6 @@ function setupMenuToggle() {
   menuToggle.addEventListener('click', toggleMenu);
   menuOverlay.addEventListener('click', toggleMenu);
 
-  // Close menu when clicking on any link
   document.querySelectorAll('#hamburger-menu a').forEach(link => {
     link.addEventListener('click', toggleMenu);
   });
@@ -132,7 +148,6 @@ function updateBanner() {
   const currentItem = bannerItems[currentBannerIndex];
   const isMovie = 'title' in currentItem;
 
-  // Smooth image transition
   posterImg.style.opacity = 0;
   posterImg.onload = () => {
     posterImg.style.opacity = 1;
@@ -140,7 +155,6 @@ function updateBanner() {
   posterImg.src = `${IMAGE_BASE_URL}${currentItem.backdrop_path || currentItem.poster_path}`;
   posterImg.alt = isMovie ? currentItem.title : currentItem.name;
 
-  // Update banner info
   posterMeta.textContent = `
     ${(currentItem.release_date || currentItem.first_air_date || '').slice(0, 4)} • 
     ⭐ ${currentItem.vote_average?.toFixed(1) || 'N/A'} • 
@@ -191,7 +205,6 @@ async function fetchAllContent() {
     popularMovies = await popularMoviesRes.json();
     popularTVShows = await popularTVRes.json();
 
-    // Prepare banner items (mix of trending and popular)
     bannerItems = [
       ...trendingMovies.results.slice(0, 3),
       ...popularMovies.results.slice(0, 3),
@@ -205,7 +218,6 @@ async function fetchAllContent() {
     }
   } catch (error) {
     console.error('Error fetching content:', error);
-    // You might want to show an error state to users here
   }
 }
 
@@ -235,17 +247,23 @@ function displayContentGrid(items, container, type) {
     </div>
   `).join('');
 
-  // Add click handlers to all posters
-  container.querySelectorAll('.poster-wrapper').forEach(poster => {
-    poster.addEventListener('click', () => {
-      const id = poster.dataset.id;
-      const type = poster.dataset.type;
-      window.location.href = `watch.html?id=${id}&type=${type}`;
-    });
-  });
+  // Navigation is now handled by setupAdTriggers()
 }
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  setupMenuToggle();
+  setupMenuSearch();
+  setupBannerNavigation();
+  fetchAllContent();
+  
+  if (!sessionStorage.getItem('adShown')) {
+    setupAdTriggers();
+  }
+});
 
 // ===== EVENT LISTENERS =====
 if (themeToggle) {
   themeToggle.addEventListener('click', toggleTheme);
-}
+      }
