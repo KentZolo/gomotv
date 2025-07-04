@@ -239,23 +239,29 @@ document.addEventListener('DOMContentLoaded', () => {
 if (themeToggle) {
   themeToggle.addEventListener('click', toggleTheme);
 }
-// ===== POPUNDER FIRST CLICK ONLY (GLOBAL) =====
-document.addEventListener('DOMContentLoaded', () => {
-  const lastShown = localStorage.getItem('popunderLastShown');
-  const now = Date.now();
-  const cooldown = 5 * 60 * 1000; // 5 minutes
 
-  if (!lastShown || now - lastShown > cooldown) {
-    const handleFirstClick = () => {
-      const adScript = document.createElement('script');
-      adScript.src = '//activelymoonlight.com/a9/48/b5/a948b5f59db616a7ea2e7a5f79e3d0d3.js';
-      adScript.type = 'text/javascript';
-      document.body.appendChild(adScript);
+const adKey = 'adLastShown';
+const now = Date.now();
+const lastShown = localStorage.getItem(adKey);
+const interval = 5 * 60 * 1000; // 5 minutes
 
-      localStorage.setItem('popunderLastShown', Date.now());
-      document.removeEventListener('click', handleFirstClick);
-    };
+if (!lastShown || now - parseInt(lastShown) > interval) {
+  const openAd = () => {
+    localStorage.setItem(adKey, now.toString());
 
-    document.addEventListener('click', handleFirstClick);
-  }
-});
+    // ✅ Fake click to trigger Adsterra's popunder ad
+    const evt = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    });
+    document.body.dispatchEvent(evt);
+
+    document.removeEventListener('click', openAd);
+    document.removeEventListener('touchstart', openAd);
+  };
+
+  // ✅ Trigger on first interaction only
+  document.addEventListener('click', openAd, { once: true });
+  document.addEventListener('touchstart', openAd, { once: true }); // mobile
+}
