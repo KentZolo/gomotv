@@ -250,13 +250,15 @@ const openAd = () => {
   if (!lastShown || now - lastShown > interval) {
     localStorage.setItem(adKey, now.toString());
 
-    // Trigger popunder ad
-    const evt = new MouseEvent("click", {
-      bubbles: true,
-      cancelable: true,
-      view: window
-    });
-    document.body.dispatchEvent(evt);
+    // Add slight delay to improve reliability
+    setTimeout(() => {
+      const evt = new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      document.body.dispatchEvent(evt);
+    }, 100);
   }
 };
 
