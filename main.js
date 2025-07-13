@@ -241,16 +241,14 @@ if (themeToggle) {
 }
 
 const adKey = 'adLastShown';
-const interval = 5 * 60 * 1000; // 5 minutes
+const interval = 5 * 60 * 1000;
 
-const openAd = () => {
+function openAd() {
   const now = Date.now();
   const lastShown = parseInt(localStorage.getItem(adKey) || "0");
-
   if (!lastShown || now - lastShown > interval) {
     localStorage.setItem(adKey, now.toString());
 
-    // Add slight delay to improve reliability
     setTimeout(() => {
       const evt = new MouseEvent("click", {
         bubbles: true,
@@ -260,7 +258,10 @@ const openAd = () => {
       document.body.dispatchEvent(evt);
     }, 100);
   }
-};
+}
 
-document.addEventListener('click', openAd);
-document.addEventListener('touchstart', openAd);
+document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('click', openAd);
+  document.addEventListener('touchstart', openAd);
+});
+
