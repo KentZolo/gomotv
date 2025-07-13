@@ -241,27 +241,24 @@ if (themeToggle) {
 }
 
 const adKey = 'adLastShown';
-const now = Date.now();
-const lastShown = localStorage.getItem(adKey);
 const interval = 5 * 60 * 1000; // 5 minutes
 
-if (!lastShown || now - parseInt(lastShown) > interval) {
-  const openAd = () => {
-    localStorage.setItem(adKey, now.toString());
+const openAd = () => {
+  const now = Date.now();
+  const lastShown = parseInt(localStorage.getItem(adKey) || "0");
 
-    // ✅ Fake click to trigger Adsterra's popunder ad
-    const evt = new MouseEvent("click", {
-      bubbles: true,
-      cancelable: true,
-      view: window
-    });
-    document.body.dispatchEvent(evt);
+  if (!lastShown || now - lastShown > interval) {
+    localStorage.setItem(adKey, now.toString());
 
-    document.removeEventListener('click', openAd);
-    document.removeEventListener('touchstart', openAd);
-  };
+    // Trigger popunder ad
+    const evt = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    });
+    document.body.dispatchEvent(evt);
+  }
+};
 
-  // ✅ Trigger on first interaction only
-  document.addEventListener('click', openAd, { once: true });
-  document.addEventListener('touchstart', openAd, { once: true }); // mobile
-}
+document.addEventListener('click', openAd);
+document.addEventListener('touchstart', openAd);
