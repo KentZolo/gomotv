@@ -240,28 +240,3 @@ if (themeToggle) {
   themeToggle.addEventListener('click', toggleTheme);
 }
 
-const adKey = 'adLastShown';
-const interval = 5 * 60 * 1000;
-
-function openAd() {
-  const now = Date.now();
-  const lastShown = parseInt(localStorage.getItem(adKey) || "0");
-  if (!lastShown || now - lastShown > interval) {
-    localStorage.setItem(adKey, now.toString());
-
-    setTimeout(() => {
-      const evt = new MouseEvent("click", {
-        bubbles: true,
-        cancelable: true,
-        view: window
-      });
-      document.body.dispatchEvent(evt);
-    }, 100);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  document.addEventListener('click', openAd);
-  document.addEventListener('touchstart', openAd);
-});
-
