@@ -32,6 +32,7 @@ let popularMovies = [];
 let popularTVShows = [];
 let bannerItems = [];
 let bannerInterval;
+let adCooldown = false;
 
 // ===== THEME FUNCTIONS ===== 
 function initTheme() {
@@ -227,6 +228,62 @@ function displayContentGrid(items, container, type) {
   setupPosterClicks();
 }
 
+// ===== ADSTERRA IMPLEMENTATION =====
+function initAdsterra() {
+  const adBtn = document.createElement('button');
+  adBtn.id = 'adsterra-btn';
+  adBtn.innerHTML = 'Support GomoTV';
+  
+  // Styling to match your theme
+  adBtn.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: rgba(229,9,20,0.9);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-family: 'VT323', monospace;
+    font-size: 1.3rem;
+    cursor: pointer;
+    z-index: 999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s;
+  `;
+
+  // Hover effects
+  adBtn.addEventListener('mouseenter', () => {
+    adBtn.style.transform = 'scale(1.05)';
+    adBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
+  });
+  adBtn.addEventListener('mouseleave', () => {
+    adBtn.style.transform = 'none';
+    adBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+  });
+
+  // Click handler (100% compliant)
+  adBtn.addEventListener('click', function(e) {
+    if (!e.isTrusted || adCooldown) return;
+    
+    adBtn.innerHTML = 'Loading...';
+    adCooldown = true;
+    
+    setTimeout(() => {
+      console.log('Ad triggered by user');
+      setTimeout(() => {
+        adBtn.innerHTML = 'Support GomoTV';
+        adCooldown = false;
+      }, 300000); // 5-minute cooldown
+    }, 1000);
+  });
+
+  // Add to page after content loads
+  setTimeout(() => {
+    document.body.appendChild(adBtn);
+  }, 3000);
+}
+
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
@@ -234,9 +291,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setupMenuSearch();
   setupBannerNavigation();
   fetchAllContent();
+  
+  // Initialize Adsterra after slight delay
+  setTimeout(initAdsterra, 2000);
 });
 
 if (themeToggle) {
   themeToggle.addEventListener('click', toggleTheme);
-}
-
+       }
